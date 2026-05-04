@@ -25,18 +25,12 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
     const areaBox = await page
       .getByRole('combobox', { name: /المنطقة|area/i })
       .boundingBox();
-    const searchBox = await page
-      .getByRole('button', { name: 'بحث' })
-      .boundingBox();
-    expect(professionBox && areaBox && searchBox).not.toBeNull();
+    expect(professionBox && areaBox).not.toBeNull();
     expect(areaBox!.y).toBeGreaterThanOrEqual(
       professionBox!.y + professionBox!.height - 1,
     );
-    expect(searchBox!.y).toBeGreaterThanOrEqual(
-      areaBox!.y + areaBox!.height - 1,
-    );
   }
-  await page.getByRole('button', { name: 'بحث' }).click();
+  await expect(page.getByRole('button', { name: 'بحث' })).toHaveCount(0);
   await expect(page.getByText('Find trusted help')).toHaveCount(0);
   await expect(page.getByText('أحمد السبّاك')).toBeVisible();
   if (testInfo.project.name === 'mobile-chrome') {

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { useTransition } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
@@ -15,25 +15,26 @@ export function SearchPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language === 'en' ? 'en' : 'ar';
   const [params, setParams] = useSearchParams();
-  const [profession, setProfession] = useState(
-    params.get('profession') ?? 'plumbing',
-  );
-  const [neighborhood, setNeighborhood] = useState(
-    params.get('neighborhood') ?? 'new-cairo',
-  );
+  const [, startTransition] = useTransition();
+  const profession = params.get('profession') ?? 'plumbing';
+  const neighborhood = params.get('neighborhood') ?? 'new-cairo';
   const query = useSearchProviders({
-    profession: params.get('profession') ?? profession,
-    neighborhood: params.get('neighborhood') ?? neighborhood,
+    profession,
+    neighborhood,
   });
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    setParams({ profession, neighborhood });
+  function updateFilters(next: { profession?: string; neighborhood?: string }) {
+    startTransition(() => {
+      setParams({
+        profession: next.profession ?? profession,
+        neighborhood: next.neighborhood ?? neighborhood,
+      });
+    });
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="space-y-4">
+    <div className="space-y-5 sm:space-y-7">
+      <div className="space-y-3">
         <div className="brand-eyebrow" />
         <div className="space-y-3">
           <p className="section-label">{t('search.eyebrow')}</p>
@@ -42,15 +43,14 @@ export function SearchPage() {
         </div>
       </div>
       <Card variant="subtle">
-        <CardContent>
-          <form
-            className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
-            onSubmit={submit}
-          >
+        <CardContent className="p-4 sm:p-5">
+          <div className="grid gap-2.5 md:grid-cols-2">
             <Select
               aria-label={t('search.profession')}
               value={profession}
-              onChange={(event) => setProfession(event.target.value)}
+              onChange={(event) =>
+                updateFilters({ profession: event.target.value })
+              }
               options={professions.map((item) => ({
                 value: item.slug,
                 label: language === 'ar' ? item.nameAr : item.nameEn,
@@ -59,16 +59,15 @@ export function SearchPage() {
             <Select
               aria-label={t('search.area')}
               value={neighborhood}
-              onChange={(event) => setNeighborhood(event.target.value)}
+              onChange={(event) =>
+                updateFilters({ neighborhood: event.target.value })
+              }
               options={neighborhoods.map((item) => ({
                 value: item.slug,
                 label: language === 'ar' ? item.nameAr : item.nameEn,
               }))}
             />
-            <Button className="w-full lg:w-auto" type="submit">
-              {t('search.submit')}
-            </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
       {query.isLoading ? <LoadingState label={t('common.loading')} /> : null}
