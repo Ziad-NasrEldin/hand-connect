@@ -8,6 +8,8 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
+      '.vite',
+      '.firebase',
       'node_modules',
       'functions/node_modules',
       'functions/lib',

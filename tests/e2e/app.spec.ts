@@ -123,9 +123,14 @@ test('mobile auth and shell layouts stay readable', async ({
   await page.getByLabel('البريد الإلكتروني').fill('provider@hand.test');
   await page.getByRole('button', { name: 'دخول' }).click();
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole('link', { name: 'لوحة المزود' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'تعديل الملف' })).toBeVisible();
+  const providerSidebar = page.getByRole('complementary');
   await expect(
-    page.getByRole('link', { name: 'الظهور المدفوع' }),
+    providerSidebar.getByRole('link', { name: 'لوحة المزود' }),
+  ).toBeVisible();
+  await expect(
+    providerSidebar.getByRole('link', { name: 'تعديل الملف' }),
+  ).toBeVisible();
+  await expect(
+    providerSidebar.getByRole('link', { name: 'الظهور المدفوع' }),
   ).toBeVisible();
 });
