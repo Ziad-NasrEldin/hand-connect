@@ -1,0 +1,21 @@
+# Added by code-review-graph
+.code-review-graph/
+node_modules/
+functions/node_modules/
+dist/
+functions/lib/
+.env.local
+.firebase-emulator-data/
+.firebase/
+test-results/
+playwright-report/
+.tmp-brand/
+tsconfig.tsbuildinfo
+tsconfig.node.tsbuildinfo
+.claude/
+.kiro/
+.mcp.json
+.opencode.json
+.cursorrules
+
+.vercel

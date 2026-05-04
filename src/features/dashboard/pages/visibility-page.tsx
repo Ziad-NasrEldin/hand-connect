@@ -1,0 +1,86 @@
+import { FormEvent, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { getNeighborhoodName, neighborhoods } from '@/config/neighborhoods';
+import { useAuth } from '@/hooks/use-auth';
+import { useOwnedProvider } from '@/hooks/use-provider-profile';
+import { getVisibilityRequestStatusLabel } from '@/lib/display';
+import {
+  createVisibilityRequest,
+  listProviderVisibilityRequests,
+} from '@/services/visibility.service';
+
+export function VisibilityPage() {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const provider = useOwnedProvider(user?.uid);
+  const queryClient = useQueryClient();
+  const language = i18n.language === 'en' ? 'en' : 'ar';
+  const requests = useQuery({
+    queryKey: ['visibility', provider.data?.id],
+    queryFn: () => listProviderVisibilityRequests(provider.data!.id),
+    enabled: Boolean(provider.data?.id),
+  });
+  const [serviceArea, setServiceArea] = useState('new-cairo');
+  const [notes, setNotes] = useState('');
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!provider.data) return;
+    await createVisibilityRequest(
+      provider.data.id,
+      serviceArea,
+      'manual',
+      notes,
+    );
+    setNotes('');
+    void queryClient.invalidateQueries({ queryKey: ['visibility'] });
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('visibility.title')}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <p className="soft-note p-4 text-sm leading-7">
+          {t('visibility.note')}
+        </p>
+        <form
+          className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
+          onSubmit={(event) => void submit(event)}
+        >
+          <Select
+            value={serviceArea}
+            onChange={(event) => setServiceArea(event.target.value)}
+            options={neighborhoods.map((area) => ({
+              value: area.slug,
+              label: language === 'ar' ? area.nameAr : area.nameEn,
+            }))}
+          />
+          <Input
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder={t('visibility.notesPlaceholder')}
+          />
+          <Button className="w-full lg:w-auto" type="submit">
+            {t('visibility.request')}
+          </Button>
+        </form>
+        {requests.data?.map((request) => (
+          <div
+            key={request.id}
+            className="soft-list-item p-4 text-sm font-semibold text-foreground"
+          >
+            {getNeighborhoodName(request.serviceArea, language)} -{' '}
+            {getVisibilityRequestStatusLabel(request.status, t)}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}

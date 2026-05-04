@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "hand-connect-cairo",
+    "staging": "hand-connect-cairo",
+    "production": "hand-connect-cairo"
+  }
+}
