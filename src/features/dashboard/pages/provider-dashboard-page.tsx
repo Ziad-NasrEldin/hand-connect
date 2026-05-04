@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { PageIntro } from '@/components/page-intro';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { useOwnedProvider } from '@/hooks/use-provider-profile';
@@ -24,15 +25,10 @@ export function ProviderDashboardPage() {
 
   return (
     <section className="motion-stagger space-y-6">
-      <div className="motion-stagger space-y-4">
-        <div className="brand-eyebrow mb-4" />
-        <div className="space-y-2">
-          <p className="section-label">{t('dashboard.insights')}</p>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t('dashboard.title')}
-          </h1>
-        </div>
-      </div>
+      <PageIntro
+        eyebrow={t('dashboard.insights')}
+        title={t('dashboard.title')}
+      />
       <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
           <Card key={card.label} className="stat-tile">

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { PageIntro } from '@/components/page-intro';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAdminOverview } from '@/hooks/use-admin-actions';
 
@@ -14,15 +15,7 @@ export function AdminDashboardPage() {
   ];
   return (
     <section className="motion-stagger space-y-6">
-      <div className="motion-stagger space-y-4">
-        <div className="brand-eyebrow mb-4" />
-        <div className="space-y-2">
-          <p className="section-label">{t('admin.overview')}</p>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t('admin.title')}
-          </h1>
-        </div>
-      </div>
+      <PageIntro eyebrow={t('admin.overview')} title={t('admin.title')} />
       <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map(([label, value]) => (
           <Card key={label} className="stat-tile">

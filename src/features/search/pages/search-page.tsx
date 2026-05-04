@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
 import { LoadingState } from '@/components/loading-state';
+import { PageIntro } from '@/components/page-intro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
@@ -34,14 +35,11 @@ export function SearchPage() {
 
   return (
     <div className="motion-stagger space-y-5 sm:space-y-7">
-      <div className="motion-stagger space-y-3">
-        <div className="brand-eyebrow" />
-        <div className="space-y-3">
-          <p className="section-label">{t('search.eyebrow')}</p>
-          <h1 className="page-title">{t('search.title')}</h1>
-          <p className="page-lead">{t('search.lead')}</p>
-        </div>
-      </div>
+      <PageIntro
+        eyebrow={t('search.eyebrow')}
+        title={t('search.title')}
+        lead={t('search.lead')}
+      />
       <Card variant="subtle">
         <CardContent className="p-4 sm:p-5">
           <div className="grid gap-2.5 md:grid-cols-2">
