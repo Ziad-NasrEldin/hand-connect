@@ -44,7 +44,10 @@ export function NewReviewPage() {
         <CardTitle>{t('reviews.new')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
+        <form
+          className="motion-stagger grid gap-4"
+          onSubmit={(event) => void submit(event)}
+        >
           <Select
             value={String(rating)}
             onChange={(event) =>

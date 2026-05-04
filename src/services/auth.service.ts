@@ -1,5 +1,5 @@
 import type { AppUser, UserRole } from '@/types/user';
-import type { ProviderProfile } from '@/types/provider';
+import type { ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
 import { createId, getSessionUserId, readDb, setSessionUserId, writeDb } from './demo-db';
 import { nowIso } from '@/lib/dates';
 
@@ -14,6 +14,7 @@ export interface RegisterProviderInput extends RegisterCustomerInput {
   profession: string;
   serviceArea: string;
   whatsappNumber: string;
+  identityDocument: Omit<ProviderIdentityDocument, 'providerId'>;
 }
 
 export async function getCurrentSession() {
@@ -26,10 +27,10 @@ export async function getCurrentSession() {
 }
 
 export async function login(email: string, password: string) {
-  if (!password) throw new Error('Password is required');
+  if (!password) throw new Error('error.auth.passwordRequired');
   const db = readDb();
   const user = db.users.find((item) => item.email.toLowerCase() === email.toLowerCase());
-  if (!user) throw new Error('Invalid email or password');
+  if (!user) throw new Error('error.auth.invalidCredentials');
   setSessionUserId(user.uid);
   return getCurrentSession();
 }
@@ -70,6 +71,7 @@ export async function registerProvider(input: RegisterProviderInput) {
     approvedAt: null,
   };
   db.providers.push(provider);
+  db.identityDocuments.push({ ...input.identityDocument, providerId: provider.id });
   writeDb(db);
   return getCurrentSession();
 }
@@ -77,7 +79,7 @@ export async function registerProvider(input: RegisterProviderInput) {
 async function createUser(input: RegisterCustomerInput, role: UserRole): Promise<AppUser> {
   const db = readDb();
   if (db.users.some((item) => item.email.toLowerCase() === input.email.toLowerCase())) {
-    throw new Error('Email already exists');
+    throw new Error('error.auth.emailExists');
   }
   const user: AppUser = {
     uid: createId(role),

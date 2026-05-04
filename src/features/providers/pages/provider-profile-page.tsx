@@ -61,8 +61,8 @@ export function ProviderProfilePage() {
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="space-y-5">
+    <div className="motion-stagger grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="motion-stagger space-y-5">
         <Card
           variant={provider.visibilityTier === 'paid' ? 'highlight' : 'default'}
         >
@@ -80,11 +80,11 @@ export function ProviderProfilePage() {
             <p className="max-w-[65ch] leading-8 text-foreground/90">
               {provider.bio}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="motion-stagger flex flex-wrap gap-2">
               {provider.serviceAreaKeys.map((area) => (
                 <span
                   key={area}
-                  className="rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground"
+                  className="motion-pop rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground"
                 >
                   {getNeighborhoodName(area, language)}
                 </span>
@@ -99,7 +99,7 @@ export function ProviderProfilePage() {
           <CardHeader>
             <CardTitle>{t('reviews.title')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="motion-stagger space-y-3">
             {reviewsQuery.data?.map((review) => (
               <div key={review.id} className="soft-list-item p-4 sm:p-5">
                 <p className="text-sm font-semibold text-primary">
@@ -129,7 +129,7 @@ export function ProviderProfilePage() {
             {t('provider.whatsapp')}
           </Button>
           {revealed ? (
-            <p className="soft-note p-4 text-center text-base font-semibold">
+            <p className="motion-pop soft-note p-4 text-center text-base font-semibold">
               {revealed}
             </p>
           ) : null}

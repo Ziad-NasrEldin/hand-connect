@@ -15,7 +15,7 @@ export function ConversationsPage() {
       <CardHeader>
         <CardTitle>{t('messages.title')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="motion-stagger space-y-3">
         {conversations.data?.length === 0 ? (
           <EmptyState title={t('messages.empty')} />
         ) : null}

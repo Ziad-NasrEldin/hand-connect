@@ -9,13 +9,18 @@ service firebase.storage {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return signedIn()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     match /providerPhotos/{providerId}/{fileName} {
       allow read: if true;
       allow write: if isOwner(providerId);
     }
 
     match /identityDocuments/{providerId}/{fileName} {
-      allow read: if false;
+      allow read: if isAdmin() || isOwner(providerId);
       allow write: if isOwner(providerId);
     }
 

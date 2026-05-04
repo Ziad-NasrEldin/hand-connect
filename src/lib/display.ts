@@ -4,6 +4,49 @@ import type { RequestStatus } from '@/types/visibility';
 
 type Translate = (key: string) => string;
 
+const adminReasonKeyByLegacyValue: Record<string, string> = {
+  'identity information did not pass manual review':
+    'admin.reason.identityRejected',
+  'identity reviewed manually': 'admin.reason.identityReviewed',
+  'manual admin suspension': 'admin.reason.manualSuspension',
+  'manual payment confirmed': 'admin.reason.paymentConfirmed',
+  'repeated report pending manual review':
+    'admin.reason.repeatedReportPendingManualReview',
+};
+
+const visibilityNoteKeyByLegacyValue: Record<string, string> = {
+  'manual cash payment confirmed for featured new cairo exposure':
+    'visibility.note.manualCashPaymentConfirmed',
+  'provider says wallet transfer will be sent today':
+    'visibility.note.walletTransferPending',
+};
+
+const reportReasonKeyByLegacyValue: Record<string, string> = {
+  'customer reported repeated rescheduling after contact':
+    'report.reason.repeatedReschedulingAfterContact',
+};
+
+function normalizeLegacyValue(value: string) {
+  return value.trim().replace(/[.]+$/, '').toLowerCase();
+}
+
+function isTranslationKey(value: string) {
+  return /^[a-z]+(?:\.[A-Za-z0-9]+)+$/.test(value.trim());
+}
+
+function translateMappedValue(
+  value: string,
+  prefix: string,
+  legacyKeyByValue: Record<string, string>,
+  t: Translate,
+) {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith(prefix)) return t(trimmed);
+  const key = legacyKeyByValue[normalizeLegacyValue(trimmed)];
+  return key ? t(key) : trimmed;
+}
+
 export function getProviderStatusLabel(
   status: ProviderStatus | null | undefined,
   t: Translate,
@@ -59,12 +102,51 @@ export function getAdminActionLabel(action: string, t: Translate) {
 }
 
 export function getAdminReasonLabel(reason: string, t: Translate) {
-  const key = {
-    'Identity information did not pass manual review':
-      'admin.reason.identityRejected',
-    'Identity reviewed manually': 'admin.reason.identityReviewed',
-    'Manual admin suspension': 'admin.reason.manualSuspension',
-    'Manual payment confirmed': 'admin.reason.paymentConfirmed',
-  }[reason];
-  return key ? t(key) : reason;
+  return translateMappedValue(
+    reason,
+    'admin.reason.',
+    adminReasonKeyByLegacyValue,
+    t,
+  );
+}
+
+export function getVisibilityRequestNoteLabel(
+  notes: string,
+  t: Translate,
+): string {
+  return notes
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return trimmed;
+
+      if (/^Admin:\s*/i.test(trimmed)) {
+        const note = trimmed.replace(/^Admin:\s*/i, '');
+        return `${t('visibility.adminNotePrefix')}: ${getVisibilityRequestNoteLabel(note, t)}`;
+      }
+
+      const visibilityNote = translateMappedValue(
+        trimmed,
+        'visibility.note.',
+        visibilityNoteKeyByLegacyValue,
+        t,
+      );
+      if (visibilityNote !== trimmed) return visibilityNote;
+
+      return getAdminReasonLabel(trimmed, t);
+    })
+    .join('\n');
+}
+
+export function getReportReasonLabel(reason: string, t: Translate) {
+  return translateMappedValue(
+    reason,
+    'report.reason.',
+    reportReasonKeyByLegacyValue,
+    t,
+  );
+}
+
+export function getLocalizedMessage(message: string, t: Translate) {
+  return isTranslationKey(message) ? t(message) : message;
 }

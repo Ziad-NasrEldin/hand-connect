@@ -13,7 +13,7 @@ export function ProvidersPage() {
   const query = useAllProviders();
   const queryClient = useQueryClient();
   async function suspend(id: string) {
-    await suspendProvider(user!.uid, id, 'Manual admin suspension');
+    await suspendProvider(user!.uid, id, 'admin.reason.manualSuspension');
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
   }
   return (
@@ -21,7 +21,7 @@ export function ProvidersPage() {
       <CardHeader>
         <CardTitle>{t('admin.providers')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="motion-stagger space-y-3">
         {query.data?.map((provider) => (
           <div
             key={provider.id}

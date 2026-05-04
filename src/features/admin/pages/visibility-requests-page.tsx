@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { useVisibilityRequests } from '@/hooks/use-admin-actions';
-import { getVisibilityRequestStatusLabel } from '@/lib/display';
+import {
+  getVisibilityRequestNoteLabel,
+  getVisibilityRequestStatusLabel,
+} from '@/lib/display';
 import { approveVisibilityRequest } from '@/services/admin.service';
 
 export function VisibilityRequestsPage() {
@@ -13,7 +16,11 @@ export function VisibilityRequestsPage() {
   const requests = useVisibilityRequests();
   const queryClient = useQueryClient();
   async function approve(id: string) {
-    await approveVisibilityRequest(user!.uid, id, 'Manual payment confirmed');
+    await approveVisibilityRequest(
+      user!.uid,
+      id,
+      'admin.reason.paymentConfirmed',
+    );
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
   }
   return (
@@ -21,7 +28,7 @@ export function VisibilityRequestsPage() {
       <CardHeader>
         <CardTitle>{t('admin.visibility')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="motion-stagger space-y-3">
         {requests.data?.map((request) => (
           <div
             key={request.id}
@@ -31,9 +38,11 @@ export function VisibilityRequestsPage() {
               <p className="font-semibold text-foreground">
                 {request.providerId}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {getVisibilityRequestStatusLabel(request.status, t)} -{' '}
-                {request.notes}
+              <p className="whitespace-pre-line text-sm text-muted-foreground">
+                {getVisibilityRequestStatusLabel(request.status, t)}
+                {request.notes
+                  ? ` - ${getVisibilityRequestNoteLabel(request.notes, t)}`
+                  : ''}
               </p>
             </div>
             {request.status === 'pending' ? (

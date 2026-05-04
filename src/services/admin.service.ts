@@ -1,7 +1,15 @@
 import { nowIso } from '@/lib/dates';
 import type { AdminAction } from '@/types/admin';
-import type { Profession } from '@/types/provider';
+import type {
+  Profession,
+  ProviderIdentityDocument,
+  ProviderProfile,
+} from '@/types/provider';
 import { activeProfessions, createId, readDb, writeDb } from './demo-db';
+
+export type ProviderApplication = ProviderProfile & {
+  identityDocument: ProviderIdentityDocument | null;
+};
 
 function audit(adminId: string, targetType: AdminAction['targetType'], targetId: string, action: string, reason: string) {
   return {
@@ -27,7 +35,17 @@ export async function getAdminOverview() {
 }
 
 export async function listProviderApplications() {
-  return readDb().providers.filter((item) => item.status === 'pending');
+  const db = readDb();
+  return db.providers
+    .filter((item) => item.status === 'pending')
+    .map(
+      (provider): ProviderApplication => ({
+        ...provider,
+        identityDocument:
+          db.identityDocuments.find((item) => item.providerId === provider.id) ??
+          null,
+      }),
+    );
 }
 
 export async function listAllProviders() {
@@ -37,18 +55,28 @@ export async function listAllProviders() {
 export async function approveProvider(adminId: string, providerId: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
+  if (!db.identityDocuments.some((item) => item.providerId === providerId))
+    throw new Error('error.provider.identityRequired');
   provider.status = 'approved';
   provider.nationalIdVerified = true;
   provider.approvedAt = nowIso();
-  db.adminActions.push(audit(adminId, 'provider', providerId, 'approve_provider', 'Identity reviewed manually'));
+  db.adminActions.push(
+    audit(
+      adminId,
+      'provider',
+      providerId,
+      'approve_provider',
+      'admin.reason.identityReviewed',
+    ),
+  );
   writeDb(db);
 }
 
 export async function rejectProvider(adminId: string, providerId: string, reason: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   provider.status = 'rejected';
   provider.rejectionReason = reason;
   db.adminActions.push(audit(adminId, 'provider', providerId, 'reject_provider', reason));
@@ -58,7 +86,7 @@ export async function rejectProvider(adminId: string, providerId: string, reason
 export async function suspendProvider(adminId: string, providerId: string, reason: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   provider.status = 'suspended';
   db.adminActions.push(audit(adminId, 'provider', providerId, 'suspend_provider', reason));
   writeDb(db);
@@ -67,12 +95,12 @@ export async function suspendProvider(adminId: string, providerId: string, reaso
 export async function approveVisibilityRequest(adminId: string, requestId: string, notes: string) {
   const db = readDb();
   const request = db.visibilityRequests.find((item) => item.id === requestId);
-  if (!request) throw new Error('Request not found');
+  if (!request) throw new Error('error.request.notFound');
   const provider = db.providers.find((item) => item.id === request.providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   request.status = 'approved';
   request.paymentConfirmedBy = adminId;
-  request.notes = `${request.notes}\nAdmin: ${notes}`.trim();
+  request.notes = [request.notes, notes].filter(Boolean).join('\n');
   request.processedAt = nowIso();
   provider.visibilityTier = 'paid';
   provider.visibilityPaidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();

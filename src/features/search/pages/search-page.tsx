@@ -33,8 +33,8 @@ export function SearchPage() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-7">
-      <div className="space-y-3">
+    <div className="motion-stagger space-y-5 sm:space-y-7">
+      <div className="motion-stagger space-y-3">
         <div className="brand-eyebrow" />
         <div className="space-y-3">
           <p className="section-label">{t('search.eyebrow')}</p>
@@ -74,7 +74,7 @@ export function SearchPage() {
       {query.data?.length === 0 ? (
         <EmptyState title={t('search.empty')} />
       ) : null}
-      <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
+      <div className="motion-stagger grid gap-4 sm:gap-5 md:grid-cols-2">
         {query.data?.map((provider) => (
           <ProviderResultCard
             key={provider.id}
@@ -111,7 +111,7 @@ function ProviderResultCard({
             </p>
           </div>
           {provider.visibilityTier === 'paid' ? (
-            <span className="rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-primary shadow-[inset_0_0_0_1px_rgba(233,179,137,0.8)]">
+            <span className="paid-badge rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-primary shadow-[inset_0_0_0_1px_rgba(233,179,137,0.8)]">
               {t('common.featured')}
             </span>
           ) : null}

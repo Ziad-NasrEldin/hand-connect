@@ -2,12 +2,12 @@ import { professions } from '../config/professions';
 import type { AdminAction, AbuseReport } from '../types/admin';
 import type { Contact } from '../types/contact';
 import type { Conversation, Message } from '../types/messaging';
-import type { ProviderProfile } from '../types/provider';
+import type { ProviderIdentityDocument, ProviderProfile } from '../types/provider';
 import type { Review } from '../types/review';
 import type { AppUser } from '../types/user';
 import type { VisibilityRequest } from '../types/visibility';
 
-export const demoSeedVersion = '2026-05-04-cairo-realistic-seed-v2';
+export const demoSeedVersion = '2026-05-04-cairo-realistic-seed-v3';
 
 const baseDate = '2026-05-04T08:00:00.000Z';
 const paidUntil = '2026-06-03T08:00:00.000Z';
@@ -15,6 +15,7 @@ const paidUntil = '2026-06-03T08:00:00.000Z';
 export interface DemoSeedData {
   users: AppUser[];
   providers: ProviderProfile[];
+  identityDocuments: ProviderIdentityDocument[];
   contacts: Contact[];
   conversations: Conversation[];
   messages: Message[];
@@ -222,7 +223,7 @@ export function createDemoSeedData(): DemoSeedData {
       status: 'approved',
       paymentConfirmedBy: 'admin-demo',
       paymentMethod: 'manual_cash',
-      notes: 'Manual cash payment confirmed for featured New Cairo exposure.',
+      notes: 'visibility.note.manualCashPaymentConfirmed',
       requestedAt: '2026-05-01T11:00:00.000Z',
       processedAt: '2026-05-01T16:30:00.000Z',
     },
@@ -234,16 +235,16 @@ export function createDemoSeedData(): DemoSeedData {
       status: 'pending',
       paymentConfirmedBy: null,
       paymentMethod: 'manual_wallet',
-      notes: 'Provider says wallet transfer will be sent today.',
+      notes: 'visibility.note.walletTransferPending',
       requestedAt: '2026-05-04T07:20:00.000Z',
       processedAt: null,
     },
   ];
 
   const adminActions: AdminAction[] = [
-    adminAction('admin-action-1', 'provider', 'provider-demo', 'approve_provider', 'Identity reviewed manually.'),
-    adminAction('admin-action-2', 'visibilityRequest', 'visibility-cleaning-new-cairo', 'approve_visibility', 'Manual payment confirmed.'),
-    adminAction('admin-action-3', 'provider', 'provider-suspended', 'suspend_provider', 'Repeated report pending manual review.'),
+    adminAction('admin-action-1', 'provider', 'provider-demo', 'approve_provider', 'admin.reason.identityReviewed'),
+    adminAction('admin-action-2', 'visibilityRequest', 'visibility-cleaning-new-cairo', 'approve_visibility', 'admin.reason.paymentConfirmed'),
+    adminAction('admin-action-3', 'provider', 'provider-suspended', 'suspend_provider', 'admin.reason.repeatedReportPendingManualReview'),
   ];
 
   const reports: AbuseReport[] = [
@@ -252,7 +253,7 @@ export function createDemoSeedData(): DemoSeedData {
       targetType: 'provider',
       targetId: 'provider-suspended',
       reporterId: 'customer-omar',
-      reason: 'Customer reported repeated rescheduling after contact.',
+      reason: 'report.reason.repeatedReschedulingAfterContact',
       status: 'open',
       createdAt: '2026-05-03T18:00:00.000Z',
     },
@@ -261,6 +262,9 @@ export function createDemoSeedData(): DemoSeedData {
   return {
     users,
     providers,
+    identityDocuments: providers.map((item) =>
+      identityDocumentFor(item.id, item.displayName),
+    ),
     contacts,
     conversations,
     messages,
@@ -318,6 +322,36 @@ function provider(input: {
     photos: input.photo ? [{ id: `${input.id}-photo-1`, url: input.photo, alt: `${input.displayName} work sample` }] : [],
     createdAt: baseDate,
     approvedAt: input.status && input.status !== 'approved' ? null : baseDate,
+  };
+}
+
+function identityDocumentFor(
+  providerId: string,
+  displayName: string,
+): ProviderIdentityDocument {
+  const svg = [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="720" height="440" viewBox="0 0 720 440">',
+    '<rect width="720" height="440" rx="28" fill="#fff6ed"/>',
+    '<rect x="36" y="36" width="648" height="368" rx="22" fill="#ffffff" stroke="#e9b389" stroke-width="4"/>',
+    '<rect x="66" y="84" width="160" height="188" rx="16" fill="#493726"/>',
+    '<circle cx="146" cy="150" r="42" fill="#ff5a00"/>',
+    '<rect x="96" y="214" width="100" height="32" rx="16" fill="#ff5a00"/>',
+    '<text x="260" y="118" font-family="Arial" font-size="28" font-weight="700" fill="#1b1f1b">Hand Connect Identity Review</text>',
+    `<text x="260" y="168" font-family="Arial" font-size="24" fill="#493726">${displayName}</text>`,
+    `<text x="260" y="214" font-family="Arial" font-size="20" fill="#493726">Application: ${providerId}</text>`,
+    '<text x="260" y="258" font-family="Arial" font-size="18" fill="#6f6257">Demo document for manual admin verification.</text>',
+    '<text x="260" y="300" font-family="Arial" font-size="18" fill="#6f6257">Not a real national ID.</text>',
+    '<rect x="260" y="330" width="300" height="22" rx="11" fill="#ff5a00"/>',
+    '</svg>',
+  ].join('');
+
+  return {
+    providerId,
+    fileName: `${providerId}-identity-demo.svg`,
+    fileType: 'image/svg+xml',
+    fileSize: svg.length,
+    uploadedAt: baseDate,
+    previewDataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
   };
 }
 

@@ -6,7 +6,7 @@ export function LoadingState({
   label?: string;
 }) {
   return (
-    <div className="rounded-[calc(var(--radius)+2px)] border border-border bg-[color:var(--hc-surface)] p-6 text-center text-sm font-medium text-muted-foreground shadow-[0_12px_30px_rgba(73,55,38,0.04)]">
+    <div className="motion-reveal motion-shimmer rounded-[calc(var(--radius)+2px)] border border-border bg-[color:var(--hc-surface)] p-6 text-center text-sm font-medium text-muted-foreground shadow-[0_12px_30px_rgba(73,55,38,0.04)]">
       {label}
     </div>
   );

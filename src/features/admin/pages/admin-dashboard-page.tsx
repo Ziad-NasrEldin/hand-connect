@@ -13,8 +13,8 @@ export function AdminDashboardPage() {
     [t('admin.reviewsUnderReview'), overview.data?.reviewsUnderReview ?? 0],
   ];
   return (
-    <section className="space-y-6">
-      <div className="space-y-4">
+    <section className="motion-stagger space-y-6">
+      <div className="motion-stagger space-y-4">
         <div className="brand-eyebrow mb-4" />
         <div className="space-y-2">
           <p className="section-label">{t('admin.overview')}</p>
@@ -23,7 +23,7 @@ export function AdminDashboardPage() {
           </h1>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map(([label, value]) => (
           <Card key={label} className="stat-tile">
             <CardContent className="p-5">

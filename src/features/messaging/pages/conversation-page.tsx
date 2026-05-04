@@ -29,12 +29,12 @@ export function ConversationPage() {
         <CardTitle>{t('messages.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid min-h-[380px] content-end gap-3 rounded-[calc(var(--radius)+2px)] border border-border bg-[color:var(--hc-surface)] p-4 sm:p-5">
+        <div className="motion-stagger grid min-h-[380px] content-end gap-3 rounded-[calc(var(--radius)+2px)] border border-border bg-[color:var(--hc-surface)] p-4 sm:p-5">
           {conversation.data?.messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                'max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-[0_12px_24px_rgba(73,55,38,0.05)] sm:max-w-[75%]',
+                'message-bubble max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-[0_12px_24px_rgba(73,55,38,0.05)] sm:max-w-[75%]',
                 message.senderId === user?.uid
                   ? 'justify-self-start bg-primary text-primary-foreground'
                   : 'justify-self-end border border-border bg-card text-foreground',
@@ -44,7 +44,10 @@ export function ConversationPage() {
             </div>
           ))}
         </div>
-        <form className="grid gap-2 md:grid-cols-[1fr_auto]" onSubmit={submit}>
+        <form
+          className="motion-stagger grid gap-2 md:grid-cols-[1fr_auto]"
+          onSubmit={submit}
+        >
           <Input
             value={text}
             onChange={(event) => setText(event.target.value)}

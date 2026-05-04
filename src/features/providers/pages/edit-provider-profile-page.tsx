@@ -46,7 +46,10 @@ export function EditProviderProfilePage() {
         <CardTitle>{t('provider.edit')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
+        <form
+          className="motion-stagger grid gap-4"
+          onSubmit={(event) => void submit(event)}
+        >
           <div className="space-y-2">
             <Input defaultValue={provider.data?.displayName} disabled />
           </div>

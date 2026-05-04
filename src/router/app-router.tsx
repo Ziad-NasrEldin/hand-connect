@@ -49,6 +49,7 @@ export function AppRouter() {
               <Route element={<AuthLayout />}>
                 <Route path="login" element={<LoginPage />} />
                 <Route path="register" element={<RegisterPage />} />
+                <Route path="join-provider" element={<RegisterPage />} />
               </Route>
             </Route>
             <Route path="pending" element={<PendingProviderPage />} />

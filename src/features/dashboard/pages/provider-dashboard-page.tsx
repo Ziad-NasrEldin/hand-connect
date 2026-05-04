@@ -23,8 +23,8 @@ export function ProviderDashboardPage() {
   ];
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-4">
+    <section className="motion-stagger space-y-6">
+      <div className="motion-stagger space-y-4">
         <div className="brand-eyebrow mb-4" />
         <div className="space-y-2">
           <p className="section-label">{t('dashboard.insights')}</p>
@@ -33,7 +33,7 @@ export function ProviderDashboardPage() {
           </h1>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
           <Card key={card.label} className="stat-tile">
             <CardContent className="p-5">

@@ -26,7 +26,7 @@ export async function incrementProfileView(providerId: string, viewerId?: string
 export async function revealWhatsApp(customerId: string, providerId: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId && item.status === 'approved');
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   let contact = db.contacts.find(
     (item) => item.customerId === customerId && item.providerId === providerId && item.type === 'whatsapp_reveal',
   );
@@ -48,7 +48,7 @@ export async function revealWhatsApp(customerId: string, providerId: string) {
 export async function updateProviderProfile(providerId: string, patch: Partial<ProviderProfile>) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   Object.assign(provider, {
     displayName: patch.displayName ?? provider.displayName,
     bio: patch.bio ?? provider.bio,

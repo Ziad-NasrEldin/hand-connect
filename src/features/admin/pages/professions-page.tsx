@@ -10,7 +10,7 @@ export function ProfessionsPage() {
       <CardHeader>
         <CardTitle>{t('admin.professions')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="motion-stagger space-y-3">
         {professions.map((profession) => (
           <div key={profession.id} className="soft-list-item p-4 sm:p-5">
             <p className="font-semibold text-foreground">

@@ -9,7 +9,7 @@ export function conversationIdFor(customerId: string, providerId: string) {
 export async function startConversation(customerId: string, providerId: string, text: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId);
-  if (!provider) throw new Error('Provider not found');
+  if (!provider) throw new Error('error.provider.notFound');
   const id = conversationIdFor(customerId, providerId);
   let conversation = db.conversations.find((item) => item.id === id);
   const timestamp = nowIso();
@@ -54,7 +54,9 @@ export async function startConversation(customerId: string, providerId: string, 
 export async function sendMessage(conversationId: string, senderId: string, text: string) {
   const db = readDb();
   const conversation = db.conversations.find((item) => item.id === conversationId);
-  if (!conversation || !conversation.participants.includes(senderId)) throw new Error('Conversation not found');
+  if (!conversation || !conversation.participants.includes(senderId)) {
+    throw new Error('error.conversation.notFound');
+  }
   const recipientId = conversation.participants.find((item) => item !== senderId)!;
   const message: Message = {
     id: createId('message'),

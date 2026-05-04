@@ -16,7 +16,7 @@ export function AuditLogPage() {
       <CardHeader>
         <CardTitle>{t('admin.actions')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="motion-stagger space-y-3">
         {actions.data?.length ? (
           actions.data.map((action) => (
             <div key={action.id} className="soft-list-item p-4 sm:p-5">

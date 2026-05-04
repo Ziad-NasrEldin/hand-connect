@@ -1,7 +1,7 @@
 import type { AdminAction, AbuseReport } from '@/types/admin';
 import type { Contact } from '@/types/contact';
 import type { Conversation, Message } from '@/types/messaging';
-import type { ProviderProfile } from '@/types/provider';
+import type { ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
 import type { Review } from '@/types/review';
 import type { AppUser } from '@/types/user';
 import type { VisibilityRequest } from '@/types/visibility';
@@ -10,6 +10,7 @@ import { activeSeedProfessions, createDemoSeedData, demoSeedVersion } from './se
 export interface DemoDb {
   users: AppUser[];
   providers: ProviderProfile[];
+  identityDocuments: ProviderIdentityDocument[];
   contacts: Contact[];
   conversations: Conversation[];
   messages: Message[];

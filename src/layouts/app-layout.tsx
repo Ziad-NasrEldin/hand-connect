@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '@/components/app/language-toggle';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/use-auth';
 export function AppLayout() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const location = useLocation();
   const navItems = [
     { href: '/search', label: t('nav.search'), show: true },
     { href: '/messages', label: t('nav.messages'), show: Boolean(user) },
@@ -20,7 +21,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen pb-10">
-      <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur-md">
+      <header className="motion-header sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center justify-between gap-3">
@@ -40,9 +41,19 @@ export function AppLayout() {
                   {t('nav.logout')}
                 </Button>
               ) : (
-                <Button asChild className="w-full md:w-auto" size="sm">
-                  <Link to="/login">{t('nav.login')}</Link>
-                </Button>
+                <>
+                  <Button
+                    asChild
+                    className="w-full md:w-auto"
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Link to="/join-provider">{t('nav.joinProvider')}</Link>
+                  </Button>
+                  <Button asChild className="w-full md:w-auto" size="sm">
+                    <Link to="/login">{t('nav.login')}</Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -64,7 +75,9 @@ export function AppLayout() {
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <Outlet />
+        <div key={location.pathname} className="route-motion">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

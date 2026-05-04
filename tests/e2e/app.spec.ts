@@ -94,6 +94,41 @@ test('provider and admin role routes are protected and operational', async ({
   ).toBeVisible();
 });
 
+test('provider join request stores identity document for admin review', async ({
+  page,
+}) => {
+  await page.getByRole('link', { name: 'انضم كمزود', exact: true }).click();
+  await expect(page).toHaveURL(/\/join-provider/);
+  await expect(
+    page.getByRole('button', { name: 'تسجيل كمزود خدمة' }),
+  ).toBeVisible();
+
+  await page.getByLabel('الاسم').fill('عمرو اختبار');
+  await page.getByLabel('البريد الإلكتروني').fill('amr.provider@hand.test');
+  await page.getByLabel('رقم الهاتف').fill('+201000000001');
+  await page.getByLabel('رقم واتساب').fill('+201000000001');
+  await page.getByLabel('البطاقة الشخصية').setInputFiles({
+    name: 'provider-identity.svg',
+    mimeType: 'image/svg+xml',
+    buffer: Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#fff6ed"/><text x="24" y="96">Demo ID</text></svg>',
+    ),
+  });
+  await page.getByRole('button', { name: 'تسجيل', exact: true }).click();
+  await expect(page).toHaveURL(/\/pending/);
+  await expect(page.getByText('طلبك قيد المراجعة')).toBeVisible();
+
+  await page.getByRole('button', { name: 'خروج' }).click();
+  await page.goto('/login');
+  await page.getByLabel('البريد الإلكتروني').fill('admin@hand.test');
+  await page.getByRole('button', { name: 'دخول' }).click();
+  await page.goto('/admin/applications');
+
+  await expect(page.getByText('عمرو اختبار')).toBeVisible();
+  await expect(page.getByText('provider-identity.svg')).toBeVisible();
+  await expect(page.getByAltText('مستند الهوية').first()).toBeVisible();
+});
+
 test('mobile auth and shell layouts stay readable', async ({
   page,
 }, testInfo) => {
@@ -128,3 +163,28 @@ test('mobile auth and shell layouts stay readable', async ({
     providerSidebar.getByRole('link', { name: 'الظهور المدفوع' }),
   ).toBeVisible();
 });
+
+test('reduced motion keeps route transitions non-disruptive', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/search');
+  const route = page.locator('.route-motion').first();
+  await expect(route).toBeVisible();
+  const animationDuration = await route.evaluate(
+    (element) => getComputedStyle(element).animationDuration,
+  );
+  const transitionDuration = await route.evaluate(
+    (element) => getComputedStyle(element).transitionDuration,
+  );
+  expect(cssTimeToMs(animationDuration)).toBeLessThanOrEqual(1);
+  expect(cssTimeToMs(transitionDuration)).toBeLessThanOrEqual(1);
+  await expect(page.getByRole('button', { name: 'بحث' })).toHaveCount(0);
+});
+
+function cssTimeToMs(value: string) {
+  const first = value.split(',')[0]?.trim() ?? '0s';
+  if (first.endsWith('ms')) return Number(first.slice(0, -2));
+  if (first.endsWith('s')) return Number(first.slice(0, -1)) * 1000;
+  return Number(first);
+}

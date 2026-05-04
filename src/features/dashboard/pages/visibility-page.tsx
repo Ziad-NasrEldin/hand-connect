@@ -8,7 +8,10 @@ import { Select } from '@/components/ui/select';
 import { getNeighborhoodName, neighborhoods } from '@/config/neighborhoods';
 import { useAuth } from '@/hooks/use-auth';
 import { useOwnedProvider } from '@/hooks/use-provider-profile';
-import { getVisibilityRequestStatusLabel } from '@/lib/display';
+import {
+  getVisibilityRequestNoteLabel,
+  getVisibilityRequestStatusLabel,
+} from '@/lib/display';
 import {
   createVisibilityRequest,
   listProviderVisibilityRequests,
@@ -46,12 +49,12 @@ export function VisibilityPage() {
       <CardHeader>
         <CardTitle>{t('visibility.title')}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="motion-stagger space-y-5">
         <p className="soft-note p-4 text-sm leading-7">
           {t('visibility.note')}
         </p>
         <form
-          className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
+          className="motion-stagger grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
           onSubmit={(event) => void submit(event)}
         >
           <Select
@@ -74,10 +77,13 @@ export function VisibilityPage() {
         {requests.data?.map((request) => (
           <div
             key={request.id}
-            className="soft-list-item p-4 text-sm font-semibold text-foreground"
+            className="soft-list-item whitespace-pre-line p-4 text-sm font-semibold text-foreground"
           >
             {getNeighborhoodName(request.serviceArea, language)} -{' '}
             {getVisibilityRequestStatusLabel(request.status, t)}
+            {request.notes
+              ? ` - ${getVisibilityRequestNoteLabel(request.notes, t)}`
+              : ''}
           </div>
         ))}
       </CardContent>

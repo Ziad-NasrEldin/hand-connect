@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
+import { getLocalizedMessage } from '@/lib/display';
 import { getPostLoginRedirect } from '@/router/redirects';
 
 export function LoginPage() {
@@ -31,19 +32,26 @@ export function LoginPage() {
         ),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('auth.loginFailed'));
+      setError(
+        err instanceof Error
+          ? getLocalizedMessage(err.message, t)
+          : t('auth.loginFailed'),
+      );
     }
   }
 
   return (
-    <Card className="w-full">
+    <Card className="motion-reveal w-full">
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('auth.welcome')}</p>
         <CardTitle>{t('auth.login')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
+        <form
+          className="motion-stagger grid gap-4"
+          onSubmit={(event) => void submit(event)}
+        >
           <div className="space-y-2">
             <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
@@ -61,7 +69,9 @@ export function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="motion-pop text-sm text-destructive">{error}</p>
+          ) : null}
           <Button className="w-full" type="submit">
             {t('auth.login')}
           </Button>

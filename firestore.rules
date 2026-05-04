@@ -41,6 +41,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /providerIdentityDocuments/{documentId} {
+      allow read: if isAdmin() || isOwner(resource.data.providerId);
+      allow create: if signedIn() && request.resource.data.providerId == request.auth.uid;
+      allow update: if isAdmin() || isOwner(resource.data.providerId);
+      allow delete: if false;
+    }
+
     match /professions/{professionId} {
       allow read: if true;
       allow write: if isAdmin();

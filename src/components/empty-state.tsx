@@ -9,9 +9,9 @@ export function EmptyState({
   children?: React.ReactNode;
 }) {
   return (
-    <Card variant="subtle">
+    <Card className="motion-reveal" variant="subtle">
       <CardContent className="p-8 text-center sm:p-10">
-        <div className="mx-auto mb-4 h-11 w-11 rounded-full bg-[color:var(--hc-cream)]" />
+        <div className="motion-pulse mx-auto mb-4 h-11 w-11 rounded-full bg-[color:var(--hc-cream)]" />
         <p className="text-xl font-bold tracking-tight text-foreground">
           {title}
         </p>

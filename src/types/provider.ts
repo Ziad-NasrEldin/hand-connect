@@ -12,6 +12,15 @@ export interface ProviderPhoto {
   alt: string;
 }
 
+export interface ProviderIdentityDocument {
+  providerId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  uploadedAt: string;
+  previewDataUrl: string;
+}
+
 export interface ProviderProfile {
   id: string;
   userId: string;

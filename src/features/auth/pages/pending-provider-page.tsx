@@ -17,9 +17,9 @@ export function PendingProviderPage() {
             : t('auth.pendingTitle')}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 leading-8 text-muted-foreground">
+      <CardContent className="motion-stagger space-y-3 leading-8 text-muted-foreground">
         <p>{t('auth.pendingCopy')}</p>
-        <p className="soft-note p-4">
+        <p className="motion-pop soft-note p-4">
           {t('auth.currentStatus', {
             status: getProviderStatusLabel(providerStatus, t),
           })}
