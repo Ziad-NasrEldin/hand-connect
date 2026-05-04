@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { getNeighborhoodName, neighborhoods } from '@/config/neighborhoods';
 import { getProfessionName, professions } from '@/config/professions';
 import { useAuth } from '@/hooks/use-auth';
@@ -51,17 +53,26 @@ export function EditProviderProfilePage() {
           onSubmit={(event) => void submit(event)}
         >
           <div className="space-y-2">
-            <Input defaultValue={provider.data?.displayName} disabled />
+            <Label htmlFor="provider-display-name">{t('auth.name')}</Label>
+            <Input
+              id="provider-display-name"
+              defaultValue={provider.data?.displayName}
+              disabled
+            />
           </div>
           <div className="space-y-2">
-            <Input
+            <Label htmlFor="provider-bio">{t('provider.bioPlaceholder')}</Label>
+            <Textarea
+              id="provider-bio"
               value={bio}
               onChange={(event) => setBio(event.target.value)}
               placeholder={provider.data?.bio ?? t('provider.bioPlaceholder')}
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="provider-profession">{t('auth.profession')}</Label>
             <Select
+              id="provider-profession"
               value={profession}
               onChange={(event) => setProfession(event.target.value)}
               placeholder={
@@ -76,7 +87,9 @@ export function EditProviderProfilePage() {
             />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="provider-area">{t('auth.area')}</Label>
             <Select
+              id="provider-area"
               value={area}
               onChange={(event) => setArea(event.target.value)}
               placeholder={

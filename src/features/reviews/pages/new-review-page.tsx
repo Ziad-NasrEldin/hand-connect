@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
 import { useContactCheck } from '@/hooks/use-contact-check';
 import { createReview } from '@/services/reviews.service';
@@ -48,21 +49,31 @@ export function NewReviewPage() {
           className="motion-stagger grid gap-4"
           onSubmit={(event) => void submit(event)}
         >
-          <Select
-            value={String(rating)}
-            onChange={(event) =>
-              setRating(Number(event.target.value) as Review['rating'])
-            }
-            options={[1, 2, 3, 4, 5].map((value) => ({
-              value: String(value),
-              label: `${value}`,
-            }))}
-          />
-          <Input
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            placeholder={t('reviews.commentPlaceholder')}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="review-rating">{t('reviews.title')}</Label>
+            <Select
+              id="review-rating"
+              value={String(rating)}
+              onChange={(event) =>
+                setRating(Number(event.target.value) as Review['rating'])
+              }
+              options={[1, 2, 3, 4, 5].map((value) => ({
+                value: String(value),
+                label: `${value}`,
+              }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="review-comment">
+              {t('reviews.commentPlaceholder')}
+            </Label>
+            <Textarea
+              id="review-comment"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder={t('reviews.commentPlaceholder')}
+            />
+          </div>
           <Button className="w-full sm:w-auto" type="submit">
             {t('common.save')}
           </Button>

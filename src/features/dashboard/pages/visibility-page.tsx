@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { getNeighborhoodName, neighborhoods } from '@/config/neighborhoods';
 import { useAuth } from '@/hooks/use-auth';
 import { useOwnedProvider } from '@/hooks/use-provider-profile';
@@ -57,19 +58,30 @@ export function VisibilityPage() {
           className="motion-stagger grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
           onSubmit={(event) => void submit(event)}
         >
-          <Select
-            value={serviceArea}
-            onChange={(event) => setServiceArea(event.target.value)}
-            options={neighborhoods.map((area) => ({
-              value: area.slug,
-              label: language === 'ar' ? area.nameAr : area.nameEn,
-            }))}
-          />
-          <Input
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder={t('visibility.notesPlaceholder')}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="visibility-area">{t('auth.area')}</Label>
+            <Select
+              id="visibility-area"
+              value={serviceArea}
+              onChange={(event) => setServiceArea(event.target.value)}
+              options={neighborhoods.map((area) => ({
+                value: area.slug,
+                label: language === 'ar' ? area.nameAr : area.nameEn,
+              }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="visibility-notes">
+              {t('visibility.notesPlaceholder')}
+            </Label>
+            <Textarea
+              id="visibility-notes"
+              className="min-h-[48px] resize-y"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder={t('visibility.notesPlaceholder')}
+            />
+          </div>
           <Button className="w-full lg:w-auto" type="submit">
             {t('visibility.request')}
           </Button>
