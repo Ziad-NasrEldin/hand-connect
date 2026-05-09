@@ -97,6 +97,8 @@ export function getAdminActionLabel(action: string, t: Translate) {
     reject_provider: 'admin.action.rejectProvider',
     suspend_provider: 'admin.action.suspendProvider',
     approve_visibility: 'admin.action.approveVisibility',
+    reject_visibility: 'admin.action.rejectVisibility',
+    flag_review: 'admin.action.flagReview',
   }[action];
   return key ? t(key) : action;
 }

@@ -7,7 +7,7 @@ import type { Review } from '../types/review';
 import type { AppUser } from '../types/user';
 import type { VisibilityRequest } from '../types/visibility';
 
-export const demoSeedVersion = '2026-05-04-cairo-realistic-seed-v3';
+export const demoSeedVersion = '2026-05-09-cairo-full-demo-seed-v4';
 
 const baseDate = '2026-05-04T08:00:00.000Z';
 const paidUntil = '2026-06-03T08:00:00.000Z';
@@ -30,6 +30,8 @@ export function createDemoSeedData(): DemoSeedData {
     user('customer-demo', 'customer@hand.test', 'customer', 'مريم حسن', '+201001112222'),
     user('customer-nour', 'nour.elsayed@hand.test', 'customer', 'نور السيد', '+201001118888'),
     user('customer-omar', 'omar.mahmoud@hand.test', 'customer', 'عمر محمود', '+201201119999'),
+    user('customer-salma', 'salma.ali@hand.test', 'customer', 'سلمى علي', '+201001117070'),
+    user('customer-youssef', 'youssef.adel@hand.test', 'customer', 'يوسف عادل', '+201221117171'),
     user('provider-demo', 'provider@hand.test', 'provider', 'أحمد السبّاك', '+201011113333'),
     user('provider-electric', 'karim.electric@hand.test', 'provider', 'كريم الكهربائي', '+201211117777'),
     user('provider-carpenter', 'hassan.carpentry@hand.test', 'provider', 'حسن النجار', '+201011116666'),
@@ -39,6 +41,7 @@ export function createDemoSeedData(): DemoSeedData {
     user('provider-nasr-cleaning', 'hala.cleaning@hand.test', 'provider', 'هالة كلين', '+201551112222'),
     user('provider-pending', 'pending@hand.test', 'provider', 'سعيد الكهربائي', '+201211114444'),
     user('provider-suspended', 'suspended@hand.test', 'provider', 'ورشة تحت المراجعة', '+201001110000'),
+    user('provider-rejected', 'rejected@hand.test', 'provider', 'طلب مرفوض', '+201001112020'),
     user('admin-demo', 'admin@hand.test', 'admin', 'مدير Hand Connect', '+201511115555'),
   ];
 
@@ -179,6 +182,23 @@ export function createDemoSeedData(): DemoSeedData {
       reviews: 3,
       activity: 12,
     }),
+    provider({
+      id: 'provider-rejected',
+      displayName: 'طلب مرفوض',
+      phone: '+201001112020',
+      profession: 'cleaning',
+      bio: 'طلب مقدم ببيانات ناقصة وتم رفضه حتى يعيد صاحب الحساب رفع مستند هوية أوضح.',
+      areas: ['dokki'],
+      whatsappNumber: '+201001112020',
+      status: 'rejected',
+      verified: false,
+      tier: 'organic',
+      views: 0,
+      rating: 0,
+      reviews: 0,
+      activity: 0,
+      rejectionReason: 'admin.reason.identityDocumentUnreadable',
+    }),
   ];
 
   const contacts: Contact[] = [
@@ -186,6 +206,10 @@ export function createDemoSeedData(): DemoSeedData {
     contact('contact-nour-cleaning', 'customer-nour', 'provider-cleaning', 'whatsapp_reveal', false),
     contact('contact-omar-electric', 'customer-omar', 'provider-electric', 'platform_message', true),
     contact('contact-nour-carpenter', 'customer-nour', 'provider-carpenter', 'platform_message', true),
+    contact('contact-salma-maadi-plumbing', 'customer-salma', 'provider-maadi-plumbing', 'whatsapp_reveal', true),
+    contact('contact-youssef-heliopolis-electric', 'customer-youssef', 'provider-heliopolis-electric', 'platform_message', false),
+    contact('contact-salma-suspended', 'customer-salma', 'provider-suspended', 'platform_message', true),
+    contact('contact-omar-suspended', 'customer-omar', 'provider-suspended', 'platform_message', true),
   ];
 
   const conversations: Conversation[] = [
@@ -197,6 +221,14 @@ export function createDemoSeedData(): DemoSeedData {
       'customer-omar': 0,
       'provider-electric': 1,
     }),
+    conversation('customer-youssef_provider-heliopolis-electric', 'customer-youssef', 'provider-heliopolis-electric', 'هراجع لوحة الكهرباء وأبعتلك التكلفة قبل الشغل.', {
+      'customer-youssef': 1,
+      'provider-heliopolis-electric': 0,
+    }),
+    conversation('customer-salma_provider-suspended', 'customer-salma', 'provider-suspended', 'تم تحويل المحادثة للمراجعة بسبب البلاغ.', {
+      'customer-salma': 0,
+      'provider-suspended': 0,
+    }),
   ];
 
   const messages: Message[] = [
@@ -205,6 +237,10 @@ export function createDemoSeedData(): DemoSeedData {
     message('message-3', 'customer-demo_provider-demo', 'customer-demo', 'وصل بسرعة وكان واضح في السعر قبل بدء الشغل.'),
     message('message-4', 'customer-omar_provider-electric', 'customer-omar', 'محتاج تركيب نجفة ومراجعة مفتاحين في المعادي.'),
     message('message-5', 'customer-omar_provider-electric', 'provider-electric', 'تمام، أقدر أعدي بكرة بعد العصر.'),
+    message('message-6', 'customer-youssef_provider-heliopolis-electric', 'customer-youssef', 'القاطع الرئيسي بيفصل لما أشغل السخان.'),
+    message('message-7', 'customer-youssef_provider-heliopolis-electric', 'provider-heliopolis-electric', 'هراجع لوحة الكهرباء وأبعتلك التكلفة قبل الشغل.'),
+    message('message-8', 'customer-salma_provider-suspended', 'customer-salma', 'المعاد اتأجل مرتين بعد ما اتفقنا.'),
+    message('message-9', 'customer-salma_provider-suspended', 'provider-suspended', 'تم تحويل المحادثة للمراجعة بسبب البلاغ.'),
   ];
 
   const reviews: Review[] = [
@@ -212,6 +248,9 @@ export function createDemoSeedData(): DemoSeedData {
     review('review-2', 'provider-electric', 'customer-omar', 'عمر محمود', 'contact-omar-electric', 4, 'حل العطل في نفس اليوم، وكان محتاج متابعة بسيطة بعدها.'),
     review('review-3', 'provider-carpenter', 'customer-nour', 'نور السيد', 'contact-nour-carpenter', 5, 'ضبط أبواب المطبخ وركب الرفوف بشكل نظيف.'),
     review('review-4', 'provider-cleaning', 'customer-nour', 'نور السيد', 'contact-nour-cleaning', 5, 'الفريق كان ملتزم بالميعاد والتنظيف العميق ممتاز.'),
+    review('review-5', 'provider-maadi-plumbing', 'customer-salma', 'سلمى علي', 'contact-salma-maadi-plumbing', 4, 'التواصل كان سريع والسعر مناسب بعد المعاينة.'),
+    review('review-6', 'provider-suspended', 'customer-salma', 'سلمى علي', 'contact-salma-suspended', 2, 'تأجيلات كثيرة بعد الاتفاق الأول.', 'under_review'),
+    review('review-7', 'provider-suspended', 'customer-omar', 'عمر محمود', 'contact-omar-suspended', 1, 'تعليق مخالف تمت إزالته من العرض العام.', 'removed'),
   ];
 
   const visibilityRequests: VisibilityRequest[] = [
@@ -239,12 +278,28 @@ export function createDemoSeedData(): DemoSeedData {
       requestedAt: '2026-05-04T07:20:00.000Z',
       processedAt: null,
     },
+    {
+      id: 'visibility-electric-shorouk-rejected',
+      providerId: 'provider-heliopolis-electric',
+      tier: 'paid',
+      serviceArea: 'shorouk',
+      status: 'rejected',
+      paymentConfirmedBy: 'admin-demo',
+      paymentMethod: 'manual_wallet',
+      notes: 'visibility.note.walletTransferMismatch',
+      requestedAt: '2026-05-02T10:10:00.000Z',
+      processedAt: '2026-05-02T14:00:00.000Z',
+      rejectionReason: 'admin.reason.paymentCouldNotBeMatched',
+    },
   ];
 
   const adminActions: AdminAction[] = [
     adminAction('admin-action-1', 'provider', 'provider-demo', 'approve_provider', 'admin.reason.identityReviewed'),
     adminAction('admin-action-2', 'visibilityRequest', 'visibility-cleaning-new-cairo', 'approve_visibility', 'admin.reason.paymentConfirmed'),
     adminAction('admin-action-3', 'provider', 'provider-suspended', 'suspend_provider', 'admin.reason.repeatedReportPendingManualReview'),
+    adminAction('admin-action-4', 'provider', 'provider-rejected', 'reject_provider', 'admin.reason.identityDocumentUnreadable'),
+    adminAction('admin-action-5', 'review', 'review-6', 'flag_review', 'admin.reason.customerComplaintNeedsReview'),
+    adminAction('admin-action-6', 'visibilityRequest', 'visibility-electric-shorouk-rejected', 'reject_visibility', 'admin.reason.paymentCouldNotBeMatched'),
   ];
 
   const reports: AbuseReport[] = [
@@ -256,6 +311,24 @@ export function createDemoSeedData(): DemoSeedData {
       reason: 'report.reason.repeatedReschedulingAfterContact',
       status: 'open',
       createdAt: '2026-05-03T18:00:00.000Z',
+    },
+    {
+      id: 'report-2',
+      targetType: 'review',
+      targetId: 'review-7',
+      reporterId: 'provider-suspended',
+      reason: 'report.reason.reviewContainsPersonalAttack',
+      status: 'closed',
+      createdAt: '2026-05-02T12:30:00.000Z',
+    },
+    {
+      id: 'report-3',
+      targetType: 'message',
+      targetId: 'message-8',
+      reporterId: 'provider-suspended',
+      reason: 'report.reason.disputeNeedsAdminContext',
+      status: 'open',
+      createdAt: '2026-05-04T09:15:00.000Z',
     },
   ];
 
@@ -299,6 +372,7 @@ function provider(input: {
   reviews: number;
   activity: number;
   photo?: string;
+  rejectionReason?: string;
 }): ProviderProfile {
   return {
     id: input.id,
@@ -309,6 +383,7 @@ function provider(input: {
     bio: input.bio,
     nationalIdVerified: input.verified ?? true,
     status: input.status ?? 'approved',
+    rejectionReason: input.rejectionReason,
     serviceAreas: input.areas.map((neighborhood) => ({ neighborhood, city: 'cairo' })),
     serviceAreaKeys: input.areas,
     whatsappNumber: input.whatsappNumber,
@@ -389,8 +464,9 @@ function review(
   contactId: string,
   rating: Review['rating'],
   comment: string,
+  status: Review['status'] = 'visible',
 ): Review {
-  return { id, providerId, customerId, customerName, contactId, rating, comment, status: 'visible', createdAt: baseDate };
+  return { id, providerId, customerId, customerName, contactId, rating, comment, status, createdAt: baseDate };
 }
 
 function adminAction(
