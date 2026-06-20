@@ -20,45 +20,57 @@ export interface DemoDb {
   reports: AbuseReport[];
 }
 
-const dbKey = 'hand-connect-demo-db';
-const sessionKey = 'hand-connect-session-id';
-const seedVersionKey = 'hand-connect-demo-seed-version';
+const dbKey = 'herafy-demo-db';
+const sessionKey = 'herafy-session-id';
+const seedVersionKey = 'herafy-demo-seed-version';
+const memoryStorage = new Map<string, string>();
+
+function storage() {
+  return globalThis.localStorage ?? {
+    getItem: (key: string) => memoryStorage.get(key) ?? null,
+    setItem: (key: string, value: string) => memoryStorage.set(key, value),
+    removeItem: (key: string) => memoryStorage.delete(key),
+  };
+}
 
 export function createSeedDb(): DemoDb {
   return createDemoSeedData();
 }
 
 export function readDb(): DemoDb {
-  const raw = localStorage.getItem(dbKey);
-  const currentSeedVersion = localStorage.getItem(seedVersionKey);
+  const store = storage();
+  const raw = store.getItem(dbKey);
+  const currentSeedVersion = store.getItem(seedVersionKey);
   if (!raw || currentSeedVersion !== demoSeedVersion) {
     const db = createSeedDb();
     writeDb(db);
-    localStorage.setItem(seedVersionKey, demoSeedVersion);
+    store.setItem(seedVersionKey, demoSeedVersion);
     return db;
   }
   return JSON.parse(raw) as DemoDb;
 }
 
 export function writeDb(db: DemoDb) {
-  localStorage.setItem(dbKey, JSON.stringify(db));
+  storage().setItem(dbKey, JSON.stringify(db));
 }
 
 export function resetDemoDb() {
   const db = createSeedDb();
   writeDb(db);
-  localStorage.setItem(seedVersionKey, demoSeedVersion);
-  localStorage.removeItem(sessionKey);
+  const store = storage();
+  store.setItem(seedVersionKey, demoSeedVersion);
+  store.removeItem(sessionKey);
   return db;
 }
 
 export function getSessionUserId() {
-  return localStorage.getItem(sessionKey);
+  return storage().getItem(sessionKey);
 }
 
 export function setSessionUserId(uid: string | null) {
-  if (uid) localStorage.setItem(sessionKey, uid);
-  else localStorage.removeItem(sessionKey);
+  const store = storage();
+  if (uid) store.setItem(sessionKey, uid);
+  else store.removeItem(sessionKey);
 }
 
 export function createId(prefix: string) {

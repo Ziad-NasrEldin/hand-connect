@@ -1,5 +1,6 @@
 import { useTransition } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
 import { LoadingState } from '@/components/loading-state';
@@ -8,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select } from '@/components/ui/select';
 import { neighborhoods, getNeighborhoodName } from '@/config/neighborhoods';
-import { professions, getProfessionName } from '@/config/professions';
+import { getProfessionName } from '@/config/professions';
 import { useSearchProviders } from '@/hooks/use-search-providers';
+import { listProfessions } from '@/services/search.service';
 import type { ProviderProfile } from '@/types/provider';
 
 export function SearchPage() {
@@ -23,6 +25,11 @@ export function SearchPage() {
     profession,
     neighborhood,
   });
+  const professionsQuery = useQuery({
+    queryKey: ['professions', 'active'],
+    queryFn: listProfessions,
+  });
+  const professionOptions = professionsQuery.data ?? [];
 
   function updateFilters(next: { profession?: string; neighborhood?: string }) {
     startTransition(() => {
@@ -49,7 +56,7 @@ export function SearchPage() {
               onChange={(event) =>
                 updateFilters({ profession: event.target.value })
               }
-              options={professions.map((item) => ({
+              options={professionOptions.map((item) => ({
                 value: item.slug,
                 label: language === 'ar' ? item.nameAr : item.nameEn,
               }))}
@@ -98,6 +105,13 @@ function ProviderResultCard({
       variant={provider.visibilityTier === 'paid' ? 'highlight' : 'default'}
     >
       <CardContent className="flex h-full flex-col gap-4 p-5">
+        {provider.photos[0] ? (
+          <img
+            src={provider.photos[0].url}
+            alt={provider.displayName}
+            className="h-44 w-full rounded-2xl object-cover"
+          />
+        ) : null}
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="brand-rule mb-4 w-28" />

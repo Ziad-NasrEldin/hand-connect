@@ -1,26 +1,18 @@
-import { createId, readDb, writeDb } from './demo-db';
-import type { VisibilityRequest } from '@/types/visibility';
-import { nowIso } from '@/lib/dates';
+import type { VisibilityService } from './contracts/visibility.contract';
+import { getDataSource } from './data-source';
+import * as demo from './demo/visibility.demo';
+import { firebaseVisibilityService } from './firebase/visibility.firebase';
+
+const demoVisibilityService: VisibilityService = demo;
+
+function visibilityService(): VisibilityService {
+  return getDataSource() === 'firebase' ? firebaseVisibilityService : demoVisibilityService;
+}
 
 export async function createVisibilityRequest(providerId: string, serviceArea: string, paymentMethod: string, notes: string) {
-  const db = readDb();
-  const request: VisibilityRequest = {
-    id: createId('visibility'),
-    providerId,
-    tier: 'paid',
-    serviceArea,
-    status: 'pending',
-    paymentConfirmedBy: null,
-    paymentMethod,
-    notes,
-    requestedAt: nowIso(),
-    processedAt: null,
-  };
-  db.visibilityRequests.push(request);
-  writeDb(db);
-  return request;
+  return visibilityService().createVisibilityRequest(providerId, serviceArea, paymentMethod, notes);
 }
 
 export async function listProviderVisibilityRequests(providerId: string) {
-  return readDb().visibilityRequests.filter((item) => item.providerId === providerId);
+  return visibilityService().listProviderVisibilityRequests(providerId);
 }

@@ -22,6 +22,7 @@ export function EditProviderProfilePage() {
   const [bio, setBio] = useState('');
   const [profession, setProfession] = useState('');
   const [area, setArea] = useState('');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -36,7 +37,9 @@ export function EditProviderProfilePage() {
         },
       ],
       serviceAreaKeys: [area || provider.data.serviceAreaKeys[0]],
+      profilePhotoFile: photoFile,
     });
+    setPhotoFile(null);
     void queryClient.invalidateQueries({ queryKey: ['provider'] });
   }
 
@@ -104,6 +107,15 @@ export function EditProviderProfilePage() {
                 value: item.slug,
                 label: language === 'ar' ? item.nameAr : item.nameEn,
               }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="provider-photo">{t('provider.photo')}</Label>
+            <Input
+              id="provider-photo"
+              type="file"
+              accept="image/*"
+              onChange={(event) => setPhotoFile(event.target.files?.[0] ?? null)}
             />
           </div>
           <Button className="w-full sm:w-auto" type="submit">

@@ -1,0 +1,51 @@
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
+import { professions as seededProfessions } from '@/config/professions';
+import { getFirebaseDb } from '@/firebase/db';
+import { professionConverter, providerConverter } from '@/firebase/converters';
+import { rankProviders } from '@/lib/ranking';
+import type { SearchService } from '../contracts/search.contract';
+
+function requireFirebaseDb() {
+  const db = getFirebaseDb();
+  if (!db) throw new Error('error.firebase.notConfigured');
+  return db;
+}
+
+export const firebaseSearchService: SearchService = {
+  listProfessions: async () => {
+    const db = requireFirebaseDb();
+    const snapshot = await getDocs(
+      query(
+        collection(db, 'professions').withConverter(professionConverter),
+        where('active', '==', true),
+        orderBy('sortOrder', 'asc'),
+      ),
+    );
+    const firestoreProfessions = snapshot.docs.map((item) => item.data());
+    return firestoreProfessions.length > 0
+      ? firestoreProfessions
+      : seededProfessions.filter((item) => item.active);
+  },
+  searchProviders: async (input) => {
+    const db = requireFirebaseDb();
+    const snapshot = await getDocs(
+      query(
+        collection(db, 'providers').withConverter(providerConverter),
+        where('status', '==', 'approved'),
+        where('profession', '==', input.profession),
+        where('serviceAreaKeys', 'array-contains', input.neighborhood),
+        orderBy('avgRating', 'desc'),
+      ),
+    );
+    return rankProviders(
+      snapshot.docs.map((item) => item.data()),
+      input,
+    );
+  },
+};

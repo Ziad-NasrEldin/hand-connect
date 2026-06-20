@@ -1,4 +1,4 @@
-# Hand Connect — Product Design Spec
+# Herafy — Product Design Spec
 **Date:** 2026-04-29  
 **Status:** Approved  
 **Stack:** Vite + React + Firebase + Capacitor (web-first)
@@ -7,7 +7,7 @@
 
 ## 1. Product Overview
 
-Hand Connect is a directory-first home services platform launching in Cairo. It is a **connection layer, not an operator** — customers find and contact verified service professionals directly. The platform does not process payments, assign jobs, negotiate prices, or guarantee outcomes.
+Herafy is a directory-first home services platform launching in Cairo. It is a **connection layer, not an operator** — customers find and contact verified service professionals directly. The platform does not process payments, assign jobs, negotiate prices, or guarantee outcomes.
 
 **Launch scope:**
 - Geography: Cairo (neighborhood-by-neighborhood rollout)
@@ -41,7 +41,7 @@ Hand Connect is a directory-first home services platform launching in Cairo. It 
 ## 3. Project Structure
 
 ```
-hand-connect/
+herafy/
 ├── src/
 │   ├── firebase/          # Firebase init, config, SDK exports
 │   ├── services/          # All Firebase calls (never called from components)

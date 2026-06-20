@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
-import { useConversation, useSendMessage } from '@/hooks/use-conversation';
+import { useConversation, useReportMessage, useSendMessage } from '@/hooks/use-conversation';
 import { cn } from '@/lib/cn';
 
 export function ConversationPage() {
@@ -14,6 +14,7 @@ export function ConversationPage() {
   const { user } = useAuth();
   const conversation = useConversation(id, user?.uid);
   const sendMessage = useSendMessage(id!);
+  const reportMessage = useReportMessage();
   const [text, setText] = useState('');
 
   function submit(event: FormEvent) {
@@ -41,6 +42,22 @@ export function ConversationPage() {
               )}
             >
               {message.text}
+              {message.senderId !== user?.uid && user ? (
+                <Button
+                  className="mt-2 h-auto px-0 py-0 text-xs underline"
+                  type="button"
+                  variant="ghost"
+                  onClick={() =>
+                    reportMessage.mutate({
+                      reporterId: user.uid,
+                      messageId: message.id,
+                      reason: 'report.reason.messageAbuse',
+                    })
+                  }
+                >
+                  {t('messages.report')}
+                </Button>
+              ) : null}
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approveVisibility } from '../src/visibility';
+import { approveVisibility } from '../src/visibility.js';
 
 describe('approveVisibility', () => {
   it('returns a paid-until date thirty days out by default', () => {

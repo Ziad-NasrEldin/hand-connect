@@ -1,23 +1,20 @@
-import { rankProviders } from '@/lib/ranking';
-import type { ProviderProfile } from '@/types/provider';
-import { activeProfessions, readDb } from './demo-db';
+import type { SearchProvidersInput, SearchService } from './contracts/search.contract';
+import { getDataSource } from './data-source';
+import * as demo from './demo/search.demo';
+import { firebaseSearchService } from './firebase/search.firebase';
 
-export interface SearchProvidersInput {
-  profession: string;
-  neighborhood: string;
+export type { SearchProvidersInput } from './contracts/search.contract';
+
+const demoSearchService: SearchService = demo;
+
+function searchService(): SearchService {
+  return getDataSource() === 'firebase' ? firebaseSearchService : demoSearchService;
 }
 
 export async function listProfessions() {
-  return activeProfessions();
+  return searchService().listProfessions();
 }
 
-export async function searchProviders(input: SearchProvidersInput): Promise<ProviderProfile[]> {
-  const db = readDb();
-  const candidates = db.providers.filter(
-    (provider) =>
-      provider.status === 'approved' &&
-      provider.profession === input.profession &&
-      provider.serviceAreaKeys.includes(input.neighborhood),
-  );
-  return rankProviders(candidates, input);
+export async function searchProviders(input: SearchProvidersInput) {
+  return searchService().searchProviders(input);
 }

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { login, registerCustomer } from './auth.service';
-import { resetDemoDb } from './demo-db';
+import { resetDemoDb } from './demo/demo-db';
 
 describe('auth service localization', () => {
   beforeEach(() => {

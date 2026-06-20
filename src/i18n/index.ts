@@ -8,7 +8,7 @@ export const defaultLanguage: AppLanguage = 'ar';
 
 void i18n.use(initReactI18next).init({
   resources: { ar: { translation: ar }, en: { translation: en } },
-  lng: (localStorage.getItem('hand-connect-language') as AppLanguage | null) ?? defaultLanguage,
+  lng: (localStorage.getItem('herafy-language') as AppLanguage | null) ?? defaultLanguage,
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });

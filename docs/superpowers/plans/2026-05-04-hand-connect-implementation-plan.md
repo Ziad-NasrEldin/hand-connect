@@ -1,8 +1,8 @@
-# Hand Connect Full Product Implementation Plan
+# Herafy Full Product Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the complete Hand Connect web product as a Vite + React + Firebase directory-first home services platform for Cairo, with Arabic-first RTL UX, customer discovery, provider onboarding, real-time messaging, reviews, paid visibility requests, and an admin panel.
+**Goal:** Build the complete Herafy web product as a Vite + React + Firebase directory-first home services platform for Cairo, with Arabic-first RTL UX, customer discovery, provider onboarding, real-time messaging, reviews, paid visibility requests, and an admin panel.
 
 **Architecture:** Use a single Vite React app with strict layering: UI components call hooks, hooks call services, services call Firebase. Keep customer, provider, and admin experiences in one codebase behind role-aware routes and Firebase Security Rules. Build web-first; Capacitor comes after the browser product is stable.
 
@@ -12,7 +12,7 @@
 
 ## Master References
 
-- Product design spec: `docs/superpowers/specs/2026-04-29-hand-connect-design.md`
+- Product design spec: `docs/superpowers/specs/2026-04-29-herafy-design.md`
 - Product positioning: directory-first connection layer, not an operator, marketplace, employer, payment processor, pricing authority, or service guarantor.
 - Launch scope: Cairo, neighborhood-by-neighborhood rollout, initial professions are plumbing, electrical work, carpentry, and cleaning.
 - Product defaults: Arabic-first, RTL default, English fallback, web-first, Firebase backend, manual admin payment confirmation.
@@ -49,7 +49,7 @@
 Create or evolve toward this structure:
 
 ```text
-hand-connect/
+herafy/
 ├── .env.example
 ├── .firebaserc
 ├── firebase.json
@@ -188,7 +188,7 @@ hand-connect/
 
 ```json
 {
-  "name": "hand-connect",
+  "name": "herafy",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -278,9 +278,9 @@ hand-connect/
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Hand Connect helps people in Cairo find verified home service professionals quickly."
+      content="Herafy helps people in Cairo find verified home service professionals quickly."
     />
-    <title>Hand Connect</title>
+    <title>Herafy</title>
   </head>
   <body>
     <div id="root"></div>
@@ -319,7 +319,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
 ```tsx
 export default function App() {
-  return <main>Hand Connect</main>;
+  return <main>Herafy</main>;
 }
 ```
 
@@ -429,7 +429,7 @@ export default i18n;
 ### Task 2.4: Add UI Store And Direction Sync
 
 - [ ] Create `src/store/ui.store.ts` with `language`, `direction`, `setLanguage`, and `hydrateLanguage`.
-- [ ] Persist language to `localStorage` under `hand-connect-language`.
+- [ ] Persist language to `localStorage` under `herafy-language`.
 - [ ] When language is Arabic, set `document.documentElement.lang = 'ar'` and `dir = 'rtl'`.
 - [ ] When language is English, set `lang = 'en'` and `dir = 'ltr'`.
 - [ ] Create `src/components/app/language-toggle.tsx`.
@@ -1425,7 +1425,7 @@ git commit -m "chore: add deployment pipeline and operations runbook"
 
 ```powershell
 npm install @capacitor/core @capacitor/cli
-npx cap init "Hand Connect" "com.handconnect.app" --web-dir dist
+npx cap init "Herafy" "com.herafy-eg.app" --web-dir dist
 ```
 
 - [ ] Add Android first unless business requirements change.

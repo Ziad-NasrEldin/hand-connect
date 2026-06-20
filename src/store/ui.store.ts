@@ -9,7 +9,7 @@ interface UiState {
   hydrateLanguage: () => void;
 }
 
-const storageKey = 'hand-connect-language';
+const storageKey = 'herafy-language';
 
 function applyLanguage(language: AppLanguage) {
   document.documentElement.lang = language;

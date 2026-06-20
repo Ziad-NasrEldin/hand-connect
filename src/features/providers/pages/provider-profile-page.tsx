@@ -69,6 +69,13 @@ export function ProviderProfilePage() {
           <CardContent className="space-y-5 p-6">
             <div>
               <div className="brand-eyebrow mb-6" />
+              {provider.photos[0] ? (
+                <img
+                  src={provider.photos[0].url}
+                  alt={provider.displayName}
+                  className="mb-5 h-56 w-full rounded-3xl object-cover shadow-soft"
+                />
+              ) : null}
               <p className="section-label">{t('provider.eyebrow')}</p>
               <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
                 {provider.displayName}

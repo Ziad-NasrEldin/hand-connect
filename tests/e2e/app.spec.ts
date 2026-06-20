@@ -1,8 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.addInitScript(() => {
+    if (window.name === 'herafy-storage-cleared') return;
+    localStorage.clear();
+    sessionStorage.clear();
+    window.name = 'herafy-storage-cleared';
+  });
   await page.goto('/');
 });
 
@@ -44,7 +48,7 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
       ratingBox!.y + ratingBox!.height - 1,
     );
   }
-  await page.getByRole('link', { name: 'عرض الملف' }).click();
+  await page.locator('a[href="/providers/provider-demo"]').click();
   await expect(
     page.getByRole('heading', { name: 'أحمد السبّاك' }),
   ).toBeVisible();
@@ -138,7 +142,7 @@ test('mobile auth and shell layouts stay readable', async ({
   );
 
   await page.goto('/register');
-  await expect(page.getByText('Join Hand Connect')).toHaveCount(0);
+  await expect(page.getByText('Join Herafy')).toHaveCount(0);
   const customerToggle = await page
     .getByRole('button', { name: 'تسجيل كعميل' })
     .boundingBox();

@@ -56,7 +56,12 @@ service cloud.firestore {
     match /contacts/{contactId} {
       allow read: if isAdmin() || isOwner(resource.data.customerId) || isOwner(resource.data.providerId);
       allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
-      allow update: if isAdmin();
+      allow update: if isAdmin()
+        || (signedIn()
+          && resource.data.customerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hasReview'])
+          && resource.data.hasReview == false
+          && request.resource.data.hasReview == true);
       allow delete: if false;
     }
 
@@ -76,7 +81,29 @@ service cloud.firestore {
 
     match /reviews/{reviewId} {
       allow read: if resource.data.status == 'visible' || isAdmin();
-      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
+      allow create: if signedIn()
+        && reviewId == request.auth.uid + '_' + request.resource.data.providerId
+        && request.resource.data.keys().hasOnly([
+          'providerId',
+          'customerId',
+          'customerName',
+          'contactId',
+          'rating',
+          'comment',
+          'status',
+          'createdAt'
+        ])
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.rating in [1, 2, 3, 4, 5]
+        && request.resource.data.comment is string
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 2000
+        && request.resource.data.status == 'visible'
+        && exists(/databases/$(database)/documents/contacts/$(request.resource.data.contactId))
+        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.customerId == request.auth.uid
+        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.providerId == request.resource.data.providerId
+        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.hasReview == false
+        && get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.status == 'approved';
       allow update: if isAdmin();
       allow delete: if false;
     }
@@ -90,7 +117,14 @@ service cloud.firestore {
 
     match /adminActions/{actionId} {
       allow read: if isAdmin();
-      allow create, update, delete: if false;
+      allow create: if isAdmin()
+        && request.resource.data.adminId == request.auth.uid
+        && request.resource.data.targetType in ['provider', 'review', 'report']
+        && request.resource.data.targetId is string
+        && request.resource.data.action is string
+        && request.resource.data.reason is string
+        && (request.resource.data.createdAt is timestamp || request.resource.data.createdAt is string);
+      allow update, delete: if false;
     }
 
     match /reports/{reportId} {

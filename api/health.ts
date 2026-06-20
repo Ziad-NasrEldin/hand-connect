@@ -6,7 +6,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   res.status(200).json({
     ok: true,
-    service: 'hand-connect-backend',
+    service: 'herafy-backend',
     provider: 'vercel',
     environment: process.env.VERCEL_ENV ?? 'local',
     region: process.env.VERCEL_REGION ?? 'unknown',

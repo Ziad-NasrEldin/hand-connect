@@ -1,2 +1,3 @@
-export { recalculateRating } from './reviews';
-export { approveVisibility } from './visibility';
+export { approveProvider, rejectProvider, suspendProvider } from './providers.js';
+export { createReview, hideReview, recalculateRating } from './reviews.js';
+export { approveVisibility } from './visibility.js';

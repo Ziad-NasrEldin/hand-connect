@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { recalculateRating } from '../src/reviews';
+import { recalculateRating } from '../src/reviews.js';
 
 describe('recalculateRating', () => {
   it('excludes removed reviews from provider reputation', () => {

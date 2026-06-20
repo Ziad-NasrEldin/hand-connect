@@ -1,6 +1,6 @@
-# Hand Connect Deployment
+# Herafy Deployment
 
-Hand Connect deploys to Firebase Hosting with Firestore, Storage, Functions, and indexed queries.
+Herafy deploys to Firebase Hosting with Firestore, Storage, Functions, and indexed queries.
 
 ## Required Commands
 

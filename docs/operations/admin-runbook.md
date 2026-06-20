@@ -1,4 +1,4 @@
-# Hand Connect Admin Runbook
+# Herafy Admin Runbook
 
 Admins manually verify provider identity, manage professions, moderate abuse, and confirm paid visibility payments.
 

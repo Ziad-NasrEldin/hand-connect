@@ -13,6 +13,7 @@ export default tseslint.config(
       'node_modules',
       'functions/node_modules',
       'functions/lib',
+      'ios/App/App/public',
       'test-results',
       'playwright-report',
       '*.config.js',

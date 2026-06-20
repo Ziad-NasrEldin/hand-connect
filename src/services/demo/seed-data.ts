@@ -1,11 +1,11 @@
-import { professions } from '../config/professions';
-import type { AdminAction, AbuseReport } from '../types/admin';
-import type { Contact } from '../types/contact';
-import type { Conversation, Message } from '../types/messaging';
-import type { ProviderIdentityDocument, ProviderProfile } from '../types/provider';
-import type { Review } from '../types/review';
-import type { AppUser } from '../types/user';
-import type { VisibilityRequest } from '../types/visibility';
+import { professions } from '../../config/professions';
+import type { AdminAction, AbuseReport } from '../../types/admin';
+import type { Contact } from '../../types/contact';
+import type { Conversation, Message } from '../../types/messaging';
+import type { ProviderIdentityDocument, ProviderProfile } from '../../types/provider';
+import type { Review } from '../../types/review';
+import type { AppUser } from '../../types/user';
+import type { VisibilityRequest } from '../../types/visibility';
 
 export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v5';
 
@@ -48,7 +48,7 @@ export function createDemoSeedData(): DemoSeedData {
     user('provider-pending', 'pending@hand.test', 'provider', 'سعيد الكهربائي', '+201211114444'),
     user('provider-suspended', 'suspended@hand.test', 'provider', 'ورشة تحت المراجعة', '+201001110000'),
     user('provider-rejected', 'rejected@hand.test', 'provider', 'طلب مرفوض', '+201001112020'),
-    user('admin-demo', 'admin@hand.test', 'admin', 'مدير Hand Connect', '+201511115555'),
+    user('admin-demo', 'admin@hand.test', 'admin', 'مدير Herafy', '+201511115555'),
   ];
 
   const providers: ProviderProfile[] = [
@@ -507,7 +507,7 @@ function identityDocumentFor(
     '<rect x="66" y="84" width="160" height="188" rx="16" fill="#493726"/>',
     '<circle cx="146" cy="150" r="42" fill="#ff5a00"/>',
     '<rect x="96" y="214" width="100" height="32" rx="16" fill="#ff5a00"/>',
-    '<text x="260" y="118" font-family="Arial" font-size="28" font-weight="700" fill="#1b1f1b">Hand Connect Identity Review</text>',
+    '<text x="260" y="118" font-family="Arial" font-size="28" font-weight="700" fill="#1b1f1b">Herafy Identity Review</text>',
     `<text x="260" y="168" font-family="Arial" font-size="24" fill="#493726">${displayName}</text>`,
     `<text x="260" y="214" font-family="Arial" font-size="20" fill="#493726">Application: ${providerId}</text>`,
     '<text x="260" y="258" font-family="Arial" font-size="18" fill="#6f6257">Demo document for manual admin verification.</text>',

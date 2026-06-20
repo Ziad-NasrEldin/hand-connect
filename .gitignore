@@ -9,6 +9,7 @@ functions/lib/
 .firebase/
 test-results/
 playwright-report/
+.DS_Store
 .tmp-brand/
 tsconfig.tsbuildinfo
 tsconfig.node.tsbuildinfo

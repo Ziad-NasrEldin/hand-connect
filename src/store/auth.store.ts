@@ -14,6 +14,8 @@ interface AuthState {
   setSession: (user: AppUser | null, providerStatus?: ProviderStatus) => void;
 }
 
+let unsubscribeAuthSession: (() => void) | null = null;
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   providerStatus: undefined,
@@ -21,6 +23,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   isInitialized: false,
   initialize: async () => {
     set({ isLoading: true });
+    if (!unsubscribeAuthSession) {
+      unsubscribeAuthSession = authService.subscribeToSession((session) => {
+        set({ ...session, isLoading: false, isInitialized: true });
+      });
+      return;
+    }
+
     const session = await authService.getCurrentSession();
     set({ ...session, isLoading: false, isInitialized: true });
   },

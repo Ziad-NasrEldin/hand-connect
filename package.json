@@ -1,5 +1,5 @@
 {
-  "name": "hand-connect",
+  "name": "herafy",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,13 +10,20 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:rules": "bash -lc 'export JAVA_HOME=\"${JAVA_HOME:-$(brew --prefix openjdk@21 2>/dev/null || true)}\"; export PATH=\"$JAVA_HOME/bin:$PATH\"; ./node_modules/.bin/firebase emulators:exec --only firestore,storage \"./node_modules/.bin/vitest run --environment node --fileParallelism=false tests/rules/firestore.rules.test.ts tests/rules/storage.rules.test.ts\"'",
     "test:watch": "vitest",
+    "cap:sync:ios": "npm run build && npx cap sync ios",
+    "cap:open:ios": "npx cap open ios",
     "e2e": "playwright test",
+    "release:check": "npm run lint && npm test && npm run build && npm run e2e",
     "firebase:emulators": "firebase emulators:start --import=.firebase-emulator-data --export-on-exit",
     "seed:dev": "tsx scripts/seed-dev.ts",
     "admin:create": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
     "@fontsource/archivo-black": "^5.2.8",
     "@fontsource/cairo": "^5.2.7",
     "@fontsource/source-sans-3": "^5.2.9",
@@ -45,6 +52,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@firebase/rules-unit-testing": "^4.0.1",
     "@playwright/test": "^1.52.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
