@@ -3,5 +3,15 @@
     "default": "hand-connect-cairo",
     "staging": "hand-connect-cairo",
     "production": "hand-connect-cairo"
-  }
+  },
+  "targets": {
+    "hand-connect-cairo": {
+      "hosting": {
+        "herafy-cairo": [
+          "herafy-cairo"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
