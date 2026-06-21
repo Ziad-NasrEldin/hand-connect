@@ -21,10 +21,7 @@ export function LoginPage() {
     event.preventDefault();
     setError('');
     try {
-      await login(email, password);
-      const state = await import('@/services/auth.service').then((module) =>
-        module.getCurrentSession(),
-      );
+      const state = await login(email, password);
       navigate(
         getPostLoginRedirect(
           state.user ?? user,
@@ -43,10 +40,7 @@ export function LoginPage() {
   async function submitGoogle() {
     setError('');
     try {
-      await loginWithGoogle();
-      const state = await import('@/services/auth.service').then((module) =>
-        module.getCurrentSession(),
-      );
+      const state = await loginWithGoogle();
       navigate(
         getPostLoginRedirect(
           state.user ?? user,

@@ -1,5 +1,6 @@
 import type { ProviderStatus } from '@/types/provider';
 import type { AppUser } from '@/types/user';
+import type { AuthSession } from '@/services/contracts/auth.contract';
 import { create } from 'zustand';
 import * as authService from '@/services/auth.service';
 
@@ -9,8 +10,8 @@ interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   initialize: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthSession>;
+  loginWithGoogle: () => Promise<AuthSession>;
   logout: () => Promise<void>;
   setSession: (user: AppUser | null, providerStatus?: ProviderStatus) => void;
 }
@@ -38,11 +39,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     const session = await authService.login(email, password);
     set({ ...session, isLoading: false, isInitialized: true });
+    return session;
   },
   loginWithGoogle: async () => {
     set({ isLoading: true });
     const session = await authService.loginWithGoogle();
     set({ ...session, isLoading: false, isInitialized: true });
+    return session;
   },
   logout: async () => {
     await authService.logout();
