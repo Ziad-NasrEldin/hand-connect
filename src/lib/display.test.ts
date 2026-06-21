@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import en from '../i18n/locales/en.json';
 import {
+  getAdminActionLabel,
   getAdminReasonLabel,
+  getAdminTargetTypeLabel,
   getLocalizedMessage,
   getReportReasonLabel,
   getVisibilityRequestNoteLabel,
@@ -17,6 +19,14 @@ describe('display helpers', () => {
     expect(getAdminReasonLabel('Identity reviewed manually.', t)).toBe(
       en['admin.reason.identityReviewed'],
     );
+  });
+
+  it('translates admin audit targets and actions', () => {
+    expect(getAdminTargetTypeLabel('user', t)).toBe(en['admin.target.user']);
+    expect(getAdminActionLabel('resolve_report', t)).toBe(en['admin.action.resolveReport']);
+    expect(getAdminActionLabel('hide_review', t)).toBe(en['admin.action.hideReview']);
+    expect(getAdminActionLabel('ban_user', t)).toBe(en['admin.action.banUser']);
+    expect(getAdminActionLabel('unban_user', t)).toBe(en['admin.action.unbanUser']);
   });
 
   it('translates system visibility notes line by line', () => {

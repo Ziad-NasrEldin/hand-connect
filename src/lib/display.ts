@@ -87,6 +87,7 @@ export function getAdminTargetTypeLabel(
     visibilityRequest: 'admin.target.visibilityRequest',
     review: 'admin.target.review',
     report: 'admin.target.report',
+    user: 'admin.target.user',
   };
   return t(key[targetType]);
 }
@@ -99,6 +100,14 @@ export function getAdminActionLabel(action: string, t: Translate) {
     approve_visibility: 'admin.action.approveVisibility',
     reject_visibility: 'admin.action.rejectVisibility',
     flag_review: 'admin.action.flagReview',
+    resolve_report: 'admin.action.resolveReport',
+    hide_review: 'admin.action.hideReview',
+    create_profession: 'admin.action.createProfession',
+    update_profession: 'admin.action.updateProfession',
+    activate_profession: 'admin.action.activateProfession',
+    deactivate_profession: 'admin.action.deactivateProfession',
+    ban_user: 'admin.action.banUser',
+    unban_user: 'admin.action.unbanUser',
   }[action];
   return key ? t(key) : action;
 }

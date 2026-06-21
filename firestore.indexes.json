@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "professions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "sortOrder", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "providers",
       "queryScope": "COLLECTION",
       "fields": [
@@ -8,6 +16,14 @@
         { "fieldPath": "profession", "order": "ASCENDING" },
         { "fieldPath": "serviceAreaKeys", "arrayConfig": "CONTAINS" },
         { "fieldPath": "avgRating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "conversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "customerId", "order": "ASCENDING" },
+        { "fieldPath": "lastMessageAt", "order": "ASCENDING" }
       ]
     },
     {
@@ -40,6 +56,15 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "customerId", "order": "ASCENDING" },
+        { "fieldPath": "type", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contacts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "customerId", "order": "ASCENDING" },
         { "fieldPath": "providerId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
@@ -51,6 +76,31 @@
         { "fieldPath": "customerId", "order": "ASCENDING" },
         { "fieldPath": "providerId", "order": "ASCENDING" },
         { "fieldPath": "hasReview", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "reporterId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visibilityRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "providerId", "order": "ASCENDING" },
+        { "fieldPath": "requestedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "visibilityRequests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "providerId", "order": "ASCENDING" },
+        { "fieldPath": "serviceArea", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
       ]
     },
     {

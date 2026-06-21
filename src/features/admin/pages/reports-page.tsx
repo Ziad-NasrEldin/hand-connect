@@ -29,6 +29,20 @@ export function ReportsPage() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {report.targetType} · {report.targetId} · {report.status}
                   </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t('admin.reporter')}: {report.reporterName ?? report.reporterId}
+                  </p>
+                  {report.targetLabel ? (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {t('admin.reportTarget')}: {report.targetLabel}
+                    </p>
+                  ) : null}
+                  {report.status === 'closed' ? (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {t('admin.reportResolvedBy')}: {report.resolvedBy ?? '-'}
+                      {report.resolvedAt ? ` · ${new Date(report.resolvedAt).toLocaleString()}` : ''}
+                    </p>
+                  ) : null}
                 </div>
                 {report.status === 'open' && user ? (
                   <div className="flex flex-wrap gap-2">

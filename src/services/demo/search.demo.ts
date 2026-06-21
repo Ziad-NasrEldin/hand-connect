@@ -5,6 +5,7 @@ import { activeProfessions, readDb } from './demo-db';
 export interface SearchProvidersInput {
   profession: string;
   neighborhood: string;
+  limit?: number;
 }
 
 export async function listProfessions() {
@@ -19,5 +20,5 @@ export async function searchProviders(input: SearchProvidersInput): Promise<Prov
       provider.profession === input.profession &&
       provider.serviceAreaKeys.includes(input.neighborhood),
   );
-  return rankProviders(candidates, input);
+  return rankProviders(candidates, input).slice(0, input.limit);
 }

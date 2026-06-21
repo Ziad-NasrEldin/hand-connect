@@ -11,7 +11,7 @@ import { getPostLoginRedirect } from '@/router/redirects';
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { login, user, providerStatus } = useAuth();
+  const { login, loginWithGoogle, user, providerStatus } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('customer@hand.test');
   const [password, setPassword] = useState('password');
@@ -22,6 +22,28 @@ export function LoginPage() {
     setError('');
     try {
       await login(email, password);
+      const state = await import('@/services/auth.service').then((module) =>
+        module.getCurrentSession(),
+      );
+      navigate(
+        getPostLoginRedirect(
+          state.user ?? user,
+          state.providerStatus ?? providerStatus,
+        ),
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? getLocalizedMessage(err.message, t)
+          : t('auth.loginFailed'),
+      );
+    }
+  }
+
+  async function submitGoogle() {
+    setError('');
+    try {
+      await loginWithGoogle();
       const state = await import('@/services/auth.service').then((module) =>
         module.getCurrentSession(),
       );
@@ -74,6 +96,14 @@ export function LoginPage() {
           ) : null}
           <Button className="w-full" type="submit">
             {t('auth.login')}
+          </Button>
+          <Button
+            className="w-full"
+            type="button"
+            variant="outline"
+            onClick={() => void submitGoogle()}
+          >
+            {t('auth.googleLogin')}
           </Button>
           <Link
             className="text-center text-sm font-semibold text-primary"

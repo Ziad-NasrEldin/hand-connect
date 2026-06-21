@@ -62,7 +62,7 @@ export const conversationConverter = createFirestoreConverter<Conversation>(['la
 export const messageConverter = createFirestoreConverter<Message>(['createdAt']);
 export const reviewConverter = createFirestoreConverter<Review>(['createdAt']);
 export const adminActionConverter = createFirestoreConverter<AdminAction>(['createdAt']);
-export const abuseReportConverter = createFirestoreConverter<AbuseReport>(['createdAt']);
+export const abuseReportConverter = createFirestoreConverter<AbuseReport>(['createdAt', 'resolvedAt']);
 export const visibilityRequestConverter = createFirestoreConverter<VisibilityRequest>([
   'requestedAt',
   'processedAt',

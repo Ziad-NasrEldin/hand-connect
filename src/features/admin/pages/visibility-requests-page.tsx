@@ -8,7 +8,10 @@ import {
   getVisibilityRequestNoteLabel,
   getVisibilityRequestStatusLabel,
 } from '@/lib/display';
-import { approveVisibilityRequest } from '@/services/admin.service';
+import {
+  approveVisibilityRequest,
+  rejectVisibilityRequest,
+} from '@/services/admin.service';
 
 export function VisibilityRequestsPage() {
   const { t } = useTranslation();
@@ -20,6 +23,15 @@ export function VisibilityRequestsPage() {
       user!.uid,
       id,
       'admin.reason.paymentConfirmed',
+    );
+    void queryClient.invalidateQueries({ queryKey: ['admin'] });
+  }
+
+  async function reject(id: string) {
+    await rejectVisibilityRequest(
+      user!.uid,
+      id,
+      'admin.reason.paymentCouldNotBeMatched',
     );
     void queryClient.invalidateQueries({ queryKey: ['admin'] });
   }
@@ -46,9 +58,17 @@ export function VisibilityRequestsPage() {
               </p>
             </div>
             {request.status === 'pending' ? (
-              <Button onClick={() => void approve(request.id)}>
-                {t('admin.confirmPayment')}
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={() => void approve(request.id)}>
+                  {t('admin.confirmPayment')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => void reject(request.id)}
+                >
+                  {t('common.reject')}
+                </Button>
+              </div>
             ) : null}
           </div>
         ))}

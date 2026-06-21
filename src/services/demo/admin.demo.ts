@@ -1,11 +1,11 @@
 import { nowIso } from '@/lib/dates';
-import type { AdminAction } from '@/types/admin';
+import type { AbuseReport, AdminAction } from '@/types/admin';
 import type {
   Profession,
   ProviderIdentityDocument,
   ProviderProfile,
 } from '@/types/provider';
-import { activeProfessions, createId, readDb, writeDb } from './demo-db';
+import { createId, readDb, writeDb } from './demo-db';
 import { recalculateProviderRating } from './reviews.demo';
 
 export type ProviderApplication = ProviderProfile & {
@@ -50,7 +50,15 @@ export async function listProviderApplications() {
 }
 
 export async function listAllProviders() {
-  return readDb().providers;
+  const db = readDb();
+  return db.providers.map((provider) => {
+    const user = db.users.find((item) => item.uid === provider.userId);
+    return {
+      ...provider,
+      accountStatus: user?.status ?? 'active',
+      banReason: user?.banReason ?? null,
+    };
+  });
 }
 
 export async function approveProvider(adminId: string, providerId: string) {
@@ -103,9 +111,28 @@ export async function approveVisibilityRequest(adminId: string, requestId: strin
   request.paymentConfirmedBy = adminId;
   request.notes = [request.notes, notes].filter(Boolean).join('\n');
   request.processedAt = nowIso();
-  provider.visibilityTier = 'paid';
-  provider.visibilityPaidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+  if (request.type === 'area_expansion') {
+    if (!provider.serviceAreaKeys.includes(request.serviceArea)) {
+      provider.serviceAreaKeys.push(request.serviceArea);
+      provider.serviceAreas.push({ neighborhood: request.serviceArea, city: 'cairo' });
+    }
+  } else {
+    provider.visibilityTier = 'paid';
+    provider.visibilityPaidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+  }
   db.adminActions.push(audit(adminId, 'visibilityRequest', requestId, 'approve_visibility', notes));
+  writeDb(db);
+}
+
+export async function rejectVisibilityRequest(adminId: string, requestId: string, reason: string) {
+  const db = readDb();
+  const request = db.visibilityRequests.find((item) => item.id === requestId);
+  if (!request) throw new Error('error.request.notFound');
+  if (request.status !== 'pending') throw new Error('error.request.notPending');
+  request.status = 'rejected';
+  request.rejectionReason = reason;
+  request.processedAt = nowIso();
+  db.adminActions.push(audit(adminId, 'visibilityRequest', requestId, 'reject_visibility', reason));
   writeDb(db);
 }
 
@@ -118,7 +145,23 @@ export async function listAdminActions() {
 }
 
 export async function listReports() {
-  return readDb().reports.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const db = readDb();
+  return db.reports
+    .map((report): AbuseReport => {
+      const reporter = db.users.find((item) => item.uid === report.reporterId);
+      const provider = report.targetType === 'provider'
+        ? db.providers.find((item) => item.id === report.targetId)
+        : report.targetType === 'review'
+          ? db.providers.find((item) => item.id === db.reviews.find((review) => review.id === report.targetId)?.providerId)
+          : null;
+      const message = report.targetType === 'message' ? db.messages.find((item) => item.id === report.targetId) : null;
+      return {
+        ...report,
+        reporterName: report.reporterName ?? reporter?.displayName ?? null,
+        targetLabel: report.targetLabel ?? provider?.displayName ?? message?.text ?? null,
+      };
+    })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function resolveReport(adminId: string, reportId: string, reason: string) {
@@ -126,6 +169,9 @@ export async function resolveReport(adminId: string, reportId: string, reason: s
   const report = db.reports.find((item) => item.id === reportId);
   if (!report) throw new Error('error.report.notFound');
   report.status = 'closed';
+  report.resolvedBy = adminId;
+  report.resolvedAt = nowIso();
+  report.resolutionReason = reason;
   db.adminActions.push(audit(adminId, 'report', reportId, 'resolve_report', reason));
   writeDb(db);
 }
@@ -137,13 +183,48 @@ export async function hideReview(adminId: string, reviewId: string, reason: stri
   review.status = 'removed';
   if (reportId) {
     const report = db.reports.find((item) => item.id === reportId);
-    if (report) report.status = 'closed';
+    if (report) {
+      report.status = 'closed';
+      report.resolvedBy = adminId;
+      report.resolvedAt = nowIso();
+      report.resolutionReason = reason;
+    }
   }
   recalculateProviderRating(db, review.providerId);
   db.adminActions.push(audit(adminId, 'review', reviewId, 'hide_review', reason));
   writeDb(db);
 }
 
+export async function setUserBanned(adminId: string, userId: string, banned: boolean, reason: string) {
+  const db = readDb();
+  const user = db.users.find((item) => item.uid === userId);
+  if (!user) throw new Error('error.user.notFound');
+  user.status = banned ? 'banned' : 'active';
+  user.banReason = banned ? reason : null;
+  user.bannedAt = banned ? nowIso() : null;
+  user.bannedBy = banned ? adminId : null;
+  db.adminActions.push(audit(adminId, 'user', userId, banned ? 'ban_user' : 'unban_user', reason));
+  writeDb(db);
+}
+
 export async function listProfessions(): Promise<Profession[]> {
-  return activeProfessions();
+  return readDb().professions.sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function saveProfession(adminId: string, profession: Profession) {
+  const db = readDb();
+  const index = db.professions.findIndex((item) => item.id === profession.id);
+  if (index >= 0) db.professions[index] = profession;
+  else db.professions.push(profession);
+  db.adminActions.push(audit(adminId, 'profession', profession.id, index >= 0 ? 'update_profession' : 'create_profession', 'admin.reason.professionUpdated'));
+  writeDb(db);
+}
+
+export async function setProfessionActive(adminId: string, professionId: string, active: boolean) {
+  const db = readDb();
+  const profession = db.professions.find((item) => item.id === professionId);
+  if (!profession) throw new Error('error.profession.notFound');
+  profession.active = active;
+  db.adminActions.push(audit(adminId, 'profession', professionId, active ? 'activate_profession' : 'deactivate_profession', 'admin.reason.professionUpdated'));
+  writeDb(db);
 }

@@ -7,21 +7,13 @@ import {
   orderBy,
   query,
   runTransaction,
-  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/firebase/db';
-import {
-  abuseReportConverter,
-  contactConverter,
-  conversationConverter,
-  messageConverter,
-  providerConverter,
-} from '@/firebase/converters';
+import { callFirebaseFunction } from '@/firebase/functions';
+import { conversationConverter, messageConverter } from '@/firebase/converters';
 import { nowIso } from '@/lib/dates';
-import type { AbuseReport } from '@/types/admin';
-import type { Contact } from '@/types/contact';
 import type { Conversation, Message } from '@/types/messaging';
 import type { ConversationDetails, MessagingService } from '../contracts/messaging.contract';
 
@@ -35,76 +27,10 @@ function createId(prefix: string) {
   return `${prefix}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
 }
 
-function platformContactId(customerId: string, providerId: string) {
-  return `${customerId}_${providerId}_platform_message`;
-}
-
 export const firebaseMessagingService: MessagingService = {
   conversationIdFor: (customerId: string, providerId: string) => `${customerId}_${providerId}`,
   startConversation: async (customerId, providerId, text) => {
-    const db = requireFirebaseDb();
-    const providerRef = doc(db, 'providers', providerId).withConverter(providerConverter);
-    const conversationId = firebaseMessagingService.conversationIdFor(customerId, providerId);
-    const conversationRef = doc(db, 'conversations', conversationId).withConverter(conversationConverter);
-    const messageRef = doc(
-      collection(db, 'conversations', conversationId, 'messages'),
-      createId('message'),
-    ).withConverter(messageConverter);
-    const contactRef = doc(db, 'contacts', platformContactId(customerId, providerId)).withConverter(contactConverter);
-    const timestamp = nowIso();
-
-    return runTransaction(db, async (transaction) => {
-      const providerSnapshot = await transaction.get(providerRef);
-      if (!providerSnapshot.exists() || providerSnapshot.data().status !== 'approved') {
-        throw new Error('error.provider.notFound');
-      }
-      const provider = providerSnapshot.data();
-      const conversationSnapshot = await transaction.get(conversationRef);
-      const contactSnapshot = await transaction.get(contactRef);
-      const existing = conversationSnapshot.exists() ? conversationSnapshot.data() : null;
-      const conversation: Conversation = existing ?? {
-        id: conversationId,
-        participants: [customerId, provider.userId],
-        providerId,
-        customerId,
-        lastMessage: text,
-        lastMessageAt: timestamp,
-        unreadCount: { [provider.userId]: 0, [customerId]: 0 },
-      };
-      const providerUnread = (conversation.unreadCount[provider.userId] ?? 0) + 1;
-      const updatedConversation: Conversation = {
-        ...conversation,
-        lastMessage: text,
-        lastMessageAt: timestamp,
-        unreadCount: {
-          ...conversation.unreadCount,
-          [provider.userId]: providerUnread,
-          [customerId]: conversation.unreadCount[customerId] ?? 0,
-        },
-      };
-      const message: Message = {
-        id: messageRef.id,
-        conversationId,
-        senderId: customerId,
-        text,
-        createdAt: timestamp,
-        read: false,
-      };
-      transaction.set(conversationRef, updatedConversation);
-      transaction.set(messageRef, message);
-      if (!contactSnapshot.exists()) {
-        const contact: Contact = {
-          id: contactRef.id,
-          customerId,
-          providerId,
-          type: 'platform_message',
-          createdAt: timestamp,
-          hasReview: false,
-        };
-        transaction.set(contactRef, contact);
-      }
-      return updatedConversation;
-    });
+    return callFirebaseFunction<{ providerId: string; text: string }, Conversation>('startConversation', { providerId, text });
   },
   sendMessage: async (conversationId, senderId, text) => {
     const db = requireFirebaseDb();
@@ -226,16 +152,21 @@ export const firebaseMessagingService: MessagingService = {
   },
   reportMessage: async (reporterId, messageId, reason) => {
     const db = requireFirebaseDb();
-    const reportRef = doc(collection(db, 'reports'), createId('report')).withConverter(abuseReportConverter);
-    const report: AbuseReport = {
-      id: reportRef.id,
-      targetType: 'message',
-      targetId: messageId,
-      reporterId,
+    const conversations = await getDocs(query(
+      collection(db, 'conversations').withConverter(conversationConverter),
+      where('participants', 'array-contains', reporterId),
+    ));
+    const messageSnapshots = await Promise.all(
+      conversations.docs.map((conversation) => getDoc(
+        doc(db, 'conversations', conversation.id, 'messages', messageId).withConverter(messageConverter),
+      )),
+    );
+    const message = messageSnapshots.find((item) => item.exists());
+    if (!message) throw new Error('error.message.notFound');
+    await callFirebaseFunction<{ conversationId: string; messageId: string; reason: string }, void>('reportMessage', {
+      conversationId: message.data().conversationId,
+      messageId,
       reason,
-      status: 'open',
-      createdAt: nowIso(),
-    };
-    await setDoc(reportRef, report);
+    });
   },
 };

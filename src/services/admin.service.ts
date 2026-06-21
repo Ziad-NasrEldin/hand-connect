@@ -1,4 +1,5 @@
 import type { AdminService } from './contracts/admin.contract';
+import type { Profession } from '@/types/provider';
 import { getDataSource } from './data-source';
 import * as demo from './demo/admin.demo';
 import { firebaseAdminService } from './firebase/admin.firebase';
@@ -37,6 +38,10 @@ export async function approveVisibilityRequest(adminId: string, requestId: strin
   return adminService().approveVisibilityRequest(adminId, requestId, notes);
 }
 
+export async function rejectVisibilityRequest(adminId: string, requestId: string, reason: string) {
+  return adminService().rejectVisibilityRequest(adminId, requestId, reason);
+}
+
 export async function listVisibilityRequests() {
   return adminService().listVisibilityRequests();
 }
@@ -57,6 +62,18 @@ export async function hideReview(adminId: string, reviewId: string, reason: stri
   return adminService().hideReview(adminId, reviewId, reason, reportId);
 }
 
+export async function setUserBanned(adminId: string, userId: string, banned: boolean, reason: string) {
+  return adminService().setUserBanned(adminId, userId, banned, reason);
+}
+
 export async function listProfessions() {
   return adminService().listProfessions();
+}
+
+export async function saveProfession(adminId: string, profession: Profession) {
+  return adminService().saveProfession(adminId, profession);
+}
+
+export async function setProfessionActive(adminId: string, professionId: string, active: boolean) {
+  return adminService().setProfessionActive(adminId, professionId, active);
 }

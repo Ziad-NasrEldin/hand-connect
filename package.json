@@ -15,7 +15,7 @@
     "cap:sync:ios": "npm run build && npx cap sync ios",
     "cap:open:ios": "npx cap open ios",
     "e2e": "playwright test",
-    "release:check": "npm run lint && npm test && npm run build && npm run e2e",
+    "release:check": "npm run lint && npm test && npm run test:rules && npm run build && npm run e2e",
     "firebase:emulators": "firebase emulators:start --import=.firebase-emulator-data --export-on-exit",
     "seed:dev": "tsx scripts/seed-dev.ts",
     "admin:create": "tsx scripts/create-admin.ts"

@@ -1,6 +1,7 @@
 import {
   collection,
   getDocs,
+  limit as firestoreLimit,
   orderBy,
   query,
   where,
@@ -9,6 +10,7 @@ import { professions as seededProfessions } from '@/config/professions';
 import { getFirebaseDb } from '@/firebase/db';
 import { professionConverter, providerConverter } from '@/firebase/converters';
 import { rankProviders } from '@/lib/ranking';
+import { maxSearchLimit } from '@/lib/search-filters';
 import type { SearchService } from '../contracts/search.contract';
 
 function requireFirebaseDb() {
@@ -41,11 +43,12 @@ export const firebaseSearchService: SearchService = {
         where('profession', '==', input.profession),
         where('serviceAreaKeys', 'array-contains', input.neighborhood),
         orderBy('avgRating', 'desc'),
+        firestoreLimit(maxSearchLimit),
       ),
     );
     return rankProviders(
       snapshot.docs.map((item) => item.data()),
       input,
-    );
+    ).slice(0, input.limit);
   },
 };

@@ -24,6 +24,7 @@ export interface AuthService {
   getCurrentSession(): Promise<AuthSession>;
   subscribeToSession(onSession: (session: AuthSession) => void): () => void;
   login(email: string, password: string): Promise<AuthSession>;
+  loginWithGoogle(): Promise<AuthSession>;
   logout(): Promise<void>;
   registerCustomer(input: RegisterCustomerInput): Promise<AuthSession>;
   registerProvider(input: RegisterProviderInput): Promise<AuthSession>;

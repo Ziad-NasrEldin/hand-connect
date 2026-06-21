@@ -22,4 +22,8 @@ export async function createReview(customerId: string, providerId: string, ratin
   return reviewsService().createReview(customerId, providerId, rating, comment);
 }
 
+export async function reportReview(reporterId: string, reviewId: string, reason: string) {
+  return reviewsService().reportReview(reporterId, reviewId, reason);
+}
+
 export { recalculateProviderRating } from './demo/reviews.demo';

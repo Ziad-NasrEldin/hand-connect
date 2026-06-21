@@ -28,6 +28,8 @@ export function RegisterPage() {
   );
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [profession, setProfession] = useState('plumbing');
   const [serviceArea, setServiceArea] = useState('new-cairo');
@@ -56,18 +58,26 @@ export function RegisterPage() {
         }
         identityDocument = await fileToIdentityDocument(identityFile);
       }
+      if (password.length < 8) {
+        setError(t('auth.passwordTooShort'));
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError(t('auth.passwordMismatch'));
+        return;
+      }
       const session =
         role === 'customer'
           ? await authService.registerCustomer({
               displayName,
               email,
-              password: 'password',
+              password,
               phone,
             })
           : await authService.registerProvider({
               displayName,
               email,
-              password: 'password',
+              password,
               phone,
               profession,
               serviceArea,
@@ -134,6 +144,30 @@ export function RegisterPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="register-password">{t('auth.password')}</Label>
+            <Input
+              id="register-password"
+              required
+              minLength={8}
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="register-confirm-password">
+              {t('auth.confirmPassword')}
+            </Label>
+            <Input
+              id="register-confirm-password"
+              required
+              minLength={8}
+              type="password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
             />
           </div>
           <div className="space-y-2">

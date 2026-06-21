@@ -2,18 +2,19 @@ import { professions } from '../../config/professions';
 import type { AdminAction, AbuseReport } from '../../types/admin';
 import type { Contact } from '../../types/contact';
 import type { Conversation, Message } from '../../types/messaging';
-import type { ProviderIdentityDocument, ProviderProfile } from '../../types/provider';
+import type { Profession, ProviderIdentityDocument, ProviderProfile } from '../../types/provider';
 import type { Review } from '../../types/review';
 import type { AppUser } from '../../types/user';
 import type { VisibilityRequest } from '../../types/visibility';
 
-export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v5';
+export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v7';
 
 const baseDate = '2026-05-04T08:00:00.000Z';
 const paidUntil = '2026-06-03T08:00:00.000Z';
 
 export interface DemoSeedData {
   users: AppUser[];
+  professions: Profession[];
   providers: ProviderProfile[];
   identityDocuments: ProviderIdentityDocument[];
   contacts: Contact[];
@@ -430,6 +431,7 @@ export function createDemoSeedData(): DemoSeedData {
 
   return {
     users,
+    professions,
     providers,
     identityDocuments: providers.map((item) =>
       identityDocumentFor(item.id, item.displayName),
@@ -449,7 +451,7 @@ export function activeSeedProfessions() {
 }
 
 function user(uid: string, email: string, role: AppUser['role'], displayName: string, phone: string): AppUser {
-  return { uid, email, role, displayName, phone, language: 'ar', createdAt: baseDate };
+  return { uid, email, role, status: 'active', banReason: null, bannedAt: null, bannedBy: null, displayName, phone, language: 'ar', createdAt: baseDate };
 }
 
 function provider(input: {

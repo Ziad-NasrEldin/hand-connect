@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approvedProviderPatch, rejectedProviderPatch, suspendedProviderPatch } from '../src/providers.js';
+import { approvedProviderPatch, isActiveAdmin, rejectedProviderPatch, suspendedProviderPatch } from '../src/providers.js';
 
 describe('provider moderation helpers', () => {
   it('builds approval and rejection patches', () => {
@@ -19,5 +19,11 @@ describe('provider moderation helpers', () => {
       status: 'suspended',
       suspensionReason: 'policy violation',
     });
+  });
+
+  it('rejects banned admins for provider moderation callables', () => {
+    expect(isActiveAdmin({ role: 'admin', status: 'active' })).toBe(true);
+    expect(isActiveAdmin({ role: 'admin', status: 'banned' })).toBe(false);
+    expect(isActiveAdmin({ role: 'customer', status: 'active' })).toBe(false);
   });
 });

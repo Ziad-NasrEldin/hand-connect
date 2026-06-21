@@ -1,8 +1,10 @@
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
+export type VisibilityRequestType = 'boost' | 'area_expansion';
 
 export interface VisibilityRequest {
   id: string;
   providerId: string;
+  type?: VisibilityRequestType;
   tier: 'paid';
   serviceArea: string;
   status: RequestStatus;

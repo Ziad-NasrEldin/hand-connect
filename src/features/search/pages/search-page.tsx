@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/select';
 import { neighborhoods, getNeighborhoodName } from '@/config/neighborhoods';
 import { getProfessionName } from '@/config/professions';
 import { useSearchProviders } from '@/hooks/use-search-providers';
+import { isPaidVisibilityActive } from '@/lib/ranking';
+import { normalizeSearchFilters } from '@/lib/search-filters';
 import { listProfessions } from '@/services/search.service';
 import type { ProviderProfile } from '@/types/provider';
 
@@ -19,17 +21,20 @@ export function SearchPage() {
   const language = i18n.language === 'en' ? 'en' : 'ar';
   const [params, setParams] = useSearchParams();
   const [, startTransition] = useTransition();
-  const profession = params.get('profession') ?? 'plumbing';
-  const neighborhood = params.get('neighborhood') ?? 'new-cairo';
-  const query = useSearchProviders({
-    profession,
-    neighborhood,
-  });
   const professionsQuery = useQuery({
     queryKey: ['professions', 'active'],
     queryFn: listProfessions,
   });
   const professionOptions = professionsQuery.data ?? [];
+  const filters = normalizeSearchFilters({
+    profession: params.get('profession') ?? undefined,
+    neighborhood: params.get('neighborhood') ?? undefined,
+  }, professionOptions.length ? professionOptions : undefined);
+  const { profession, neighborhood } = filters;
+  const query = useSearchProviders({
+    profession,
+    neighborhood,
+  });
 
   function updateFilters(next: { profession?: string; neighborhood?: string }) {
     startTransition(() => {
@@ -100,9 +105,10 @@ function ProviderResultCard({
   language: 'ar' | 'en';
 }) {
   const { t } = useTranslation();
+  const paidActive = isPaidVisibilityActive(provider);
   return (
     <Card
-      variant={provider.visibilityTier === 'paid' ? 'highlight' : 'default'}
+      variant={paidActive ? 'highlight' : 'default'}
     >
       <CardContent className="flex h-full flex-col gap-4 p-5">
         {provider.photos[0] ? (
@@ -122,7 +128,7 @@ function ProviderResultCard({
               {getProfessionName(provider.profession, language)}
             </p>
           </div>
-          {provider.visibilityTier === 'paid' ? (
+          {paidActive ? (
             <span className="paid-badge rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-primary shadow-[inset_0_0_0_1px_rgba(233,179,137,0.8)]">
               {t('common.featured')}
             </span>

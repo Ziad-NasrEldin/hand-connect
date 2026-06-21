@@ -23,6 +23,10 @@ export async function login(email: string, password: string) {
   return authService().login(email, password);
 }
 
+export async function loginWithGoogle() {
+  return authService().loginWithGoogle();
+}
+
 export async function logout() {
   return authService().logout();
 }

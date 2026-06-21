@@ -1,6 +1,7 @@
 import { createId, readDb, writeDb } from './demo-db';
 import type { Review } from '@/types/review';
 import { nowIso } from '@/lib/dates';
+import { assertUnderDailyLimit, dailyRateLimits, isWithinLastDay } from '@/lib/rate-limits';
 
 export async function canCustomerReviewProvider(customerId: string, providerId: string) {
   const contact = readDb().contacts.find((item) => item.customerId === customerId && item.providerId === providerId && !item.hasReview);
@@ -34,6 +35,31 @@ export async function createReview(customerId: string, providerId: string, ratin
   recalculateProviderRating(db, providerId);
   writeDb(db);
   return review;
+}
+
+export async function reportReview(reporterId: string, reviewId: string, reason: string) {
+  const db = readDb();
+  const review = db.reviews.find((item) => item.id === reviewId);
+  if (!review) throw new Error('error.review.notFound');
+  assertUnderDailyLimit(
+    db.reports.filter((item) => item.reporterId === reporterId && isWithinLastDay(item.createdAt)).length,
+    dailyRateLimits.reports,
+  );
+  db.reports.push({
+    id: createId('report'),
+    targetType: 'review',
+    targetId: reviewId,
+    targetLabel: review.comment,
+    reporterId,
+    reporterName: db.users.find((item) => item.uid === reporterId)?.displayName ?? null,
+    reason,
+    status: 'open',
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionReason: null,
+    createdAt: nowIso(),
+  });
+  writeDb(db);
 }
 
 export function recalculateProviderRating(db: ReturnType<typeof readDb>, providerId: string) {

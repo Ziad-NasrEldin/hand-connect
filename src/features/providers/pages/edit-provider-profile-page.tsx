@@ -22,6 +22,8 @@ export function EditProviderProfilePage() {
   const [bio, setBio] = useState('');
   const [profession, setProfession] = useState('');
   const [area, setArea] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [whatsappVisible, setWhatsappVisible] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   async function submit(event: FormEvent) {
@@ -30,6 +32,11 @@ export function EditProviderProfilePage() {
     await updateProviderProfile(provider.data.id, {
       bio: bio || provider.data.bio,
       profession: profession || provider.data.profession,
+      whatsappNumber: whatsappNumber || provider.data.whatsappNumber,
+      whatsappVisible:
+        whatsappVisible === ''
+          ? provider.data.whatsappVisible
+          : whatsappVisible === 'true',
       serviceAreas: [
         {
           neighborhood: area || provider.data.serviceAreaKeys[0],
@@ -107,6 +114,34 @@ export function EditProviderProfilePage() {
                 value: item.slug,
                 label: language === 'ar' ? item.nameAr : item.nameEn,
               }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="provider-whatsapp">{t('auth.whatsapp')}</Label>
+            <Input
+              id="provider-whatsapp"
+              value={whatsappNumber}
+              onChange={(event) => setWhatsappNumber(event.target.value)}
+              placeholder={provider.data?.whatsappNumber}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="provider-whatsapp-visible">
+              {t('provider.whatsappVisibility')}
+            </Label>
+            <Select
+              id="provider-whatsapp-visible"
+              value={whatsappVisible}
+              onChange={(event) => setWhatsappVisible(event.target.value)}
+              placeholder={
+                provider.data?.whatsappVisible
+                  ? t('common.active')
+                  : t('common.inactive')
+              }
+              options={[
+                { value: 'true', label: t('common.active') },
+                { value: 'false', label: t('common.inactive') },
+              ]}
             />
           </div>
           <div className="space-y-2">

@@ -3,7 +3,8 @@ export type AdminTargetType =
   | 'profession'
   | 'visibilityRequest'
   | 'review'
-  | 'report';
+  | 'report'
+  | 'user';
 
 export interface AdminAction {
   id: string;
@@ -19,8 +20,13 @@ export interface AbuseReport {
   id: string;
   targetType: 'provider' | 'review' | 'message';
   targetId: string;
+  targetLabel?: string | null;
   reporterId: string;
+  reporterName?: string | null;
   reason: string;
   status: 'open' | 'closed';
+  resolvedBy?: string | null;
+  resolvedAt?: string | null;
+  resolutionReason?: string | null;
   createdAt: string;
 }

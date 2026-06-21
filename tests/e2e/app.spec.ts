@@ -22,6 +22,7 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
     expect(headerBox!.height).toBeLessThan(220);
   }
   await page.getByRole('link', { name: 'ابدأ البحث' }).click();
+  await expect(page).toHaveURL(/\/search/);
   if (testInfo.project.name === 'mobile-chrome') {
     const professionBox = await page
       .getByRole('combobox', { name: /المهنة|profession/i })
@@ -63,7 +64,7 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
   }
 });
 
-test('customer can login, reveal WhatsApp, message, and review after contact', async ({
+test('customer can login, reveal WhatsApp, and message after contact', async ({
   page,
 }) => {
   await page.goto('/login');
@@ -109,6 +110,8 @@ test('provider join request stores identity document for admin review', async ({
 
   await page.getByLabel('الاسم').fill('عمرو اختبار');
   await page.getByLabel('البريد الإلكتروني').fill('amr.provider@hand.test');
+  await page.getByLabel('كلمة المرور', { exact: true }).fill('password123');
+  await page.getByLabel('تأكيد كلمة المرور').fill('password123');
   await page.getByLabel('رقم الهاتف').fill('+201000000001');
   await page.getByLabel('رقم واتساب').fill('+201000000001');
   await page.getByLabel('البطاقة الشخصية').setInputFiles({

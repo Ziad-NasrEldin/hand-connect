@@ -1,6 +1,7 @@
 import { createId, readDb, writeDb } from './demo-db';
 import type { Conversation, Message } from '@/types/messaging';
 import { nowIso } from '@/lib/dates';
+import { assertUnderDailyLimit, dailyRateLimits, isWithinLastDay } from '@/lib/rate-limits';
 import type {
   ConversationDetails,
   ConversationListener,
@@ -19,6 +20,10 @@ export async function startConversation(customerId: string, providerId: string, 
   let conversation = db.conversations.find((item) => item.id === id);
   const timestamp = nowIso();
   if (!conversation) {
+    assertUnderDailyLimit(
+      db.conversations.filter((item) => item.customerId === customerId && isWithinLastDay(item.lastMessageAt)).length,
+      dailyRateLimits.conversationStarts,
+    );
     conversation = {
       id,
       participants: [customerId, provider.userId],
@@ -140,16 +145,26 @@ export async function markConversationRead(conversationId: string, userId: strin
 
 export async function reportMessage(reporterId: string, messageId: string, reason: string) {
   const db = readDb();
-  if (!db.messages.some((message) => message.id === messageId)) {
+  const message = db.messages.find((item) => item.id === messageId);
+  if (!message) {
     throw new Error('error.message.notFound');
   }
+  assertUnderDailyLimit(
+    db.reports.filter((item) => item.reporterId === reporterId && isWithinLastDay(item.createdAt)).length,
+    dailyRateLimits.reports,
+  );
   db.reports.push({
     id: createId('report'),
     targetType: 'message',
     targetId: messageId,
+    targetLabel: message.text,
     reporterId,
+    reporterName: db.users.find((item) => item.uid === reporterId)?.displayName ?? null,
     reason,
     status: 'open',
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionReason: null,
     createdAt: nowIso(),
   });
   writeDb(db);

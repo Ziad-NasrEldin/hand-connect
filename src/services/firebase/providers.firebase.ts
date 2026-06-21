@@ -6,16 +6,14 @@ import {
   increment,
   limit,
   query,
-  setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getFirebaseDb } from '@/firebase/db';
+import { callFirebaseFunction } from '@/firebase/functions';
 import { getFirebaseStorage } from '@/firebase/storage';
 import { contactConverter, providerConverter } from '@/firebase/converters';
-import { nowIso } from '@/lib/dates';
-import type { Contact } from '@/types/contact';
 import type { ProviderPhoto, ProviderProfile } from '@/types/provider';
 import type {
   ProviderProfileUpdateInput,
@@ -32,14 +30,6 @@ function requireFirebaseStorage() {
   const storage = getFirebaseStorage();
   if (!storage) throw new Error('error.firebase.notConfigured');
   return storage;
-}
-
-function contactIdFor(customerId: string, providerId: string, type: Contact['type']) {
-  return `${customerId}_${providerId}_${type}`;
-}
-
-function whatsappUrl(number: string) {
-  return `https://wa.me/${number.replace(/\D/g, '')}`;
 }
 
 async function uploadProfilePhoto(providerId: string, file: File) {
@@ -120,31 +110,13 @@ export const firebaseProvidersService: ProvidersService = {
     }
   },
   revealWhatsApp: async (customerId, providerId) => {
-    const db = requireFirebaseDb();
-    const providerSnapshot = await getDoc(
-      doc(db, 'providers', providerId).withConverter(providerConverter),
+    return callFirebaseFunction<{ providerId: string }, Awaited<ReturnType<ProvidersService['revealWhatsApp']>>>(
+      'revealWhatsApp',
+      { providerId },
     );
-    if (!providerSnapshot.exists() || providerSnapshot.data().status !== 'approved') {
-      throw new Error('error.provider.notFound');
-    }
-
-    const contact: Contact = {
-      id: contactIdFor(customerId, providerId, 'whatsapp_reveal'),
-      customerId,
-      providerId,
-      type: 'whatsapp_reveal',
-      createdAt: nowIso(),
-      hasReview: false,
-    };
-    const contactRef = doc(db, 'contacts', contact.id).withConverter(contactConverter);
-    const existingContact = await getDoc(contactRef);
-    if (!existingContact.exists()) await setDoc(contactRef, contact);
-
-    return {
-      provider: providerSnapshot.data(),
-      contact: existingContact.exists() ? existingContact.data() : contact,
-      whatsappUrl: whatsappUrl(providerSnapshot.data().whatsappNumber),
-    };
+  },
+  reportProvider: async (reporterId, providerId, reason) => {
+    await callFirebaseFunction<{ providerId: string; reason: string }, void>('reportProvider', { providerId, reason });
   },
   updateProviderProfile: async (providerId, patch) => {
     const db = requireFirebaseDb();

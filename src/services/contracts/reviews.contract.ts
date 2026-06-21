@@ -4,4 +4,5 @@ export interface ReviewsService {
   canCustomerReviewProvider(customerId: string, providerId: string): Promise<boolean>;
   getProviderReviews(providerId: string): Promise<Review[]>;
   createReview(customerId: string, providerId: string, rating: Review['rating'], comment: string): Promise<Review>;
+  reportReview(reporterId: string, reviewId: string, reason: string): Promise<void>;
 }

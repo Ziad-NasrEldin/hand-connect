@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rankProviders } from './ranking';
+import { isPaidVisibilityActive, rankProviders } from './ranking';
 import type { ProviderProfile } from '@/types/provider';
 
 const baseProvider: ProviderProfile = {
@@ -31,5 +31,23 @@ describe('rankProviders', () => {
     const organic = { ...baseProvider, id: 'organic', visibilityTier: 'organic' as const, avgRating: 5, reviewCount: 20, activityScore: 95 };
     const paid = { ...baseProvider, id: 'paid', visibilityTier: 'paid' as const, avgRating: 2, reviewCount: 1, activityScore: 10 };
     expect(rankProviders([paid, organic], { profession: 'plumbing', neighborhood: 'new-cairo' })[0].id).toBe('organic');
+  });
+
+  it('treats expired paid visibility as organic', () => {
+    const expiredPaid = {
+      ...baseProvider,
+      visibilityTier: 'paid' as const,
+      visibilityPaidUntil: '2026-05-01T00:00:00.000Z',
+    };
+    expect(isPaidVisibilityActive(expiredPaid, new Date('2026-05-04T00:00:00.000Z'))).toBe(false);
+  });
+
+  it('recognizes active paid visibility before expiry', () => {
+    const activePaid = {
+      ...baseProvider,
+      visibilityTier: 'paid' as const,
+      visibilityPaidUntil: '2026-06-01T00:00:00.000Z',
+    };
+    expect(isPaidVisibilityActive(activePaid, new Date('2026-05-04T00:00:00.000Z'))).toBe(true);
   });
 });

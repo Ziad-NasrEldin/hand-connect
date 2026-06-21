@@ -16,6 +16,7 @@ export interface ProvidersService {
   getProviderForOwner(userId: string): Promise<ProviderProfile | null>;
   incrementProfileView(providerId: string, viewerId?: string): Promise<void>;
   revealWhatsApp(customerId: string, providerId: string): Promise<RevealWhatsAppResult>;
+  reportProvider(reporterId: string, providerId: string, reason: string): Promise<void>;
   updateProviderProfile(providerId: string, patch: ProviderProfileUpdateInput): Promise<ProviderProfile>;
   providerContacts(providerId: string): Promise<Contact[]>;
 }

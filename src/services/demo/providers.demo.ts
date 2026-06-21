@@ -2,6 +2,7 @@ import { createId, readDb, writeDb } from './demo-db';
 import type { Contact } from '@/types/contact';
 import type { ProviderProfileUpdateInput } from '../contracts/providers.contract';
 import { nowIso } from '@/lib/dates';
+import { assertUnderDailyLimit, dailyRateLimits, isWithinLastDay } from '@/lib/rate-limits';
 
 export async function getProviderById(id: string) {
   const provider = readDb().providers.find((item) => item.id === id && item.status === 'approved');
@@ -27,10 +28,15 @@ export async function revealWhatsApp(customerId: string, providerId: string) {
   const db = readDb();
   const provider = db.providers.find((item) => item.id === providerId && item.status === 'approved');
   if (!provider) throw new Error('error.provider.notFound');
+  if (!provider.whatsappVisible) throw new Error('error.provider.whatsappUnavailable');
   let contact = db.contacts.find(
     (item) => item.customerId === customerId && item.providerId === providerId && item.type === 'whatsapp_reveal',
   );
   if (!contact) {
+    assertUnderDailyLimit(
+      db.contacts.filter((item) => item.customerId === customerId && item.type === 'whatsapp_reveal' && isWithinLastDay(item.createdAt)).length,
+      dailyRateLimits.whatsappReveals,
+    );
     contact = {
       id: createId('contact'),
       customerId,
@@ -43,6 +49,31 @@ export async function revealWhatsApp(customerId: string, providerId: string) {
     writeDb(db);
   }
   return { provider, contact, whatsappUrl: `https://wa.me/${provider.whatsappNumber.replace(/\D/g, '')}` };
+}
+
+export async function reportProvider(reporterId: string, providerId: string, reason: string) {
+  const db = readDb();
+  const provider = db.providers.find((item) => item.id === providerId);
+  if (!provider) throw new Error('error.provider.notFound');
+  assertUnderDailyLimit(
+    db.reports.filter((item) => item.reporterId === reporterId && isWithinLastDay(item.createdAt)).length,
+    dailyRateLimits.reports,
+  );
+  db.reports.push({
+    id: createId('report'),
+    targetType: 'provider',
+    targetId: providerId,
+    targetLabel: provider.displayName,
+    reporterId,
+    reporterName: db.users.find((item) => item.uid === reporterId)?.displayName ?? null,
+    reason,
+    status: 'open',
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionReason: null,
+    createdAt: nowIso(),
+  });
+  writeDb(db);
 }
 
 export async function updateProviderProfile(providerId: string, patch: ProviderProfileUpdateInput) {

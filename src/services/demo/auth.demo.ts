@@ -22,6 +22,10 @@ export async function getCurrentSession() {
   if (!uid) return { user: null, providerStatus: undefined };
   const db = readDb();
   const user = db.users.find((item) => item.uid === uid) ?? null;
+  if (user?.status === 'banned') {
+    setSessionUserId(null);
+    return { user: null, providerStatus: undefined };
+  }
   const provider = db.providers.find((item) => item.userId === uid);
   return { user, providerStatus: provider?.status };
 }
@@ -36,7 +40,27 @@ export async function login(email: string, password: string) {
   const db = readDb();
   const user = db.users.find((item) => item.email.toLowerCase() === email.toLowerCase());
   if (!user) throw new Error('error.auth.invalidCredentials');
+  if (user.status === 'banned') throw new Error('error.auth.accountBanned');
   setSessionUserId(user.uid);
+  return getCurrentSession();
+}
+
+export async function loginWithGoogle() {
+  const db = readDb();
+  const existing = db.users.find((item) => item.email === 'google.customer@hand.test');
+  if (existing) {
+    setSessionUserId(existing.uid);
+    return getCurrentSession();
+  }
+  await createUser(
+    {
+      displayName: 'Google Customer',
+      email: 'google.customer@hand.test',
+      password: 'oauth',
+      phone: '',
+    },
+    'customer',
+  );
   return getCurrentSession();
 }
 
@@ -90,6 +114,10 @@ async function createUser(input: RegisterCustomerInput, role: UserRole): Promise
     uid: createId(role),
     email: input.email,
     role,
+    status: 'active',
+    banReason: null,
+    bannedAt: null,
+    bannedBy: null,
     displayName: input.displayName,
     phone: input.phone,
     language: 'ar',

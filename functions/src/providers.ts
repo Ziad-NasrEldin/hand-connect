@@ -11,6 +11,15 @@ interface ProviderRecord {
   rejectionReason?: string;
 }
 
+interface UserRecord {
+  role?: string;
+  status?: string;
+}
+
+export function isActiveAdmin(user: UserRecord | undefined) {
+  return Boolean(user) && user?.role === 'admin' && user?.status !== 'banned';
+}
+
 function ensureApp() {
   if (!getApps().length) initializeApp();
 }
@@ -37,7 +46,7 @@ function readString(value: unknown, field: string, maxLength = 1000) {
 
 async function requireAdmin(firestore: Firestore, uid: string) {
   const user = await firestore.collection('users').doc(uid).get();
-  if (user.data()?.role !== 'admin') {
+  if (!isActiveAdmin(user.data() as UserRecord | undefined)) {
     throw new HttpsError('permission-denied', 'Admin access is required.');
   }
 }

@@ -34,6 +34,10 @@ export async function revealWhatsApp(customerId: string, providerId: string) {
   return providersService().revealWhatsApp(customerId, providerId);
 }
 
+export async function reportProvider(reporterId: string, providerId: string, reason: string) {
+  return providersService().reportProvider(reporterId, providerId, reason);
+}
+
 export async function updateProviderProfile(
   providerId: string,
   patch: ProviderProfileUpdateInput,

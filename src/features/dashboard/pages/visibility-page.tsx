@@ -31,10 +31,18 @@ export function VisibilityPage() {
   });
   const [serviceArea, setServiceArea] = useState('new-cairo');
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
+  const isAreaExpansion = provider.data ? !provider.data.serviceAreaKeys.includes(serviceArea) : false;
+  const canRequestAreaExpansion = !isAreaExpansion || (provider.data?.reviewCount ?? 0) >= 30;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    setError('');
     if (!provider.data) return;
+    if (!canRequestAreaExpansion) {
+      setError(t('visibility.areaExpansionLocked'));
+      return;
+    }
     await createVisibilityRequest(
       provider.data.id,
       serviceArea,
@@ -54,6 +62,13 @@ export function VisibilityPage() {
         <p className="soft-note p-4 text-sm leading-7">
           {t('visibility.note')}
         </p>
+        {isAreaExpansion ? (
+          <p className="soft-note p-4 text-sm leading-7">
+            {canRequestAreaExpansion
+              ? t('visibility.areaExpansionEligible')
+              : t('visibility.areaExpansionLocked')}
+          </p>
+        ) : null}
         <form
           className="motion-stagger grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
           onSubmit={(event) => void submit(event)}
@@ -86,6 +101,7 @@ export function VisibilityPage() {
             {t('visibility.request')}
           </Button>
         </form>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
         {requests.data?.map((request) => (
           <div
             key={request.id}

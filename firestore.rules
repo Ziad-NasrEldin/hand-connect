@@ -14,37 +14,61 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return signedIn() && role() == 'admin';
+      return signedIn() && role() == 'admin' && userDoc().data.status != 'banned';
+    }
+
+    function activeUser() {
+      return signedIn() && userDoc().data.status != 'banned';
     }
 
     function isOwner(uid) {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function ownsProvider(providerId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/providers/$(providerId)).data.userId == request.auth.uid;
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.role in ['customer', 'provider'];
-      allow update: if isOwner(userId)
+      allow create: if isOwner(userId)
+        && request.resource.data.role in ['customer', 'provider']
+        && request.resource.data.status == 'active';
+      allow update: if isAdmin()
+        || (isOwner(userId)
+        && activeUser()
         && request.resource.data.role == resource.data.role
-        && request.resource.data.uid == resource.data.uid;
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.banReason == resource.data.banReason
+        && request.resource.data.bannedAt == resource.data.bannedAt
+        && request.resource.data.bannedBy == resource.data.bannedBy);
       allow delete: if false;
     }
 
     match /providers/{providerId} {
       allow read: if resource.data.status == 'approved' || isOwner(resource.data.userId) || isAdmin();
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
+      allow create: if activeUser() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
       allow update: if isAdmin()
-        || (isOwner(resource.data.userId)
-          && request.resource.data.status == resource.data.status
-          && request.resource.data.nationalIdVerified == resource.data.nationalIdVerified
-          && request.resource.data.visibilityTier == resource.data.visibilityTier);
+        || (activeUser()
+          && isOwner(resource.data.userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'displayName',
+            'phone',
+            'profession',
+            'bio',
+            'whatsappNumber',
+            'whatsappVisible',
+            'photos'
+          ]));
       allow delete: if false;
     }
 
     match /providerIdentityDocuments/{documentId} {
       allow read: if isAdmin() || isOwner(resource.data.providerId);
-      allow create: if signedIn() && request.resource.data.providerId == request.auth.uid;
-      allow update: if isAdmin() || isOwner(resource.data.providerId);
+      allow create: if activeUser() && request.resource.data.providerId == request.auth.uid;
+      allow update: if isAdmin() || (activeUser() && isOwner(resource.data.providerId));
       allow delete: if false;
     }
 
@@ -55,62 +79,72 @@ service cloud.firestore {
 
     match /contacts/{contactId} {
       allow read: if isAdmin() || isOwner(resource.data.customerId) || isOwner(resource.data.providerId);
-      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
-      allow update: if isAdmin()
-        || (signedIn()
-          && resource.data.customerId == request.auth.uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hasReview'])
-          && resource.data.hasReview == false
-          && request.resource.data.hasReview == true);
+      allow create: if false;
+      allow update: if isAdmin();
       allow delete: if false;
     }
 
     match /conversations/{conversationId} {
-      allow read: if signedIn() && request.auth.uid in resource.data.participants;
-      allow create: if signedIn() && request.auth.uid in request.resource.data.participants;
-      allow update: if signedIn() && request.auth.uid in resource.data.participants;
+      allow read: if activeUser() && request.auth.uid in resource.data.participants;
+      allow create: if false;
+      allow update: if activeUser()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'lastMessage',
+          'lastMessageAt',
+          'unreadCount'
+        ]);
 
       match /messages/{messageId} {
-        allow read: if signedIn()
+        allow read: if activeUser()
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow create: if signedIn()
+        allow create: if activeUser()
           && request.auth.uid == request.resource.data.senderId
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow update: if activeUser()
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+          && resource.data.senderId != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+          && request.resource.data.read == true;
       }
     }
 
     match /reviews/{reviewId} {
       allow read: if resource.data.status == 'visible' || isAdmin();
-      allow create: if signedIn()
-        && reviewId == request.auth.uid + '_' + request.resource.data.providerId
-        && request.resource.data.keys().hasOnly([
-          'providerId',
-          'customerId',
-          'customerName',
-          'contactId',
-          'rating',
-          'comment',
-          'status',
-          'createdAt'
-        ])
-        && request.resource.data.customerId == request.auth.uid
-        && request.resource.data.rating in [1, 2, 3, 4, 5]
-        && request.resource.data.comment is string
-        && request.resource.data.comment.size() > 0
-        && request.resource.data.comment.size() <= 2000
-        && request.resource.data.status == 'visible'
-        && exists(/databases/$(database)/documents/contacts/$(request.resource.data.contactId))
-        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.customerId == request.auth.uid
-        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.providerId == request.resource.data.providerId
-        && get(/databases/$(database)/documents/contacts/$(request.resource.data.contactId)).data.hasReview == false
-        && get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.status == 'approved';
+      allow create: if false;
       allow update: if isAdmin();
       allow delete: if false;
     }
 
     match /visibilityRequests/{requestId} {
-      allow read: if isAdmin() || isOwner(resource.data.providerId);
-      allow create: if signedIn();
+      allow read: if isAdmin() || ownsProvider(resource.data.providerId);
+      allow create: if activeUser()
+        && request.resource.data.keys().hasOnly([
+          'providerId',
+          'type',
+          'tier',
+          'serviceArea',
+          'status',
+          'paymentConfirmedBy',
+          'paymentMethod',
+          'notes',
+          'requestedAt',
+          'processedAt'
+        ])
+        && request.resource.data.providerId is string
+        && ownsProvider(request.resource.data.providerId)
+        && request.resource.data.type in ['boost', 'area_expansion']
+        && request.resource.data.tier == 'paid'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.paymentConfirmedBy == null
+        && request.resource.data.processedAt == null
+        && (
+          (request.resource.data.type == 'boost'
+            && request.resource.data.serviceArea in get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.serviceAreaKeys)
+          || (request.resource.data.type == 'area_expansion'
+            && !(request.resource.data.serviceArea in get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.serviceAreaKeys)
+            && get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.reviewCount >= 30)
+        );
       allow update: if isAdmin();
       allow delete: if false;
     }
@@ -119,7 +153,7 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create: if isAdmin()
         && request.resource.data.adminId == request.auth.uid
-        && request.resource.data.targetType in ['provider', 'review', 'report']
+        && request.resource.data.targetType in ['provider', 'profession', 'visibilityRequest', 'review', 'report', 'user']
         && request.resource.data.targetId is string
         && request.resource.data.action is string
         && request.resource.data.reason is string
@@ -129,7 +163,7 @@ service cloud.firestore {
 
     match /reports/{reportId} {
       allow read: if isAdmin();
-      allow create: if signedIn();
+      allow create: if false;
       allow update: if isAdmin();
       allow delete: if false;
     }

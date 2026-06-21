@@ -16,6 +16,19 @@ interface ReviewRecord extends RatingReview {
   createdAt: string;
 }
 
+interface UserRecord {
+  role?: string;
+  status?: string;
+}
+
+export function isActiveUser(user: UserRecord | undefined) {
+  return Boolean(user) && user?.status !== 'banned';
+}
+
+export function isActiveAdmin(user: UserRecord | undefined) {
+  return isActiveUser(user) && user?.role === 'admin';
+}
+
 export function recalculateRating(reviews: RatingReview[]) {
   const visible = reviews.filter((review) => review.status === 'visible');
   if (!visible.length) return { avgRating: 0, reviewCount: 0 };
@@ -58,8 +71,15 @@ function readRating(value: unknown) {
 
 async function requireAdmin(firestore: Firestore, uid: string) {
   const user = await firestore.collection('users').doc(uid).get();
-  if (user.data()?.role !== 'admin') {
+  if (!isActiveAdmin(user.data() as UserRecord | undefined)) {
     throw new HttpsError('permission-denied', 'Admin access is required.');
+  }
+}
+
+async function requireActiveUser(firestore: Firestore, uid: string) {
+  const user = await firestore.collection('users').doc(uid).get();
+  if (!isActiveUser(user.data() as UserRecord | undefined)) {
+    throw new HttpsError('permission-denied', 'Active account is required.');
   }
 }
 
@@ -83,6 +103,7 @@ export const createReview = onCall(async (request) => {
   const rating = readRating(request.data?.rating);
   const comment = readString(request.data?.comment, 'comment', 2000);
   const firestore = db();
+  await requireActiveUser(firestore, customerId);
   const review = await firestore.runTransaction(async (transaction) => {
     const existingReviews = await transaction.get(
       firestore
@@ -159,7 +180,14 @@ export const hideReview = onCall(async (request) => {
     if (!review.exists) throw new HttpsError('not-found', 'Review not found.');
     const reviewData = review.data() as ReviewRecord;
     transaction.update(reviewRef, { status: 'removed' });
-    if (reportId) transaction.update(firestore.collection('reports').doc(reportId), { status: 'closed' });
+    if (reportId) {
+      transaction.update(firestore.collection('reports').doc(reportId), {
+        status: 'closed',
+        resolvedBy: adminId,
+        resolvedAt: new Date().toISOString(),
+        resolutionReason: reason,
+      });
+    }
     const actionRef = firestore.collection('adminActions').doc();
     transaction.set(actionRef, {
       adminId,

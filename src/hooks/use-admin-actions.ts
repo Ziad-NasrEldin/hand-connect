@@ -8,6 +8,7 @@ import {
   listReports,
   listVisibilityRequests,
   resolveReport,
+  setUserBanned,
 } from '@/services/admin.service';
 
 export function useAdminOverview() {
@@ -62,6 +63,28 @@ export function useHideReview() {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'actions'] });
       void queryClient.invalidateQueries({ queryKey: ['reviews'] });
       void queryClient.invalidateQueries({ queryKey: ['provider'] });
+    },
+  });
+}
+
+export function useSetUserBanned() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      adminId,
+      userId,
+      banned,
+      reason,
+    }: {
+      adminId: string;
+      userId: string;
+      banned: boolean;
+      reason: string;
+    }) => setUserBanned(adminId, userId, banned, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'providers'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'actions'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'overview'] });
     },
   });
 }

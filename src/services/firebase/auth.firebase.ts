@@ -1,7 +1,9 @@
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   updateProfile,
   type User,
@@ -51,6 +53,10 @@ async function buildSession(firebaseUser: User | null): Promise<AuthSession> {
   if (!userSnap.exists()) return { user: null, providerStatus: undefined };
 
   const user = userSnap.data();
+  if (user.status === 'banned') {
+    await signOut(requireFirebaseAuth());
+    throw new Error('error.auth.accountBanned');
+  }
   const providerStatus = user.role === 'provider' ? await getProviderStatus(user.uid) : undefined;
   return { user, providerStatus };
 }
@@ -81,6 +87,10 @@ async function createAppUser(input: RegisterCustomerInput, role: UserRole): Prom
       uid: credential.user.uid,
       email: input.email,
       role,
+      status: 'active',
+      banReason: null,
+      bannedAt: null,
+      bannedBy: null,
       displayName: input.displayName,
       phone: input.phone,
       language: 'ar',
@@ -91,6 +101,28 @@ async function createAppUser(input: RegisterCustomerInput, role: UserRole): Prom
   } catch (error) {
     throw mapFirebaseAuthError(error);
   }
+}
+
+async function ensureOAuthCustomer(firebaseUser: User): Promise<void> {
+  const db = requireFirebaseDb();
+  const userRef = doc(db, 'users', firebaseUser.uid).withConverter(userConverter);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) return;
+
+  const user: AppUser = {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email ?? '',
+    role: 'customer',
+    status: 'active',
+    banReason: null,
+    bannedAt: null,
+    bannedBy: null,
+    displayName: firebaseUser.displayName ?? 'Customer',
+    phone: '',
+    language: 'ar',
+    createdAt: nowIso(),
+  };
+  await setDoc(userRef, user);
 }
 
 function optionalFirebaseStorage() {
@@ -184,11 +216,22 @@ export const firebaseAuthService: AuthService = {
   getCurrentSession: async () => buildSession(requireFirebaseAuth().currentUser),
   subscribeToSession: (onSession) =>
     onAuthStateChanged(requireFirebaseAuth(), (firebaseUser) => {
-      void buildSession(firebaseUser).then(onSession);
+      void buildSession(firebaseUser)
+        .then(onSession)
+        .catch(() => onSession({ user: null, providerStatus: undefined }));
     }),
   login: async (email, password) => {
     try {
       const credential = await signInWithEmailAndPassword(requireFirebaseAuth(), email, password);
+      return buildSession(credential.user);
+    } catch (error) {
+      throw mapFirebaseAuthError(error);
+    }
+  },
+  loginWithGoogle: async () => {
+    try {
+      const credential = await signInWithPopup(requireFirebaseAuth(), new GoogleAuthProvider());
+      await ensureOAuthCustomer(credential.user);
       return buildSession(credential.user);
     } catch (error) {
       throw mapFirebaseAuthError(error);

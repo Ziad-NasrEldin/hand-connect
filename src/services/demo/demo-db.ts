@@ -1,14 +1,15 @@
 import type { AdminAction, AbuseReport } from '@/types/admin';
 import type { Contact } from '@/types/contact';
 import type { Conversation, Message } from '@/types/messaging';
-import type { ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
+import type { Profession, ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
 import type { Review } from '@/types/review';
 import type { AppUser } from '@/types/user';
 import type { VisibilityRequest } from '@/types/visibility';
-import { activeSeedProfessions, createDemoSeedData, demoSeedVersion } from './seed-data';
+import { createDemoSeedData, demoSeedVersion } from './seed-data';
 
 export interface DemoDb {
   users: AppUser[];
+  professions: Profession[];
   providers: ProviderProfile[];
   identityDocuments: ProviderIdentityDocument[];
   contacts: Contact[];
@@ -78,5 +79,5 @@ export function createId(prefix: string) {
 }
 
 export function activeProfessions() {
-  return activeSeedProfessions();
+  return readDb().professions.filter((profession) => profession.active).sort((a, b) => a.sortOrder - b.sortOrder);
 }

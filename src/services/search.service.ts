@@ -2,6 +2,7 @@ import type { SearchProvidersInput, SearchService } from './contracts/search.con
 import { getDataSource } from './data-source';
 import * as demo from './demo/search.demo';
 import { firebaseSearchService } from './firebase/search.firebase';
+import { normalizeSearchFilters } from '@/lib/search-filters';
 
 export type { SearchProvidersInput } from './contracts/search.contract';
 
@@ -16,5 +17,7 @@ export async function listProfessions() {
 }
 
 export async function searchProviders(input: SearchProvidersInput) {
-  return searchService().searchProviders(input);
+  const service = searchService();
+  const filters = normalizeSearchFilters(input, await service.listProfessions());
+  return service.searchProviders(filters);
 }
