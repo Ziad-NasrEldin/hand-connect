@@ -500,6 +500,7 @@ function provider(input: {
   return {
     id: input.id,
     userId: input.id,
+    ownerStatus: 'active',
     displayName: input.displayName,
     phone: input.phone,
     profession: input.profession,

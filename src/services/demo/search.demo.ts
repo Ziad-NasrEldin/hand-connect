@@ -18,8 +18,8 @@ export async function searchProviders(input: SearchProvidersInput): Promise<Prov
   const candidates = db.providers.filter(
     (provider) =>
       provider.status === 'approved' &&
+      provider.ownerStatus === 'active' &&
       provider.profession === input.profession &&
-      db.users.find((user) => user.uid === provider.userId)?.status !== 'banned' &&
       providerCoversNeighborhood(provider, input.neighborhood),
   );
   return rankProviders(candidates, input).slice(0, input.limit);

@@ -87,7 +87,7 @@ describe('search service', () => {
     expect(results.map((item) => item.id)).not.toContain('provider-paid-shorouk-only');
   });
 
-  it('excludes approved providers owned by banned users', async () => {
+  it('excludes approved providers by denormalized owner status', async () => {
     const db = readDb();
     const template = db.providers.find((item) => item.id === 'provider-demo')!;
     db.users.push({
@@ -108,6 +108,7 @@ describe('search service', () => {
       id: 'provider-banned-public',
       userId: 'provider-banned-owner',
       displayName: 'Banned Public',
+      ownerStatus: 'banned',
       avgRating: 5,
       reviewCount: 99,
       activityScore: 99,
@@ -117,5 +118,38 @@ describe('search service', () => {
     const results = await searchProviders({ profession: 'plumbing', neighborhood: 'new-cairo' });
 
     expect(results.map((item) => item.id)).not.toContain('provider-banned-public');
+  });
+
+  it('does not hide public search results from stale user status alone', async () => {
+    const db = readDb();
+    const template = db.providers.find((item) => item.id === 'provider-demo')!;
+    db.users.push({
+      uid: 'provider-stale-owner',
+      email: 'provider-stale-owner@hand.test',
+      role: 'provider',
+      status: 'banned',
+      banReason: 'admin.reason.manualBan',
+      bannedAt: '2026-01-02T00:00:00.000Z',
+      bannedBy: 'admin',
+      displayName: 'Stale Owner',
+      phone: '+201001112288',
+      language: 'ar',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    });
+    db.providers.push({
+      ...template,
+      id: 'provider-local-active',
+      userId: 'provider-stale-owner',
+      displayName: 'Local Active',
+      ownerStatus: 'active',
+      avgRating: 5,
+      reviewCount: 99,
+      activityScore: 99,
+    });
+    writeDb(db);
+
+    const results = await searchProviders({ profession: 'plumbing', neighborhood: 'new-cairo' });
+
+    expect(results.map((item) => item.id)).toContain('provider-local-active');
   });
 });

@@ -30,11 +30,6 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/providers/$(providerId)).data.userId == request.auth.uid;
     }
 
-    function providerOwnerActive(provider) {
-      return exists(/databases/$(database)/documents/users/$(provider.data.userId))
-        && get(/databases/$(database)/documents/users/$(provider.data.userId)).data.status != 'banned';
-    }
-
     function policyCoverageRadius(profession, serviceAreaKey) {
       return serviceAreaKey in ['new-cairo', 'shorouk'] ? 14
         : profession == 'plumbing' ? 12
@@ -91,9 +86,8 @@ service cloud.firestore {
       ]);
     }
 
-    function providerCreateValuesAreSafe(providerId) {
+    function providerCreateValuesAreSafe() {
       return request.resource.data.userId == request.auth.uid
-        && request.resource.data.id == providerId
         && request.resource.data.ownerStatus == 'active'
         && request.resource.data.status == 'pending'
         && request.resource.data.nationalIdVerified == false
@@ -198,13 +192,14 @@ service cloud.firestore {
     }
 
     match /providers/{providerId} {
-      allow read: if (
-          resource.data.status == 'approved'
-          && providerOwnerActive(resource)
-        ) || (activeUser() && isOwner(resource.data.userId)) || isAdmin();
+      allow get, list: if resource.data.status == 'approved'
+        && resource.data.ownerStatus == 'active';
+      allow get: if (activeUser() && isOwner(resource.data.userId)) || isAdmin();
+      allow list: if isAdmin()
+        || (activeUser() && resource.data.userId == request.auth.uid);
       allow create: if activeUser()
         && providerCreateKeysAreSafe()
-        && providerCreateValuesAreSafe(providerId);
+        && providerCreateValuesAreSafe();
       allow update: if isAdmin()
         || (activeUser()
           && isOwner(resource.data.userId)

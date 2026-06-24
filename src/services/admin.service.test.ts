@@ -59,6 +59,7 @@ describe('admin service account bans', () => {
 
     expect((await listAllProviders()).find((item) => item.id === 'provider-demo')).toMatchObject({
       accountStatus: 'banned',
+      ownerStatus: 'banned',
       banReason: 'admin.reason.manualBan',
     });
     await expect(login('provider@hand.test', 'password')).rejects.toThrow('error.auth.accountBanned');
@@ -67,6 +68,7 @@ describe('admin service account bans', () => {
 
     expect((await listAllProviders()).find((item) => item.id === 'provider-demo')).toMatchObject({
       accountStatus: 'active',
+      ownerStatus: 'active',
       banReason: null,
     });
     await expect(login('provider@hand.test', 'password')).resolves.toMatchObject({

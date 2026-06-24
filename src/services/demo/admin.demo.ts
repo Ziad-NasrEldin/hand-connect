@@ -212,6 +212,11 @@ export async function setUserBanned(adminId: string, userId: string, banned: boo
   user.banReason = banned ? reason : null;
   user.bannedAt = banned ? nowIso() : null;
   user.bannedBy = banned ? adminId : null;
+  db.providers
+    .filter((provider) => provider.userId === userId)
+    .forEach((provider) => {
+      provider.ownerStatus = banned ? 'banned' : 'active';
+    });
   db.adminActions.push(audit(adminId, 'user', userId, banned ? 'ban_user' : 'unban_user', reason));
   writeDb(db);
 }

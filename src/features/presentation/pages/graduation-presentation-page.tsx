@@ -1,130 +1,229 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentType,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import {
-  Blocks,
-  ClipboardCheck,
-  Compass,
-  ChevronLeft,
-  ChevronRight,
-  Globe2,
-  LayoutDashboard,
-  MapPinned,
-  MessageCircle,
-  ShieldCheck,
-  Smartphone,
-  Wrench,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+type SlideKind =
+  | 'scope'
+  | 'problem'
+  | 'constraints'
+  | 'roles'
+  | 'journey'
+  | 'trust'
+  | 'pipeline'
+  | 'architecture'
+  | 'evidence'
+  | 'launch'
+  | 'final';
+
 type Slide = {
+  kind: SlideKind;
   eyebrow: string;
   title: string;
   copy: string;
-  Icon: ComponentType<{ className?: string }>;
-  points: string[];
-  accent: string;
+  proof: string;
+  visualTitle: string;
+  items: string[];
 };
 
 const slides: Slide[] = [
   {
+    kind: 'scope',
     eyebrow: 'Graduation project',
-    title: 'Herafy turns a stressful home-service search into a direct path to contact.',
-    copy: 'A Cairo-first discovery product for finding verified plumbers, electricians, carpenters, and cleaning providers without marketplace overhead.',
-    Icon: Compass,
-    accent: 'Product brief',
-    points: ['Cairo only', 'Four professions', 'Direct contact', 'Verified public profiles'],
+    title: 'Hand Connect is a home services discovery product.',
+    copy: 'It helps customers find nearby service providers fast.',
+    proof: 'Focus: product and how it was built',
+    visualTitle: 'What it is for',
+    items: ['Customer need', 'Profession', 'Nearby provider', 'Direct contact'],
   },
   {
-    eyebrow: 'Problem',
-    title: 'Reliable providers are still found through referrals, Facebook posts, and outdated numbers.',
-    copy: 'The product exists to make that journey faster, clearer, and more trustworthy while staying honest about what the platform does and does not guarantee.',
-    Icon: MessageCircle,
-    accent: 'Market gap',
-    points: ['Slow discovery', 'Fragmented trust', 'Unclear availability', 'No clean provider context'],
+    kind: 'scope',
+    eyebrow: 'Project brief',
+    title: 'The first version focuses on four professions in Cairo.',
+    copy: 'Plumbers, electricians, carpenters, and cleaning providers are enough to prove the discovery model without spreading the product too thin.',
+    proof: 'Cairo only / four professions / nearby discovery',
+    visualTitle: 'Initial service map',
+    items: ['Plumbers', 'Electricians', 'Carpenters', 'Cleaning providers'],
   },
   {
-    eyebrow: 'Strategy',
-    title: 'The constraints shaped the product instead of weakening it.',
-    copy: 'No customer payments, no service guarantees, capped paid visibility, and review limits after contact kept the product focused on discovery and trust.',
-    Icon: ShieldCheck,
-    accent: 'Business rules',
-    points: ['No marketplace claims', 'Labeled visibility', 'Reviews after contact', 'Admin-controlled safety'],
+    kind: 'problem',
+    eyebrow: 'Why it exists',
+    title: 'Finding reliable home service providers is still slow, fragmented, and stressful.',
+    copy: 'People usually depend on referrals, Facebook posts, WhatsApp groups, or outdated phone numbers. The product exists to make this process faster, clearer, and more trustworthy.',
+    proof: 'From informal search to clear provider discovery',
+    visualTitle: 'Old path to new path',
+    items: ['Referral', 'Facebook post', 'WhatsApp group', 'Old phone number', 'Unverified provider'],
   },
   {
+    kind: 'constraints',
+    eyebrow: 'Business rules',
+    title: 'The constraints are the product strategy.',
+    copy: 'The product avoided marketplace complexity on purpose: direct contact only, no customer payments, no guarantees, and no provider shown publicly before approval.',
+    proof: 'Rules changed screens, ranking, reviews, paid visibility, and admin controls',
+    visualTitle: 'Decision matrix',
+    items: ['Cairo only', 'Four professions', 'Direct contact only', 'No payments', 'Verified before public'],
+  },
+  {
+    kind: 'constraints',
+    eyebrow: 'Product direction',
+    title: 'The most important features are also the features that were rejected.',
+    copy: 'No platform-managed visits, held funds, platform fees, work allocation, work status system, skill guarantees, or expansion beyond Cairo in v1. The product stays a directory.',
+    proof: 'Out of scope is enforced by docs, route shape, and product-boundary tests',
+    visualTitle: 'Boundary line',
+    items: ['In: search', 'In: profiles', 'In: chat', 'Out: managed visits', 'Out: payments', 'Out: dispatch'],
+  },
+  {
+    kind: 'roles',
     eyebrow: 'Live demo',
-    title: 'The customer proof is simple: need, filter, profile, contact.',
-    copy: 'This flow proves that a customer can move from a home-service need to a provider conversation quickly on a phone-first interface.',
-    Icon: Smartphone,
-    accent: 'Customer journey',
-    points: ['Select profession', 'Select area', 'Open provider profile', 'Reveal WhatsApp or start chat'],
+    title: 'The demo is a three-role system, not one linear app tour.',
+    copy: 'Customers search and contact. Providers operate approved profiles. Admins control verification, reports, professions, visibility, and audit logs.',
+    proof: 'Route guards: customer, provider, admin',
+    visualTitle: 'Role map',
+    items: ['Customer: discover and contact', 'Provider: profile and visibility', 'Admin: approval and moderation'],
   },
   {
-    eyebrow: 'Provider flow',
-    title: 'Providers join, verify, complete a profile, and receive real contact intent.',
-    copy: 'The provider experience stays operational and lightweight while still giving admins enough structure to protect the public directory.',
-    Icon: Wrench,
-    accent: 'Provider journey',
-    points: ['Create account', 'Choose profession and area', 'Submit identity', 'Track contacts and visibility'],
+    kind: 'journey',
+    eyebrow: 'Customer demo',
+    title: 'The customer path is built around one conversion: reaching a provider.',
+    copy: 'Search filters profession and neighborhood, results show approved providers, profile actions require login, and reviews are only allowed after a recorded contact.',
+    proof: 'Services: searchProviders, startConversation, revealWhatsApp, canCustomerReviewProvider',
+    visualTitle: 'Need to contact',
+    items: ['Need', 'Profession', 'Neighborhood', 'Approved results', 'Profile', 'Chat or WhatsApp', 'Review after contact'],
   },
   {
-    eyebrow: 'Admin flow',
-    title: 'Trust is not a slogan. It is a controlled workflow.',
-    copy: 'The admin surface gives the platform a moderation layer for verification, reports, provider status, paid visibility, and logged actions.',
-    Icon: LayoutDashboard,
-    accent: 'Trust system',
-    points: ['Approve providers', 'Reject risky profiles', 'Moderate reports', 'Audit admin actions'],
+    kind: 'journey',
+    eyebrow: 'Provider demo',
+    title: 'A provider is not public until verification is complete.',
+    copy: 'Registration creates a pending provider, identity evidence is reviewed, approved providers get dashboard/profile/visibility routes, and metrics come from contacts, messages, views, and reviews.',
+    proof: 'Provider guard redirects unapproved accounts to /pending',
+    visualTitle: 'Provider activation',
+    items: ['Register', 'Identity document', 'Pending', 'Admin approval', 'Profile edit', 'Dashboard metrics', 'Visibility request'],
   },
   {
-    eyebrow: 'Build process',
-    title: 'The product moved from business context to PRD, SRS, sitemap, UI, and tracked implementation.',
-    copy: 'Each screen came from a real journey, and each requirement was turned into buildable tasks with acceptance criteria and QA checks.',
-    Icon: Blocks,
-    accent: 'How it was built',
-    points: ['PRD from business rules', 'SRS from 110+ questions', 'Tech decisions from lifecycle needs', 'Tracker-backed implementation'],
+    kind: 'trust',
+    eyebrow: 'Admin demo',
+    title: 'Trust is implemented as an admin workflow with audit trails.',
+    copy: 'Admin routes cover applications, providers, professions, visibility requests, reports, and action logs. Sensitive mutations are backed by rules and callable/server paths where required.',
+    proof: 'Admin routes: applications, providers, professions, visibility, reports, actions',
+    visualTitle: 'Control loop',
+    items: ['Review identity', 'Approve or reject', 'Moderate reports', 'Suspend or ban', 'Write audit row'],
   },
   {
-    eyebrow: 'System map',
-    title: 'Three user surfaces share one trust and discovery system.',
-    copy: 'Customer discovery, provider operations, and admin control connect through auth, API contracts, ranking rules, analytics, and moderation.',
-    Icon: MapPinned,
-    accent: 'Architecture story',
-    points: ['Customer app', 'Provider dashboard', 'Admin workspace', 'Backend services and data rules'],
+    kind: 'pipeline',
+    eyebrow: 'How it was built',
+    title: 'The build process turned ambiguity into implementation checkpoints.',
+    copy: 'The work moved through PRD, SRS, tech decisions, sitemap, design and motion system, implementation tracker, QA, hardening, and release readiness.',
+    proof: 'Tracker milestones M0-M8 are marked verified',
+    visualTitle: 'Build pipeline',
+    items: ['Business context', 'PRD', 'SRS', 'Tech decisions', 'Sitemap', 'Design + motion', 'Implementation tracker', 'Release gate'],
   },
   {
-    eyebrow: 'Launch readiness',
-    title: 'The project ends as a beta-ready product, not a static prototype.',
-    copy: 'Deployment, domain setup, mobile beta preparation, and hardening work show that the project was prepared for real users and real testing.',
-    Icon: Globe2,
-    accent: 'Go live',
-    points: ['Vercel deployment', 'Cloudflare domain', 'iOS beta path', 'Android beta path'],
+    kind: 'pipeline',
+    eyebrow: 'PRD',
+    title: 'The PRD turned the idea into requirements and boundaries.',
+    copy: 'It clarified users, journeys, functional requirements, non-functional requirements, acceptance criteria, and what must stay outside v1.',
+    proof: 'Feature list has 14 feature areas plus explicit out-of-scope boundaries',
+    visualTitle: 'PRD contents',
+    items: ['Users', 'Journeys', 'Functional requirements', 'NFRs', 'Acceptance criteria', 'Out of scope'],
   },
   {
+    kind: 'evidence',
+    eyebrow: 'SRS',
+    title: 'The SRS audit shows what exists and what still needs hardening.',
+    copy: 'The implementation map audited 56 groups: 20 implemented, 36 partially implemented, and 0 not implemented. That is a real product with remaining launch-grade hardening work.',
+    proof: 'SRS implementation map, 56 audited groups',
+    visualTitle: 'Audit status',
+    items: ['Implemented: 20', 'Partially implemented: 36', 'Not implemented: 0', 'Total audited groups: 56'],
+  },
+  {
+    kind: 'architecture',
+    eyebrow: 'Technology decisions',
+    title: 'The stack matches the product shape: fast app, controlled backend, strict rules.',
+    copy: 'The app is Vite + React Router + TanStack Query on the frontend, service contracts in the middle, Firebase Auth/Firestore/Storage/Functions underneath, and Vercel for web/API deployment.',
+    proof: 'Sources: app-router, service contracts, firebase app, deployment.md, vercel.json',
+    visualTitle: 'System stack',
+    items: ['React + Vite', 'React Router guards', 'Service contracts', 'Firebase Auth', 'Firestore + Storage', 'Cloud Functions', 'Vercel API/routes'],
+  },
+  {
+    kind: 'architecture',
+    eyebrow: 'Sitemap',
+    title: 'The route tree proves the product architecture.',
+    copy: 'Public discovery, authenticated messages, customer-only reviews, approved-provider workspace, and admin-only operations are separated at the router level.',
+    proof: 'Route source of truth: src/router/app-router.tsx',
+    visualTitle: 'Route tree',
+    items: ['Public: /search, /providers/:id', 'Auth: /login, /register', 'Customer: /reviews/new/:providerId', 'Provider: dashboard/profile/visibility', 'Admin: six operational tabs'],
+  },
+  {
+    kind: 'pipeline',
+    eyebrow: 'Design and motion',
+    title: 'The design system is warm because the task is stressful.',
+    copy: 'Herafy uses Cairo-first Arabic typography, warm paper surfaces, orange action color, soft list rows, clear cards, and reduced-motion fallbacks so search and trust actions stay calm.',
+    proof: 'Sources: DESIGN.md, globals.css, motion.md',
+    visualTitle: 'Interface language',
+    items: ['Warm paper', 'Herafy orange', 'Cairo typography', 'Rounded trust cards', 'Mobile-first nav', 'Reduced motion'],
+  },
+  {
+    kind: 'roles',
+    eyebrow: 'UI design',
+    title: 'The UI covers product surfaces, not decorative pages.',
+    copy: 'The current page set includes landing, search, provider profile, auth, chat, review submission, provider dashboard, profile editing, visibility, and admin operations.',
+    proof: 'Design goal: help users reach contact as fast as possible',
+    visualTitle: 'Screen families',
+    items: ['Discovery', 'Contact', 'Provider ops', 'Admin trust', 'Moderation', 'Release'],
+  },
+  {
+    kind: 'pipeline',
+    eyebrow: 'Implementation plan',
+    title: 'The tracker made progress measurable.',
+    copy: 'The v1 tracker records decisions, tasks, dependencies, verification proof, notes, and milestones. It includes release gates and evidence, not just a checklist.',
+    proof: 'Milestones M0-M8 verified in hand-connect-v1-completion-tracker.md',
+    visualTitle: 'Tracker proof',
+    items: ['Product decisions', 'Task IDs', 'Dependencies', 'Verification proof', 'Milestones', 'Release gate'],
+  },
+  {
+    kind: 'evidence',
+    eyebrow: 'Polish and hardening',
+    title: 'The release gate is a technical argument, not a claim.',
+    copy: 'The documented gate runs lint, Vitest, Firestore rules tests, production build, and Playwright E2E. The tracker records E2E smoke as 11 passed with 1 expected mobile-only skip.',
+    proof: 'release:check, test:rules, build, e2e',
+    visualTitle: 'Quality gates',
+    items: ['ESLint', 'Vitest', 'Firestore rules', 'Vite build', 'Playwright E2E', 'Operations docs'],
+  },
+  {
+    kind: 'launch',
+    eyebrow: 'Go live',
+    title: 'The launch stack separates web delivery from backend trust systems.',
+    copy: 'Vercel serves the Vite app and API routes with SPA fallback. Firebase remains Auth, Firestore, Storage, Functions, rules, and indexes. Capacitor wraps the dist build as Herafy for iOS beta readiness.',
+    proof: 'vercel.json, deployment.md, capacitor.config.ts',
+    visualTitle: 'Launch stack',
+    items: ['Vercel app', 'Vercel API', 'Cloudflare domain', 'Firebase backend', 'Firebase rules', 'Capacitor iOS wrapper'],
+  },
+  {
+    kind: 'final',
     eyebrow: 'Final message',
-    title: 'This is not just an app. It is a full product-building process.',
-    copy: 'Herafy started from a real market problem, became business rules, product requirements, architecture, UI, implementation tasks, and a tested beta-ready product.',
-    Icon: ClipboardCheck,
-    accent: 'From idea to launch',
-    points: ['Problem', 'Rules', 'Product', 'System', 'Launch'],
+    title: 'The graduation project is the product-building process.',
+    copy: 'A messy market problem became business rules, requirements, a routed product, service contracts, Firebase-backed trust controls, release gates, and a beta-ready launch path.',
+    proof: 'Idea to launch, with implementation evidence',
+    visualTitle: 'End-to-end proof',
+    items: ['Problem', 'Rules', 'Requirements', 'Architecture', 'UI', 'Implementation', 'Verification', 'Launch'],
   },
 ];
 
-const demoFlow = ['Need', 'Profession', 'Location', 'Profile', 'Contact'];
-const systemLayers = ['Customer', 'Provider', 'Admin', 'API', 'Data rules'];
+const flowKinds = new Set<SlideKind>(['journey', 'pipeline', 'final']);
+const gridKinds = new Set<SlideKind>(['scope', 'constraints', 'roles']);
 
 export function GraduationPresentationPage() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const slideRefs = useRef<Array<HTMLElement | null>>([]);
   const firstSlideRef = useRef<HTMLElement | null>(null);
+  const activeSlideRef = useRef(0);
+  const wheelDeltaRef = useRef(0);
+  const wheelLockedUntilRef = useRef(0);
+  const wheelResetTimeoutRef = useRef<number | null>(null);
+  const unlockTimeoutRef = useRef<number | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const isScrollingRef = useRef(false);
 
@@ -133,32 +232,66 @@ export function GraduationPresentationPage() {
     [],
   );
 
+  useEffect(() => {
+    activeSlideRef.current = activeSlide;
+  }, [activeSlide]);
+
   const goToSlide = useCallback((index: number) => {
     const root = containerRef.current;
+    const currentIndex = activeSlideRef.current;
     const boundedIndex = Math.min(Math.max(index, 0), slides.length - 1);
     const nextSlide = slideRefs.current[boundedIndex];
-    if (!root || !nextSlide || isScrollingRef.current) return;
+    if (!root || !nextSlide || isScrollingRef.current || boundedIndex === currentIndex) return;
 
-    const currentSlide = slideRefs.current[activeSlide];
-    const direction = boundedIndex > activeSlide ? 1 : -1;
+    const scrollRoot = root;
+    const currentSlide = slideRefs.current[currentIndex];
+    const direction = boundedIndex > currentIndex ? 1 : -1;
+    const targetScrollTop = nextSlide.offsetTop;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    isScrollingRef.current = true;
-    root.style.scrollSnapType = 'none';
-
     const currentContent = currentSlide?.querySelector('[data-slide-content]');
     const nextContent = nextSlide.querySelector('[data-slide-content]');
 
+    isScrollingRef.current = true;
+    wheelDeltaRef.current = 0;
+    wheelLockedUntilRef.current = Date.now() + 1_100;
+    scrollRoot.style.scrollSnapType = 'none';
+
     if (reduceMotion) {
-      root.scrollTop = nextSlide.offsetTop;
-      root.style.scrollSnapType = '';
-      isScrollingRef.current = false;
+      scrollRoot.scrollTop = targetScrollTop;
+      scrollRoot.style.scrollSnapType = '';
+      activeSlideRef.current = boundedIndex;
       setActiveSlide(boundedIndex);
+      isScrollingRef.current = false;
       return;
     }
 
-    gsap.killTweensOf(root);
+    gsap.killTweensOf(scrollRoot);
     gsap.killTweensOf([currentContent, nextContent]);
+
+    function finishTransition() {
+      activeSlideRef.current = boundedIndex;
+      setActiveSlide(boundedIndex);
+      scrollRoot.scrollTop = targetScrollTop;
+      scrollRoot.style.scrollSnapType = '';
+
+      if (currentContent) gsap.set(currentContent, { autoAlpha: 1, y: 0 });
+      if (nextContent) {
+        gsap.to(nextContent, {
+          autoAlpha: 1,
+          duration: 0.3,
+          ease: 'expo.out',
+          overwrite: true,
+          y: 0,
+        });
+      }
+
+      if (unlockTimeoutRef.current) window.clearTimeout(unlockTimeoutRef.current);
+      unlockTimeoutRef.current = window.setTimeout(() => {
+        isScrollingRef.current = false;
+        wheelLockedUntilRef.current = Date.now() + 420;
+        unlockTimeoutRef.current = null;
+      }, 140);
+    }
 
     if (currentContent && currentSlide !== nextSlide) {
       gsap.to(currentContent, {
@@ -170,43 +303,18 @@ export function GraduationPresentationPage() {
     }
 
     if (nextContent) {
-      gsap.set(nextContent, {
-        autoAlpha: 0.84,
-        y: direction * 14,
-      });
+      gsap.set(nextContent, { autoAlpha: 0.84, y: direction * 14 });
     }
 
-    gsap.to(root, {
+    gsap.to(scrollRoot, {
       duration: 0.82,
       ease: 'power2.inOut',
       overwrite: true,
-      scrollTo: {
-        y: nextSlide.offsetTop,
-        autoKill: false,
-      },
-      onComplete: () => {
-        setActiveSlide(boundedIndex);
-        root.style.scrollSnapType = '';
-
-        if (currentContent) {
-          gsap.set(currentContent, { autoAlpha: 1, y: 0 });
-        }
-
-        if (nextContent) {
-          gsap.to(nextContent, {
-            autoAlpha: 1,
-            duration: 0.34,
-            ease: 'expo.out',
-            y: 0,
-          });
-        }
-
-        window.setTimeout(() => {
-          isScrollingRef.current = false;
-        }, 80);
-      },
+      scrollTo: { y: targetScrollTop, autoKill: false },
+      onComplete: finishTransition,
+      onInterrupt: finishTransition,
     });
-  }, [activeSlide]);
+  }, []);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -218,8 +326,10 @@ export function GraduationPresentationPage() {
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-        if (!visible) return;
-        setActiveSlide(Number(visible.target.getAttribute('data-slide-index')));
+        if (isScrollingRef.current || !visible) return;
+        const index = Number(visible.target.getAttribute('data-slide-index'));
+        activeSlideRef.current = index;
+        setActiveSlide(index);
       },
       { root, threshold: [0.58, 0.75] },
     );
@@ -238,18 +348,16 @@ export function GraduationPresentationPage() {
 
     const context = gsap.context(() => {
       gsap
-        .timeline({
-          defaults: {
-            duration: 0.72,
-            ease: 'expo.out',
-          },
+        .timeline({ defaults: { duration: 0.72, ease: 'expo.out' } })
+        .from('[data-hero-mark]', {
+          autoAlpha: 0,
+          scaleX: 0.18,
+          transformOrigin: 'left center',
         })
-        .from('[data-hero-mark]', { autoAlpha: 0, scaleX: 0.18, transformOrigin: 'left center' })
         .from('[data-hero-kicker]', { autoAlpha: 0, y: 18 }, '-=0.48')
         .from('[data-hero-title]', { autoAlpha: 0, y: 34 }, '-=0.44')
         .from('[data-hero-copy]', { autoAlpha: 0, y: 20 }, '-=0.48')
-        .from('[data-hero-step]', { autoAlpha: 0, y: 16, stagger: 0.08 }, '-=0.36')
-        .from('[data-hero-orbit]', { autoAlpha: 0, scale: 0.88, rotate: -8 }, '-=0.72');
+        .from('[data-hero-chip]', { autoAlpha: 0, y: 12, stagger: 0.08 }, '-=0.32');
     }, root);
 
     return () => context.revert();
@@ -260,23 +368,34 @@ export function GraduationPresentationPage() {
     if (!root) return;
 
     function onWheel(event: WheelEvent) {
-      if (Math.abs(event.deltaY) < 18 || isScrollingRef.current) return;
       event.preventDefault();
-      goToSlide(activeSlide + (event.deltaY > 0 ? 1 : -1));
+
+      if (isScrollingRef.current || Date.now() < wheelLockedUntilRef.current) {
+        wheelDeltaRef.current = 0;
+        return;
+      }
+
+      wheelDeltaRef.current += event.deltaY;
+      if (wheelResetTimeoutRef.current) window.clearTimeout(wheelResetTimeoutRef.current);
+      wheelResetTimeoutRef.current = window.setTimeout(() => {
+        wheelDeltaRef.current = 0;
+        wheelResetTimeoutRef.current = null;
+      }, 140);
+
+      if (Math.abs(wheelDeltaRef.current) < 90) return;
+      const direction = wheelDeltaRef.current > 0 ? 1 : -1;
+      wheelDeltaRef.current = 0;
+      goToSlide(activeSlideRef.current + direction);
     }
 
     function onKeyDown(event: KeyboardEvent) {
       const nextKeys = ['ArrowDown', 'PageDown', ' '];
       const previousKeys = ['ArrowUp', 'PageUp'];
-
-      if (![...nextKeys, ...previousKeys, 'Home', 'End'].includes(event.key)) {
-        return;
-      }
+      if (![...nextKeys, ...previousKeys, 'Home', 'End'].includes(event.key)) return;
 
       event.preventDefault();
-
-      if (nextKeys.includes(event.key)) goToSlide(activeSlide + 1);
-      if (previousKeys.includes(event.key)) goToSlide(activeSlide - 1);
+      if (nextKeys.includes(event.key)) goToSlide(activeSlideRef.current + 1);
+      if (previousKeys.includes(event.key)) goToSlide(activeSlideRef.current - 1);
       if (event.key === 'Home') goToSlide(0);
       if (event.key === 'End') goToSlide(slides.length - 1);
     }
@@ -287,8 +406,9 @@ export function GraduationPresentationPage() {
     return () => {
       root.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
+      if (wheelResetTimeoutRef.current) window.clearTimeout(wheelResetTimeoutRef.current);
     };
-  }, [activeSlide, goToSlide]);
+  }, [goToSlide]);
 
   return (
     <main
@@ -301,7 +421,7 @@ export function GraduationPresentationPage() {
           <div>
             <p className="brand-title text-2xl sm:text-3xl">Herafy</p>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Graduation presentation
+              Product build presentation
             </p>
           </div>
           <p className="font-latin text-sm font-extrabold text-muted-foreground">
@@ -318,7 +438,7 @@ export function GraduationPresentationPage() {
 
       {slides.map((slide, index) => (
         <section
-          key={slide.title}
+          key={`${slide.eyebrow}-${slide.title}`}
           ref={(element) => {
             slideRefs.current[index] = element;
             if (index === 0) firstSlideRef.current = element;
@@ -326,11 +446,15 @@ export function GraduationPresentationPage() {
           data-slide-index={index}
           className="relative grid min-h-screen snap-start snap-always overflow-hidden px-4 pb-8 pt-28 sm:px-6 lg:px-8"
         >
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_88%_18%,color-mix(in_oklch,var(--hc-orange)_13%,transparent),transparent_28%),radial-gradient(circle_at_10%_84%,color-mix(in_oklch,var(--hc-orange-soft)_20%,transparent),transparent_28%)]" />
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_86%_14%,color-mix(in_oklch,var(--hc-orange)_10%,transparent),transparent_30%),radial-gradient(circle_at_8%_84%,color-mix(in_oklch,var(--hc-orange-soft)_14%,transparent),transparent_30%)]" />
           {index === 0 ? (
             <OpeningSlide />
+          ) : index === 1 ? (
+            <FocusSlide slide={slide} />
+          ) : index === 2 ? (
+            <ProblemSlide slide={slide} />
           ) : (
-            <StandardSlide slide={slide} index={index} />
+            <DeckSlide slide={slide} />
           )}
         </section>
       ))}
@@ -342,7 +466,7 @@ export function GraduationPresentationPage() {
           size="sm"
           variant="outline"
           disabled={activeSlide === 0}
-          onClick={() => goToSlide(activeSlide - 1)}
+          onClick={() => goToSlide(activeSlideRef.current - 1)}
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
@@ -351,7 +475,7 @@ export function GraduationPresentationPage() {
           className="h-11 w-11 rounded-full p-0"
           size="sm"
           disabled={activeSlide === slides.length - 1}
-          onClick={() => goToSlide(activeSlide + 1)}
+          onClick={() => goToSlide(activeSlideRef.current + 1)}
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
@@ -361,62 +485,81 @@ export function GraduationPresentationPage() {
 }
 
 function OpeningSlide() {
-  const steps = ['Problem', 'Product', 'Trust', 'Launch'];
-
   return (
-    <div
-      data-slide-content
-      className="mx-auto grid w-full max-w-7xl items-center will-change-transform"
-    >
-      <div className="relative min-h-[620px]">
-        <div
-          data-hero-orbit
-          className="absolute right-0 top-1/2 hidden h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-[color:var(--hc-rule)] bg-[radial-gradient(circle_at_42%_38%,color-mix(in_oklch,var(--hc-orange)_26%,transparent),transparent_42%)] lg:block"
-        >
-          <div className="absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_30px_80px_rgba(242,111,54,0.24)]" />
-          <div className="absolute left-14 top-20 h-5 w-5 rounded-full bg-[color:var(--hc-orange-soft)]" />
-          <div className="absolute bottom-24 right-16 h-9 w-9 rounded-full border border-[color:var(--hc-orange-soft)] bg-[color:var(--hc-paper)]" />
-        </div>
-
-        <div className="relative z-10 flex min-h-[620px] max-w-4xl flex-col justify-center">
-          <div
-            data-hero-mark
-            className="mb-10 h-2 w-24 rounded-full bg-primary"
-          />
-          <p
-            data-hero-kicker
-            className="mb-5 text-sm font-black uppercase tracking-[0.24em] text-primary"
-          >
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+        <div className="space-y-7">
+          <div data-hero-mark className="h-2 w-24 rounded-full bg-primary" />
+          <p data-hero-kicker className="text-sm font-black uppercase tracking-[0.24em] text-primary">
             Graduation project
           </p>
-          <h1
-            data-hero-title
-            className="brand-title max-w-[11ch] text-[clamp(5.2rem,18vw,14rem)] leading-[0.78] tracking-[-0.07em]"
-          >
+          <h1 data-hero-title className="brand-title max-w-[11ch] text-[clamp(4.8rem,15vw,12rem)] leading-[0.78] tracking-[-0.07em]">
             Herafy
           </h1>
-          <p
-            data-hero-copy
-            className="mt-9 max-w-2xl text-[clamp(1.2rem,2.4vw,2.1rem)] font-bold leading-[1.35] text-foreground"
-          >
-            A direct-contact home services product for Cairo.
+          <p data-hero-copy className="max-w-2xl text-[clamp(1.15rem,2.2vw,1.95rem)] font-black leading-[1.32] text-foreground">
+            Hand Connect is a home services discovery product.
           </p>
-          <p
-            data-hero-copy
-            className="mt-4 max-w-xl text-base font-semibold leading-8 text-muted-foreground sm:text-lg"
-          >
-            From a stressful search to verified providers, fast.
-          </p>
+        </div>
 
-          <div className="mt-12 flex flex-wrap items-center gap-x-4 gap-y-3">
-            {steps.map((step, index) => (
-              <div key={step} data-hero-step className="flex items-center gap-4">
-                <span className="text-sm font-black uppercase tracking-[0.18em] text-foreground">
-                  {step}
-                </span>
-                {index < steps.length - 1 ? (
-                  <span className="h-px w-10 bg-[color:var(--hc-rule)]" />
-                ) : null}
+        <div className="relative min-h-[520px]">
+          <div className="absolute left-1/2 top-1/2 grid h-52 w-52 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-center text-primary-foreground shadow-[0_34px_90px_rgba(242,111,54,0.24)]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] opacity-80">Purpose</p>
+              <p className="mt-2 text-2xl font-black leading-tight">Find nearby providers fast</p>
+            </div>
+          </div>
+
+          {[
+            ['Customer need', 'left-2 top-8'],
+            ['Profession', 'right-10 top-12'],
+            ['Location', 'left-12 bottom-16'],
+            ['Provider profile', 'right-0 bottom-24'],
+            ['Direct contact', 'left-1/2 top-0 -translate-x-1/2'],
+          ].map(([label, position]) => (
+            <div
+              key={label}
+              data-hero-chip
+              className={`soft-list-item absolute ${position} w-44 px-4 py-3 text-center text-sm font-black`}
+            >
+              {label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FocusSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] grid-rows-[auto_1fr] gap-8">
+        <header className="max-w-4xl">
+          <p className="section-label">{slide.eyebrow}</p>
+          <h1 className="mt-4 text-[clamp(2.6rem,6vw,5.6rem)] font-black leading-[0.95] tracking-[-0.045em] text-foreground">
+            {slide.title}
+          </h1>
+        </header>
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr] lg:items-stretch">
+          <div className="brand-panel grid content-between p-6">
+            <div>
+              <p className="section-label">Launch geography</p>
+              <p className="mt-5 brand-title text-[clamp(4rem,12vw,9rem)] leading-none">Cairo</p>
+            </div>
+            <p className="max-w-md text-lg font-bold leading-8 text-muted-foreground">
+              {slide.copy}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {slide.items.map((item, index) => (
+              <div
+                key={item}
+                className="soft-list-item grid min-h-44 content-between p-5"
+              >
+                <p className="brand-number text-5xl">{String(index + 1).padStart(2, '0')}</p>
+                <p className="text-2xl font-black leading-tight text-foreground">{item}</p>
               </div>
             ))}
           </div>
@@ -426,66 +569,206 @@ function OpeningSlide() {
   );
 }
 
-function StandardSlide({ slide, index }: { slide: Slide; index: number }) {
+function ProblemSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+        <div className="space-y-6">
+          <p className="section-label">{slide.eyebrow}</p>
+          <h1 className="text-[clamp(2.5rem,5.8vw,5.4rem)] font-black leading-[0.96] tracking-[-0.045em] text-foreground">
+            {slide.title}
+          </h1>
+          <p className="max-w-2xl text-xl font-bold leading-9 text-muted-foreground">
+            {slide.copy}
+          </p>
+        </div>
+
+        <div className="grid gap-5">
+          <div className="grid gap-3 rounded-[calc(var(--radius)+8px)] border border-border bg-[color:var(--hc-paper)] p-5">
+            <p className="section-label">Current behavior</p>
+            <div className="grid gap-3">
+              {slide.items.slice(0, 4).map((item) => (
+                <div key={item} className="soft-list-item px-4 py-3 text-sm font-black text-foreground">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            <div className="h-px bg-[color:var(--hc-rule)]" />
+            <div className="rounded-full bg-primary px-4 py-2 text-sm font-black text-primary-foreground">
+              Herafy replaces this with
+            </div>
+            <div className="h-px bg-[color:var(--hc-rule)]" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {['Faster', 'Clearer', 'More trustworthy'].map((item) => (
+              <div key={item} className="rounded-2xl bg-primary p-5 text-center text-lg font-black text-primary-foreground shadow-[0_20px_45px_rgba(242,111,54,0.2)]">
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeckSlide({ slide }: { slide: Slide }) {
   return (
     <div
       data-slide-content
-      className="mx-auto grid w-full max-w-7xl items-center gap-5 will-change-transform lg:grid-cols-[minmax(0,1.04fr)_minmax(320px,0.96fr)]"
+      className="mx-auto grid w-full max-w-7xl items-center gap-8 will-change-transform lg:grid-cols-[minmax(0,0.98fr)_minmax(360px,0.82fr)]"
     >
-      <article className="motion-stagger min-w-0 space-y-6">
+      <article className="motion-stagger min-w-0 space-y-7">
         <div className="brand-eyebrow" />
         <div className="space-y-4">
           <p className="section-label">{slide.eyebrow}</p>
-          <h1 className="max-w-5xl text-[clamp(2.25rem,6.4vw,5.6rem)] font-black leading-[0.96] tracking-[-0.04em] text-foreground">
+          <h1 className="max-w-6xl text-[clamp(2.35rem,5.6vw,5.65rem)] font-black leading-[0.96] tracking-[-0.04em] text-foreground">
             {slide.title}
           </h1>
           <p className="max-w-3xl text-base font-semibold leading-8 text-muted-foreground sm:text-xl sm:leading-9">
             {slide.copy}
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          {slide.points.map((point) => (
-            <span
-              key={point}
-              className="soft-note inline-flex min-h-10 items-center rounded-full px-4 text-sm font-bold"
-            >
-              {point}
-            </span>
-          ))}
-        </div>
+        <p className="max-w-3xl text-sm font-black uppercase tracking-[0.18em] text-primary">
+          {slide.proof}
+        </p>
       </article>
 
-      <aside className="brand-panel motion-surface min-w-0 overflow-hidden p-5 sm:p-6 lg:p-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="section-label">{slide.accent}</p>
-            <p className="mt-2 text-2xl font-black leading-tight tracking-[-0.02em] text-foreground sm:text-3xl">
-              {slide.points[0]}
-            </p>
-          </div>
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-[0_16px_32px_rgba(242,111,54,0.22)]">
-            <slide.Icon className="h-7 w-7" />
-          </div>
-        </div>
-
-        <div className="mt-8 grid gap-3">
-          {(index === 3 ? demoFlow : systemLayers).map((item, itemIndex) => (
-            <div key={item} className="soft-list-item flex items-center gap-3 p-4">
-              <span className="brand-number text-3xl">
-                {String(itemIndex + 1).padStart(2, '0')}
-              </span>
-              <div className="min-w-0">
-                <p className="font-bold text-foreground">{item}</p>
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {index === 7
-                    ? 'Connected layer in the product system'
-                    : 'Clear step in the presentation story'}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </aside>
+      <VisualPanel slide={slide} />
     </div>
+  );
+}
+
+function VisualPanel({ slide }: { slide: Slide }) {
+  if (slide.kind === 'evidence') return <EvidenceVisual slide={slide} />;
+  if (slide.kind === 'architecture' || slide.kind === 'launch') return <StackVisual slide={slide} />;
+  if (flowKinds.has(slide.kind)) return <FlowVisual slide={slide} />;
+  if (gridKinds.has(slide.kind)) return <GridVisual slide={slide} />;
+  if (slide.kind === 'trust') return <TrustVisual slide={slide} />;
+  if (slide.kind === 'problem') return <ProblemVisual slide={slide} />;
+  return <GridVisual slide={slide} />;
+}
+
+function PanelShell({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <aside className="brand-panel min-w-0 overflow-hidden p-5 shadow-[0_20px_52px_rgba(73,55,38,0.08)] sm:p-6 lg:p-7">
+      <p className="section-label">{title}</p>
+      <div className="mt-6">{children}</div>
+    </aside>
+  );
+}
+
+function GridVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="grid grid-cols-2 gap-3">
+        {slide.items.map((item, index) => (
+          <div key={item} className="soft-list-item min-h-24 p-4">
+            <p className="brand-number text-3xl">{String(index + 1).padStart(2, '0')}</p>
+            <p className="mt-2 text-sm font-black leading-6 text-foreground">{item}</p>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+function FlowVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="grid gap-3">
+        {slide.items.map((item, index) => (
+          <div key={item} className="grid grid-cols-[auto_1fr] items-center gap-4">
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">
+              {index + 1}
+            </div>
+            <div className="soft-list-item px-4 py-3">
+              <p className="text-sm font-black text-foreground">{item}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+function ProblemVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="grid gap-3">
+        {slide.items.map((item, index) => (
+          <div key={item} className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-[color:var(--hc-rule)]" />
+            <div className="soft-note min-w-0 rounded-full px-4 py-2 text-sm font-black">
+              {item}
+            </div>
+            {index < slide.items.length - 1 ? <div className="h-px w-6 bg-primary" /> : null}
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 rounded-2xl bg-primary p-5 text-primary-foreground">
+        <p className="text-sm font-black uppercase tracking-[0.18em]">Converted into</p>
+        <p className="mt-2 text-2xl font-black">searchable, approved provider profiles</p>
+      </div>
+    </PanelShell>
+  );
+}
+
+function TrustVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="relative grid gap-3">
+        {slide.items.map((item, index) => (
+          <div key={item} className="soft-list-item flex items-center justify-between gap-4 p-4">
+            <p className="text-sm font-black text-foreground">{item}</p>
+            <span className="rounded-full bg-[color:var(--hc-cream)] px-3 py-1 text-xs font-black text-primary">
+              {index === slide.items.length - 1 ? 'Evidence' : 'Control'}
+            </span>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+function StackVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="grid gap-2">
+        {slide.items.map((item, index) => (
+          <div
+            key={item}
+            className="rounded-2xl border border-border bg-[color:var(--hc-paper)] px-4 py-3 shadow-[0_12px_24px_rgba(73,55,38,0.05)]"
+            style={{ marginInlineStart: `${index % 3}rem` }}
+          >
+            <p className="text-sm font-black text-foreground">{item}</p>
+          </div>
+        ))}
+      </div>
+    </PanelShell>
+  );
+}
+
+function EvidenceVisual({ slide }: { slide: Slide }) {
+  return (
+    <PanelShell title={slide.visualTitle}>
+      <div className="grid grid-cols-2 gap-3">
+        {slide.items.map((item) => {
+          const [label, value = ''] = item.split(': ');
+          return (
+            <div key={item} className="stat-tile p-4">
+              <p className="brand-number text-4xl">{value || label}</p>
+              <p className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">
+                {value ? label : 'Gate'}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </PanelShell>
   );
 }

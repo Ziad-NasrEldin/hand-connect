@@ -1,5 +1,6 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   GoogleAuthProvider,
   onAuthStateChanged,
   sendEmailVerification,
@@ -18,6 +19,7 @@ import {
   setDoc,
   where,
   collection,
+  deleteDoc,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getFirebaseAuth } from '@/firebase/auth';
@@ -84,8 +86,10 @@ async function createAppUser(
 ): Promise<{ user: AppUser; emailVerificationSent: boolean }> {
   const auth = requireFirebaseAuth();
   const db = requireFirebaseDb();
+  let firebaseUser: User | null = null;
   try {
     const credential = await createUserWithEmailAndPassword(auth, input.email, input.password);
+    firebaseUser = credential.user;
     await updateProfile(credential.user, { displayName: input.displayName });
     const emailVerificationSent = await sendEmailVerification(credential.user)
       .then(() => true)
@@ -107,7 +111,28 @@ async function createAppUser(
     await setDoc(doc(db, 'users', user.uid).withConverter(userConverter), user);
     return { user, emailVerificationSent };
   } catch (error) {
+    await cleanupCreatedFirebaseUser(firebaseUser);
     throw mapFirebaseAuthError(error);
+  }
+}
+
+async function cleanupCreatedFirebaseUser(firebaseUser: User | null) {
+  if (!firebaseUser) return;
+  await deleteUser(firebaseUser).catch(async () => {
+    await signOut(requireFirebaseAuth()).catch(() => undefined);
+  });
+}
+
+async function rollbackAppRegistration(userId: string) {
+  const db = requireFirebaseDb();
+  await Promise.allSettled([
+    deleteDoc(doc(db, 'providerIdentityDocuments', userId)),
+    deleteDoc(doc(db, 'providers', userId)),
+    deleteDoc(doc(db, 'users', userId)),
+  ]);
+  const currentUser = requireFirebaseAuth().currentUser;
+  if (currentUser?.uid === userId) {
+    await cleanupCreatedFirebaseUser(currentUser);
   }
 }
 
@@ -139,6 +164,7 @@ async function ensureOAuthCustomer(firebaseUser: User): Promise<void> {
 }
 
 function optionalFirebaseStorage() {
+  if (import.meta.env.VITE_FIREBASE_STORAGE_ENABLED !== 'true') return null;
   return getFirebaseStorage();
 }
 
@@ -278,7 +304,12 @@ export const firebaseAuthService: AuthService = {
   },
   registerProvider: async (input) => {
     const { user, emailVerificationSent } = await createAppUser(input, 'provider');
-    await createProviderProfile(user, input);
-    return { ...(await buildSession(requireFirebaseAuth().currentUser)), emailVerificationSent };
+    try {
+      await createProviderProfile(user, input);
+      return { ...(await buildSession(requireFirebaseAuth().currentUser)), emailVerificationSent };
+    } catch (error) {
+      await rollbackAppRegistration(user.uid);
+      throw mapFirebaseAuthError(error);
+    }
   },
 };

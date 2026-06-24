@@ -12,7 +12,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getFirebaseDb } from '@/firebase/db';
 import { callFirebaseFunction } from '@/firebase/functions';
 import { getFirebaseStorage } from '@/firebase/storage';
-import { contactConverter, providerConverter, userConverter } from '@/firebase/converters';
+import { contactConverter, providerConverter } from '@/firebase/converters';
 import type { ProviderPhoto, ProviderProfile } from '@/types/provider';
 import type {
   ProviderProfileUpdateInput,
@@ -70,8 +70,7 @@ export const firebaseProvidersService: ProvidersService = {
     if (!snapshot.exists()) return null;
     const provider = snapshot.data();
     if (provider.status !== 'approved') return null;
-    const owner = await getDoc(doc(db, 'users', provider.userId).withConverter(userConverter));
-    if (owner.data()?.status === 'banned') return null;
+    if (provider.ownerStatus !== 'active') return null;
     return provider;
   },
   getProviderForOwner: async (userId) => {

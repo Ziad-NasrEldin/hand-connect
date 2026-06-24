@@ -464,4 +464,49 @@ describe('callable integration coverage with Firestore test double', () => {
       'approve_provider',
     );
   });
+
+  it('keeps provider ownerStatus in sync when admins ban and unban provider users', async () => {
+    const { setUserBanned } = await import('../src/admin.js');
+    firestore.reset({
+      'users/admin-1': { role: 'admin', status: 'active' },
+      'users/provider-1': { role: 'provider', status: 'active' },
+      'providers/provider-1-a': { userId: 'provider-1', ownerStatus: 'active' },
+      'providers/provider-1-b': { userId: 'provider-1', ownerStatus: 'active' },
+      'providers/provider-other': { userId: 'provider-other', ownerStatus: 'active' },
+    });
+
+    await call(setUserBanned, 'admin-1', {
+      userId: 'provider-1',
+      banned: true,
+      reason: 'admin.reason.manualBan',
+    });
+
+    expect(firestore.read('users/provider-1')).toMatchObject({
+      status: 'banned',
+      banReason: 'admin.reason.manualBan',
+      bannedBy: 'admin-1',
+    });
+    expect(firestore.read('providers/provider-1-a')).toMatchObject({ ownerStatus: 'banned' });
+    expect(firestore.read('providers/provider-1-b')).toMatchObject({ ownerStatus: 'banned' });
+    expect(firestore.read('providers/provider-other')).toMatchObject({ ownerStatus: 'active' });
+
+    await call(setUserBanned, 'admin-1', {
+      userId: 'provider-1',
+      banned: false,
+      reason: 'admin.reason.manualUnban',
+    });
+
+    expect(firestore.read('users/provider-1')).toMatchObject({
+      status: 'active',
+      banReason: null,
+      bannedAt: null,
+      bannedBy: null,
+    });
+    expect(firestore.read('providers/provider-1-a')).toMatchObject({ ownerStatus: 'active' });
+    expect(firestore.read('providers/provider-1-b')).toMatchObject({ ownerStatus: 'active' });
+    expect(firestore.findCollection('adminActions').map((item) => item.data.action)).toEqual([
+      'ban_user',
+      'unban_user',
+    ]);
+  });
 });

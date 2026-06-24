@@ -99,10 +99,11 @@ export const setUserBanned = onCall(async (request) => {
   const reason = readString(request.data?.reason, 'reason', 1000);
   const firestore = db();
   await requireAdmin(firestore, adminId);
-  const providerSnapshots = await firestore.collection('providers').where('userId', '==', userId).get();
   await firestore.runTransaction(async (transaction) => {
     const userRef = firestore.collection('users').doc(userId);
+    const providerQuery = firestore.collection('providers').where('userId', '==', userId);
     const user = await transaction.get(userRef);
+    const providerSnapshots = await transaction.get(providerQuery);
     if (!user.exists) throw new HttpsError('not-found', 'User not found.');
     const timestamp = new Date().toISOString();
     transaction.update(userRef, {

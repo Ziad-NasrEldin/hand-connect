@@ -6,7 +6,18 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 
 const hasFirestoreEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
 const rulesDescribe = hasFirestoreEmulator ? describe : describe.skip;
@@ -39,7 +50,13 @@ rulesDescribe('firestore security rules: users and providers', () => {
         bannedBy: 'admin',
       });
       await setDoc(doc(db, 'providers/provider-a'), providerDoc('provider-a', 'approved'));
-      await setDoc(doc(db, 'providers/provider-banned'), providerDoc('provider-banned', 'approved'));
+      await setDoc(doc(db, 'providers/provider-banned'), {
+        ...providerDoc('provider-banned', 'approved'),
+        ownerStatus: 'banned',
+      });
+      const legacyProvider = providerDoc('provider-legacy', 'approved') as Record<string, unknown>;
+      delete legacyProvider.ownerStatus;
+      await setDoc(doc(db, 'providers/provider-legacy'), legacyProvider);
       await setDoc(doc(db, 'providers/provider-pending'), providerDoc('provider-pending', 'pending'));
       await setDoc(doc(db, 'providers/provider-rejected'), providerDoc('provider-rejected', 'rejected'));
       await setDoc(doc(db, 'providers/provider-suspended'), providerDoc('provider-suspended', 'suspended'));
@@ -73,6 +90,7 @@ rulesDescribe('firestore security rules: users and providers', () => {
 
     await assertSucceeds(getDoc(doc(anon, 'providers/provider-a')));
     await assertFails(getDoc(doc(anon, 'providers/provider-banned')));
+    await assertFails(getDoc(doc(anon, 'providers/provider-legacy')));
     await assertFails(getDoc(doc(anon, 'providers/provider-pending')));
     await assertFails(getDoc(doc(anon, 'providers/provider-rejected')));
     await assertFails(getDoc(doc(anon, 'providers/provider-suspended')));
@@ -87,14 +105,49 @@ rulesDescribe('firestore security rules: users and providers', () => {
     await assertSucceeds(updateDoc(doc(admin, 'providers/provider-a'), { status: 'suspended' }));
   });
 
+  it('allows anonymous public search queries over provider-local visibility fields only', async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+
+    const searchQuery = query(
+      collection(anon, 'providers'),
+      where('status', '==', 'approved'),
+      where('ownerStatus', '==', 'active'),
+      where('profession', '==', 'cleaning'),
+      where('coverageAreaKeys', 'array-contains', 'new-cairo'),
+      orderBy('avgRating', 'desc'),
+      limit(50),
+    );
+
+    const snapshot = await assertSucceeds(getDocs(searchQuery));
+
+    expect(snapshot.docs.map((item) => item.id)).toEqual(['provider-a']);
+  });
+
+  it('rejects anonymous public search queries that omit provider-local owner status', async () => {
+    const anon = testEnv.unauthenticatedContext().firestore();
+
+    const unsafeSearchQuery = query(
+      collection(anon, 'providers'),
+      where('status', '==', 'approved'),
+      where('profession', '==', 'cleaning'),
+      where('coverageAreaKeys', 'array-contains', 'new-cairo'),
+      orderBy('avgRating', 'desc'),
+      limit(50),
+    );
+
+    await assertFails(getDocs(unsafeSearchQuery));
+  });
+
   it('lets signed-in providers create only pending owned provider profiles', async () => {
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await setDoc(doc(context.firestore(), 'users/provider-new'), userDoc('provider-new', 'provider'));
     });
 
     const provider = testEnv.authenticatedContext('provider-new').firestore();
+    const converterShapedProvider = providerDoc('provider-new', 'pending') as Record<string, unknown>;
+    delete converterShapedProvider.id;
 
-    await assertSucceeds(setDoc(doc(provider, 'providers/provider-new'), providerDoc('provider-new', 'pending')));
+    await assertSucceeds(setDoc(doc(provider, 'providers/provider-new'), converterShapedProvider));
     await assertFails(setDoc(doc(provider, 'providers/provider-new-tampered'), {
       ...providerDoc('provider-new', 'pending'),
       visibilityTier: 'paid',
