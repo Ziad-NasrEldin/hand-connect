@@ -1,9 +1,17 @@
 import { getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { isPotentialLeadSpam } from './abuse.js';
+import { writeAnalyticsEvent } from './analytics.js';
+import { requirePublicApprovedProvider } from './provider-visibility.js';
 
 const dayMs = 24 * 60 * 60 * 1000;
+const hourMs = 60 * 60 * 1000;
 const limits = { whatsappReveals: 20, conversationStarts: 20, reports: 10 };
+
+export function isMessageRateLimited(recentMessagesInHour: number) {
+  return isPotentialLeadSpam(0, recentMessagesInHour + 1);
+}
 
 function ensureApp() {
   if (!getApps().length) initializeApp();
@@ -46,7 +54,11 @@ async function assertDailyReportLimit(firestore: Firestore, reporterId: string) 
 }
 
 function whatsappUrl(number: string) {
-  return `https://wa.me/${number.replace(/\D/g, '')}`;
+  const digits = number.replace(/\D/g, '');
+  if (digits.length < 10 || digits.length > 15) {
+    throw new HttpsError('failed-precondition', 'WhatsApp contact is unavailable.');
+  }
+  return `https://wa.me/${digits}`;
 }
 
 export const revealWhatsApp = onCall(async (request) => {
@@ -55,9 +67,7 @@ export const revealWhatsApp = onCall(async (request) => {
   const firestore = db();
   await requireActiveUser(firestore, customerId);
 
-  const providerRef = firestore.collection('providers').doc(providerId);
-  const provider = await providerRef.get();
-  if (!provider.exists || provider.data()?.status !== 'approved') throw new HttpsError('not-found', 'Provider not found.');
+  const provider = await requirePublicApprovedProvider(firestore, providerId);
   if (!provider.data()?.whatsappVisible) throw new HttpsError('failed-precondition', 'WhatsApp contact is unavailable.');
 
   const contactId = `${customerId}_${providerId}_whatsapp_reveal`;
@@ -72,12 +82,23 @@ export const revealWhatsApp = onCall(async (request) => {
       .where('createdAt', '>=', since)
       .get();
     if (recent.size >= limits.whatsappReveals) throw new HttpsError('resource-exhausted', 'error.rateLimit.exceeded');
-    await contactRef.set({
-      customerId,
-      providerId,
-      type: 'whatsapp_reveal',
-      createdAt: new Date().toISOString(),
-      hasReview: false,
+    const timestamp = new Date().toISOString();
+    await firestore.runTransaction(async (transaction) => {
+      transaction.set(contactRef, {
+        customerId,
+        providerId,
+        type: 'whatsapp_reveal',
+        createdAt: timestamp,
+        hasReview: false,
+      });
+      writeAnalyticsEvent(transaction, firestore, {
+        type: 'whatsapp_reveal',
+        actorId: customerId,
+        targetType: 'provider',
+        targetId: providerId,
+        metadata: { contactId },
+        createdAt: timestamp,
+      });
     });
   }
 
@@ -96,8 +117,7 @@ export const startConversation = onCall(async (request) => {
   const firestore = db();
   await requireActiveUser(firestore, customerId);
 
-  const provider = await firestore.collection('providers').doc(providerId).get();
-  if (!provider.exists || provider.data()?.status !== 'approved') throw new HttpsError('not-found', 'Provider not found.');
+  const provider = await requirePublicApprovedProvider(firestore, providerId);
   const providerUserId = String(provider.data()?.userId ?? providerId);
   const conversationId = `${customerId}_${providerId}`;
   const conversationRef = firestore.collection('conversations').doc(conversationId);
@@ -136,11 +156,75 @@ export const startConversation = onCall(async (request) => {
       });
     }
     transaction.set(messageRef, { conversationId, senderId: customerId, text, createdAt: timestamp, read: false });
-    if (!contact.exists) transaction.set(contactRef, { customerId, providerId, type: 'platform_message', createdAt: timestamp, hasReview: false });
+    if (!contact.exists) {
+      transaction.set(contactRef, { customerId, providerId, type: 'platform_message', createdAt: timestamp, hasReview: false });
+      writeAnalyticsEvent(transaction, firestore, {
+        type: 'chat_initiated',
+        actorId: customerId,
+        targetType: 'provider',
+        targetId: providerId,
+        metadata: { conversationId },
+        createdAt: timestamp,
+      });
+    }
   });
 
   const conversation = await conversationRef.get();
   return { id: conversation.id, ...conversation.data() };
+});
+
+export const sendMessage = onCall(async (request) => {
+  const senderId = requireAuth(request);
+  const conversationId = readString(request.data?.conversationId, 'conversationId', 240);
+  const text = readString(request.data?.text, 'text', 4000);
+  const firestore = db();
+  await requireActiveUser(firestore, senderId);
+
+  const conversationRef = firestore.collection('conversations').doc(conversationId);
+  const conversation = await conversationRef.get();
+  if (!conversation.exists || !conversation.data()?.participants?.includes(senderId)) {
+    throw new HttpsError('not-found', 'Conversation not found.');
+  }
+  const providerId = conversation.data()?.providerId;
+  if (typeof providerId === 'string') {
+    await requirePublicApprovedProvider(firestore, providerId);
+  }
+
+  const since = new Date(Date.now() - hourMs).toISOString();
+  const recentMessages = await firestore
+    .collectionGroup('messages')
+    .where('senderId', '==', senderId)
+    .where('createdAt', '>=', since)
+    .get();
+  if (isMessageRateLimited(recentMessages.size)) {
+    throw new HttpsError('resource-exhausted', 'error.rateLimit.exceeded');
+  }
+
+  const messageRef = conversationRef.collection('messages').doc();
+  const timestamp = new Date().toISOString();
+  const message = await firestore.runTransaction(async (transaction) => {
+    const current = await transaction.get(conversationRef);
+    if (!current.exists || !current.data()?.participants?.includes(senderId)) {
+      throw new HttpsError('not-found', 'Conversation not found.');
+    }
+    const currentProviderId = current.data()?.providerId;
+    if (typeof currentProviderId === 'string') {
+      await requirePublicApprovedProvider(firestore, currentProviderId);
+    }
+    const participants = current.data()?.participants as string[];
+    const recipientId = participants.find((item) => item !== senderId);
+    if (!recipientId) throw new HttpsError('failed-precondition', 'Conversation recipient is unavailable.');
+    const messageData = { conversationId, senderId, text, createdAt: timestamp, read: false };
+    transaction.set(messageRef, messageData);
+    transaction.update(conversationRef, {
+      lastMessage: text,
+      lastMessageAt: timestamp,
+      [`unreadCount.${recipientId}`]: Number(current.data()?.unreadCount?.[recipientId] ?? 0) + 1,
+    });
+    return { id: messageRef.id, ...messageData };
+  });
+
+  return message;
 });
 
 export const reportProvider = onCall(async (request) => {

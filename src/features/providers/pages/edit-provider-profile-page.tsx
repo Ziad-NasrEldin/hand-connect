@@ -21,37 +21,52 @@ export function EditProviderProfilePage() {
   const language = i18n.language === 'en' ? 'en' : 'ar';
   const [bio, setBio] = useState('');
   const [profession, setProfession] = useState('');
-  const [area, setArea] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [whatsappVisible, setWhatsappVisible] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formStatus, setFormStatus] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  function isValidWhatsAppNumber(value: string) {
+    const digits = value.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!provider.data) return;
-    await updateProviderProfile(provider.data.id, {
-      bio: bio || provider.data.bio,
-      profession: profession || provider.data.profession,
-      whatsappNumber: whatsappNumber || provider.data.whatsappNumber,
-      whatsappVisible:
-        whatsappVisible === ''
-          ? provider.data.whatsappVisible
-          : whatsappVisible === 'true',
-      serviceAreas: [
-        {
-          neighborhood: area || provider.data.serviceAreaKeys[0],
-          city: 'cairo',
-        },
-      ],
-      serviceAreaKeys: [area || provider.data.serviceAreaKeys[0]],
-      profilePhotoFile: photoFile,
-    });
-    setPhotoFile(null);
-    void queryClient.invalidateQueries({ queryKey: ['provider'] });
+    const nextWhatsApp = whatsappNumber.trim() || provider.data.whatsappNumber;
+    setFormError(null);
+    setFormStatus(null);
+    if (!isValidWhatsAppNumber(nextWhatsApp)) {
+      setFormError(t('validation.phone'));
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateProviderProfile(provider.data.id, {
+        bio: bio || provider.data.bio,
+        profession: profession || provider.data.profession,
+        whatsappNumber: nextWhatsApp,
+        whatsappVisible:
+          whatsappVisible === ''
+            ? provider.data.whatsappVisible
+            : whatsappVisible === 'true',
+        profilePhotoFile: photoFile,
+      });
+      setPhotoFile(null);
+      setFormStatus(t('provider.saveSuccess'));
+      void queryClient.invalidateQueries({ queryKey: ['provider'] });
+    } catch {
+      setFormError(t('provider.saveFailed'));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('provider.settingsEyebrow')}</p>
@@ -100,8 +115,8 @@ export function EditProviderProfilePage() {
             <Label htmlFor="provider-area">{t('auth.area')}</Label>
             <Select
               id="provider-area"
-              value={area}
-              onChange={(event) => setArea(event.target.value)}
+              value={provider.data?.serviceAreaKeys[0] ?? ''}
+              disabled
               placeholder={
                 provider.data
                   ? getNeighborhoodName(
@@ -121,6 +136,7 @@ export function EditProviderProfilePage() {
             <Input
               id="provider-whatsapp"
               value={whatsappNumber}
+              aria-invalid={Boolean(formError)}
               onChange={(event) => setWhatsappNumber(event.target.value)}
               placeholder={provider.data?.whatsappNumber}
             />
@@ -153,8 +169,18 @@ export function EditProviderProfilePage() {
               onChange={(event) => setPhotoFile(event.target.files?.[0] ?? null)}
             />
           </div>
-          <Button className="w-full sm:w-auto" type="submit">
-            {t('common.save')}
+          {formStatus ? (
+            <p className="motion-pop soft-note p-3 text-sm font-semibold" role="status">
+              {formStatus}
+            </p>
+          ) : null}
+          {formError ? (
+            <p className="motion-pop soft-note p-3 text-sm font-semibold text-destructive" role="alert">
+              {formError}
+            </p>
+          ) : null}
+          <Button className="w-full sm:w-auto" disabled={isSaving} type="submit">
+            {isSaving ? t('common.loading') : t('common.save')}
           </Button>
         </form>
       </CardContent>

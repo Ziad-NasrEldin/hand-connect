@@ -1,4 +1,5 @@
 import type { ProviderProfile } from '@/types/provider';
+import { getPlatformCoverageRadiusKm, getProviderCoverageDistanceKm } from './provider-coverage';
 
 export interface RankingInput {
   profession: string;
@@ -14,7 +15,15 @@ export function isPaidVisibilityActive(provider: ProviderProfile, now = new Date
 }
 
 export function providerRankingScore(provider: ProviderProfile, input: RankingInput) {
-  const locationScore = provider.serviceAreaKeys.includes(input.neighborhood) ? 100 : 0;
+  const distance = getProviderCoverageDistanceKm(provider, input.neighborhood);
+  const radius = getPlatformCoverageRadiusKm({
+    city: provider.serviceAreas[0]?.city,
+    profession: provider.profession,
+    serviceAreaKey: provider.initialServiceAreaKey || provider.serviceAreaKeys[0],
+  });
+  const locationScore = distance === null
+    ? 0
+    : Math.max(0, 100 - (Math.min(distance, radius) / radius) * 35);
   const reputationScore = Math.min(provider.avgRating / 5, 1) * 24 + Math.min(provider.reviewCount, 25);
   const activityScore = Math.min(provider.activityScore, 100) * 0.22;
   const paidBonus = isPaidVisibilityActive(provider) ? 12 : 0;

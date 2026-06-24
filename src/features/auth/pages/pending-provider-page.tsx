@@ -7,7 +7,7 @@ export function PendingProviderPage() {
   const { t } = useTranslation();
   const { providerStatus } = useAuth();
   return (
-    <Card variant="subtle">
+    <Card className="motion-reveal" variant="subtle">
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('auth.applicationStatus')}</p>

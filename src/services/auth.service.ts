@@ -19,8 +19,8 @@ export function subscribeToSession(onSession: (session: Awaited<ReturnType<typeo
   return authService().subscribeToSession(onSession);
 }
 
-export async function login(email: string, password: string) {
-  return authService().login(email, password);
+export async function login(identifier: string, password: string) {
+  return authService().login(identifier, password);
 }
 
 export async function loginWithGoogle() {

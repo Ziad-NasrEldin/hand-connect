@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { login } from './auth.service';
 import {
   approveProvider,
@@ -19,7 +19,10 @@ import {
 import { readDb, resetDemoDb, writeDb } from './demo/demo-db';
 
 describe('admin service professions', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('saves professions and toggles active status', async () => {
     await saveProfession('admin-demo', {
@@ -46,7 +49,10 @@ describe('admin service professions', () => {
 });
 
 describe('admin service account bans', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('bans and unbans provider accounts with audit entries', async () => {
     await setUserBanned('admin-demo', 'provider-demo', true, 'admin.reason.manualBan');
@@ -70,7 +76,10 @@ describe('admin service account bans', () => {
 });
 
 describe('admin service reports workflow', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('shows target context and stores resolution metadata', async () => {
     const openReport = (await listReports()).find((item) => item.id === 'report-1');
@@ -95,7 +104,10 @@ describe('admin service reports workflow', () => {
 });
 
 describe('admin service audit coverage', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('records audit rows for each admin mutation', async () => {
     const db = readDb();
@@ -108,6 +120,23 @@ describe('admin service audit coverage', () => {
       status: 'pending',
       paymentConfirmedBy: null,
       paymentMethod: 'manual_wallet',
+      paymentStatus: 'pending',
+      paymentReference: null,
+      productSnapshot: {
+        productId: 'visibility_boost_30_paymob',
+        productVersion: 2,
+        productType: 'visibility_boost',
+        durationDays: 30,
+        priceAmount: 500,
+        currency: 'EGP',
+        billingModel: 'pay_as_you_go',
+        capPolicy: 'none',
+        paymentProvider: 'paymob',
+        renewalPolicy: 'none',
+        snapshotAt: '2026-05-04T08:00:00.000Z',
+      },
+      disclosureVersion: 'visibility-no-guarantee-v1',
+      disclosureAcceptedAt: '2026-05-04T08:00:00.000Z',
       notes: 'visibility.note.walletTransferPending',
       requestedAt: '2026-05-04T08:00:00.000Z',
       processedAt: null,

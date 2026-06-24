@@ -18,6 +18,10 @@ export async function createReview(customerId: string, providerId: string, ratin
   const db = readDb();
   const contact = db.contacts.find((item) => item.customerId === customerId && item.providerId === providerId && !item.hasReview);
   if (!contact) throw new Error('Review is only available after contact');
+  assertUnderDailyLimit(
+    db.reviews.filter((item) => item.customerId === customerId && isWithinLastDay(item.createdAt)).length,
+    dailyRateLimits.reviewCreates,
+  );
   const customer = db.users.find((item) => item.uid === customerId);
   const review: Review = {
     id: createId('review'),

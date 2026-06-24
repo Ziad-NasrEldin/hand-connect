@@ -20,9 +20,9 @@ export function AppLayout() {
   ];
 
   return (
-    <div className="min-h-screen pb-10">
+    <div className="min-h-screen overflow-x-hidden pb-10">
       <header className="motion-header sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl min-w-0 flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center justify-between gap-3">
               <Link to="/" className="brand-title text-[1.45rem] sm:text-3xl">
@@ -57,7 +57,7 @@ export function AppLayout() {
               )}
             </div>
           </div>
-          <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          <nav className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-1">
             {navItems
               .filter((item) => item.show)
               .map((item) => (
@@ -74,7 +74,7 @@ export function AppLayout() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <main className="mx-auto max-w-7xl min-w-0 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div key={location.pathname} className="route-motion">
           <Outlet />
         </div>

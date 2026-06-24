@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -38,6 +38,7 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
   await expect(page.getByRole('button', { name: 'بحث' })).toHaveCount(0);
   await expect(page.getByText('Find trusted help')).toHaveCount(0);
   await expect(page.getByText('أحمد السبّاك')).toBeVisible();
+  await assertNoHorizontalOverflow(page);
   if (testInfo.project.name === 'mobile-chrome') {
     const ratingBox = await page.getByText('4.8 / 5').boundingBox();
     const profileLinkBox = await page
@@ -53,6 +54,9 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
   await expect(
     page.getByRole('heading', { name: 'أحمد السبّاك' }),
   ).toBeVisible();
+  await expect(page.getByText('وصل بسرعة وكان واضح في السعر')).toBeVisible();
+  await expect(page.getByText('المنصة لا تحدد السعر')).toBeVisible();
+  await assertNoForbiddenMarketplaceCtas(page);
   await expect(page.getByText('Provider profile')).toHaveCount(0);
   if (testInfo.project.name === 'mobile-chrome') {
     await expect(
@@ -62,6 +66,95 @@ test('Arabic RTL landing and search flow work', async ({ page }, testInfo) => {
       page.getByRole('button', { name: 'راسل داخل التطبيق' }),
     ).toBeVisible();
   }
+});
+
+test('search handles denied geolocation and still supports manual discovery', async ({
+  page,
+}) => {
+  await page.goto('/search');
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        getCurrentPosition: (
+          _success: PositionCallback,
+          error: PositionErrorCallback,
+        ) =>
+          error({
+            code: 1,
+            message: 'Permission denied',
+            PERMISSION_DENIED: 1,
+            POSITION_UNAVAILABLE: 2,
+            TIMEOUT: 3,
+          } as GeolocationPositionError),
+      },
+    });
+  });
+
+  await page.getByRole('button', { name: 'استخدم موقعي' }).click();
+  await expect(page.getByRole('status')).toContainText('تم رفض إذن الموقع');
+  await expect(page.getByText('أحمد السبّاك')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'عرض الملف' }).first()).toBeVisible();
+});
+
+test('provider profile stays directory-first before explicit contact', async ({
+  page,
+}) => {
+  await page.goto('/search');
+  await page.locator('a[href="/providers/provider-demo"]').click();
+
+  await expect(page).toHaveURL(/\/providers\/provider-demo/);
+  await expect(page.getByRole('heading', { name: 'أحمد السبّاك' })).toBeVisible();
+  await expect(page.getByText('+201011113333')).toHaveCount(0);
+  await assertNoForbiddenMarketplaceCtas(page);
+  await assertVisibleBox(page.getByRole('button', { name: 'إظهار واتساب' }));
+  await assertVisibleBox(page.getByRole('button', { name: 'راسل داخل التطبيق' }));
+  await assertNoHorizontalOverflow(page);
+});
+
+test('provider completes mocked Paymob visibility payment end-to-end', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/login');
+  await page.getByLabel('البريد الإلكتروني').fill('provider@hand.test');
+  await page.getByRole('button', { name: 'دخول' }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByText('الظهور المدفوع يخضع لقواعد المنصة')).toBeVisible();
+
+  await page.getByRole('link', { name: 'إدارة الظهور' }).click();
+  await expect(page).toHaveURL(/\/visibility/);
+  await expect(page.getByText('الدفع لا يضمن')).toBeVisible();
+  await assertVisibleBox(page.getByRole('button', { name: 'طلب ظهور مدفوع' }));
+  await page.getByLabel('ملاحظات دفع Paymob').fill('Smoke visibility request');
+  await page.getByRole('button', { name: 'طلب ظهور مدفوع' }).click();
+  await expect(page.getByText('تم إنشاء جلسة دفع Paymob التجريبية')).toBeVisible();
+  await expect(page.getByText('بانتظار إكمال دفع Paymob')).toBeVisible();
+  await page.getByRole('button', { name: 'إكمال دفع Paymob التجريبي' }).click();
+  await expect(page.getByText('تمت مطابقة الدفع - فيزا/بطاقة عبر Paymob')).toBeVisible();
+  await expect(page.getByText('مدفوعة - جلسة Paymob تجريبية')).toBeVisible();
+  await page.goto('/dashboard');
+  await expect(page.getByText('الظهور المدفوع نشط')).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath('paymob-provider-active.png'),
+    fullPage: true,
+  });
+
+  await page.getByRole('button', { name: 'خروج' }).click();
+  await page.goto('/login');
+  await page.getByLabel('البريد الإلكتروني').fill('admin@hand.test');
+  await page.getByRole('button', { name: 'دخول' }).click();
+  await page.goto('/admin/visibility');
+  await expect(page.getByRole('heading', { name: 'طلبات الظهور' })).toBeVisible();
+  const paymobRequest = page.locator('.soft-list-item').filter({ hasText: 'Smoke visibility request' });
+  await expect(paymobRequest.getByText('provider-demo', { exact: true })).toBeVisible();
+  await expect(paymobRequest.getByText('تمت مطابقة الدفع - فيزا/بطاقة عبر Paymob')).toBeVisible();
+  await expect(paymobRequest.getByRole('button', { name: 'تأكيد الدفع' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /حجز|جدولة|تعيين/ })).toHaveCount(0);
+  await assertNoHorizontalOverflow(page);
+  await page.screenshot({
+    path: testInfo.outputPath('paymob-admin-proof.png'),
+    fullPage: true,
+  });
 });
 
 test('customer can login, reveal WhatsApp, and message after contact', async ({
@@ -171,6 +264,31 @@ test('mobile auth and shell layouts stay readable', async ({
   ).toBeVisible();
 });
 
+test('mobile provider dashboard and visibility surfaces stay usable', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chrome',
+    'Mobile-only provider dashboard and paid visibility smoke',
+  );
+
+  await page.goto('/login');
+  await page.getByLabel('البريد الإلكتروني').fill('provider@hand.test');
+  await page.getByRole('button', { name: 'دخول' }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByRole('heading', { name: 'لوحة المزود' })).toBeVisible();
+  await assertVisibleBox(page.getByRole('link', { name: 'إدارة الظهور' }));
+  await expect(page.getByText('الظهور المدفوع يخضع لقواعد المنصة')).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+
+  await page.getByRole('link', { name: 'إدارة الظهور' }).click();
+  await expect(page).toHaveURL(/\/visibility/);
+  await expect(page.getByRole('heading', { name: 'الظهور المدفوع' })).toBeVisible();
+  await assertVisibleBox(page.getByRole('button', { name: 'طلب ظهور مدفوع' }));
+  await expect(page.getByText('منتجات المزودين المدفوعة اختيارية')).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+});
+
 test('reduced motion keeps route transitions non-disruptive', async ({
   page,
 }) => {
@@ -194,4 +312,32 @@ function cssTimeToMs(value: string) {
   if (first.endsWith('ms')) return Number(first.slice(0, -2));
   if (first.endsWith('s')) return Number(first.slice(0, -1)) * 1000;
   return Number(first);
+}
+
+async function assertNoHorizontalOverflow(page: Page) {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.documentElement;
+        return Math.max(document.body.scrollWidth, root.scrollWidth) - root.clientWidth;
+      }),
+    )
+    .toBeLessThanOrEqual(1);
+}
+
+async function assertVisibleBox(locator: Locator) {
+  await expect(locator).toBeVisible();
+  const box = await locator.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.width).toBeGreaterThan(0);
+  expect(box!.height).toBeGreaterThan(0);
+}
+
+async function assertNoForbiddenMarketplaceCtas(page: Page) {
+  await expect(
+    page.getByRole('button', { name: /حجز|جدولة|ادفع|فاتورة|تعيين|تتبع/ }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: /حجز|جدولة|ادفع|فاتورة|تعيين|تتبع/ }),
+  ).toHaveCount(0);
 }

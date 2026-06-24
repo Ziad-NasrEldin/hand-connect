@@ -1,4 +1,5 @@
 import { rankProviders } from '@/lib/ranking';
+import { providerCoversNeighborhood } from '@/lib/provider-coverage';
 import type { ProviderProfile } from '@/types/provider';
 import { activeProfessions, readDb } from './demo-db';
 
@@ -18,7 +19,8 @@ export async function searchProviders(input: SearchProvidersInput): Promise<Prov
     (provider) =>
       provider.status === 'approved' &&
       provider.profession === input.profession &&
-      provider.serviceAreaKeys.includes(input.neighborhood),
+      db.users.find((user) => user.uid === provider.userId)?.status !== 'banned' &&
+      providerCoversNeighborhood(provider, input.neighborhood),
   );
   return rankProviders(candidates, input).slice(0, input.limit);
 }

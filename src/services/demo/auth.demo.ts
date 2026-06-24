@@ -2,6 +2,8 @@ import type { AppUser, UserRole } from '@/types/user';
 import type { ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
 import { createId, getSessionUserId, readDb, setSessionUserId, writeDb } from './demo-db';
 import { nowIso } from '@/lib/dates';
+import { normalizeEgyptPhone } from '@/lib/phone';
+import { computeCoverageAreaKeys, getPlatformCoverageRadiusKm } from '@/lib/provider-coverage';
 
 export interface RegisterCustomerInput {
   displayName: string;
@@ -35,10 +37,14 @@ export function subscribeToSession(onSession: (session: Awaited<ReturnType<typeo
   return () => undefined;
 }
 
-export async function login(email: string, password: string) {
+export async function login(identifier: string, password: string) {
   if (!password) throw new Error('error.auth.passwordRequired');
   const db = readDb();
-  const user = db.users.find((item) => item.email.toLowerCase() === email.toLowerCase());
+  const normalizedIdentifier = normalizeEgyptPhone(identifier);
+  const user = db.users.find((item) =>
+    item.email.toLowerCase() === identifier.toLowerCase() ||
+    normalizeEgyptPhone(item.phone) === normalizedIdentifier,
+  );
   if (!user) throw new Error('error.auth.invalidCredentials');
   if (user.status === 'banned') throw new Error('error.auth.accountBanned');
   setSessionUserId(user.uid);
@@ -76,6 +82,11 @@ export async function registerCustomer(input: RegisterCustomerInput) {
 export async function registerProvider(input: RegisterProviderInput) {
   const user = await createUser(input, 'provider');
   const db = readDb();
+  const coverageRadiusKm = getPlatformCoverageRadiusKm({
+    city: 'cairo',
+    profession: input.profession,
+    serviceAreaKey: input.serviceArea,
+  });
   const provider: ProviderProfile = {
     id: user.uid,
     userId: user.uid,
@@ -87,10 +98,24 @@ export async function registerProvider(input: RegisterProviderInput) {
     status: 'pending',
     serviceAreas: [{ neighborhood: input.serviceArea, city: 'cairo' }],
     serviceAreaKeys: [input.serviceArea],
+    initialServiceAreaKey: input.serviceArea,
+    coverageRadiusKm,
+    coverageAreaKeys: computeCoverageAreaKeys([input.serviceArea], coverageRadiusKm),
     whatsappNumber: input.whatsappNumber,
     whatsappVisible: true,
     visibilityTier: 'organic',
     visibilityPaidUntil: null,
+    paidVisibilityStartedAt: null,
+    activeVisibilityRequestId: null,
+    activeVisibilityProductId: null,
+    activeVisibilityProductVersion: null,
+    paidVisibilityHoldUntil: null,
+    rankingPenalty: 0,
+    rankingPenaltyUntil: null,
+    verificationStatus: 'submitted',
+    verificationReviewedAt: null,
+    verificationReviewedBy: null,
+    verificationNotes: null,
     profileViews: 0,
     avgRating: 0,
     reviewCount: 0,

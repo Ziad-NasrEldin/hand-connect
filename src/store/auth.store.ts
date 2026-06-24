@@ -10,7 +10,7 @@ interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   initialize: () => Promise<void>;
-  login: (email: string, password: string) => Promise<AuthSession>;
+  login: (identifier: string, password: string) => Promise<AuthSession>;
   loginWithGoogle: () => Promise<AuthSession>;
   logout: () => Promise<void>;
   setSession: (user: AppUser | null, providerStatus?: ProviderStatus) => void;
@@ -35,21 +35,32 @@ export const useAuthStore = create<AuthState>((set) => ({
     const session = await authService.getCurrentSession();
     set({ ...session, isLoading: false, isInitialized: true });
   },
-  login: async (email, password) => {
+  login: async (identifier, password) => {
     set({ isLoading: true });
-    const session = await authService.login(email, password);
-    set({ ...session, isLoading: false, isInitialized: true });
-    return session;
+    try {
+      const session = await authService.login(identifier, password);
+      set({ ...session, isLoading: false, isInitialized: true });
+      return session;
+    } catch (error) {
+      set({ isLoading: false, isInitialized: true });
+      throw error;
+    }
   },
   loginWithGoogle: async () => {
     set({ isLoading: true });
-    const session = await authService.loginWithGoogle();
-    set({ ...session, isLoading: false, isInitialized: true });
-    return session;
+    try {
+      const session = await authService.loginWithGoogle();
+      set({ ...session, isLoading: false, isInitialized: true });
+      return session;
+    } catch (error) {
+      set({ isLoading: false, isInitialized: true });
+      throw error;
+    }
   },
   logout: async () => {
     await authService.logout();
     set({ user: null, providerStatus: undefined, isInitialized: true });
   },
-  setSession: (user, providerStatus) => set({ user, providerStatus, isInitialized: true }),
+  setSession: (user, providerStatus) =>
+    set({ user, providerStatus, isInitialized: true }),
 }));

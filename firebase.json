@@ -1,18 +1,4 @@
 {
-  "hosting": [
-    {
-      "site": "hand-connect-cairo",
-      "public": "dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [{ "source": "**", "destination": "/index.html" }]
-    },
-    {
-      "target": "herafy-cairo",
-      "public": "dist",
-      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "rewrites": [{ "source": "**", "destination": "/index.html" }]
-    }
-  ],
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -28,7 +14,6 @@
     "firestore": { "port": 8080 },
     "storage": { "port": 9199 },
     "functions": { "port": 5001 },
-    "hosting": { "port": 5000 },
     "ui": { "enabled": true, "port": 4000 }
   }
 }

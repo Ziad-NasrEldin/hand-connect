@@ -5,7 +5,10 @@ import { nowIso } from '@/lib/dates';
 import { assertUnderDailyLimit, dailyRateLimits, isWithinLastDay } from '@/lib/rate-limits';
 
 export async function getProviderById(id: string) {
-  const provider = readDb().providers.find((item) => item.id === id && item.status === 'approved');
+  const db = readDb();
+  const provider = db.providers.find((item) => item.id === id && item.status === 'approved');
+  const owner = provider ? db.users.find((item) => item.uid === provider.userId) : null;
+  if (owner?.status === 'banned') return null;
   return provider ?? null;
 }
 
@@ -86,8 +89,6 @@ export async function updateProviderProfile(providerId: string, patch: ProviderP
     profession: patch.profession ?? provider.profession,
     whatsappNumber: patch.whatsappNumber ?? provider.whatsappNumber,
     whatsappVisible: patch.whatsappVisible ?? provider.whatsappVisible,
-    serviceAreas: patch.serviceAreas ?? provider.serviceAreas,
-    serviceAreaKeys: patch.serviceAreaKeys ?? provider.serviceAreaKeys,
     photos: patch.photos ?? provider.photos,
   });
   writeDb(db);

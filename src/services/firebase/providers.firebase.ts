@@ -3,7 +3,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  increment,
   limit,
   query,
   updateDoc,
@@ -13,7 +12,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getFirebaseDb } from '@/firebase/db';
 import { callFirebaseFunction } from '@/firebase/functions';
 import { getFirebaseStorage } from '@/firebase/storage';
-import { contactConverter, providerConverter } from '@/firebase/converters';
+import { contactConverter, providerConverter, userConverter } from '@/firebase/converters';
 import type { ProviderPhoto, ProviderProfile } from '@/types/provider';
 import type {
   ProviderProfileUpdateInput,
@@ -51,8 +50,6 @@ function safeProviderPatch(
     profession: patch.profession ?? current.profession,
     whatsappNumber: patch.whatsappNumber ?? current.whatsappNumber,
     whatsappVisible: patch.whatsappVisible ?? current.whatsappVisible,
-    serviceAreas: patch.serviceAreas ?? current.serviceAreas,
-    serviceAreaKeys: patch.serviceAreaKeys ?? current.serviceAreaKeys,
     photos: uploadedPhotoUrl
       ? [
           {
@@ -72,7 +69,10 @@ export const firebaseProvidersService: ProvidersService = {
     const snapshot = await getDoc(doc(db, 'providers', id).withConverter(providerConverter));
     if (!snapshot.exists()) return null;
     const provider = snapshot.data();
-    return provider.status === 'approved' ? provider : null;
+    if (provider.status !== 'approved') return null;
+    const owner = await getDoc(doc(db, 'users', provider.userId).withConverter(userConverter));
+    if (owner.data()?.status === 'banned') return null;
+    return provider;
   },
   getProviderForOwner: async (userId) => {
     const db = requireFirebaseDb();
@@ -102,8 +102,9 @@ export const firebaseProvidersService: ProvidersService = {
     sessionStorage.setItem(key, 'true');
 
     try {
-      await updateDoc(doc(db, 'providers', providerId), {
-        profileViews: increment(1),
+      await callFirebaseFunction<{ providerId: string; dedupeKey: string }, void>('trackProfileView', {
+        providerId,
+        dedupeKey: key,
       });
     } catch {
       // Profile viewing must not break read-only profile access if rules deny analytics writes.

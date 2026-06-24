@@ -17,7 +17,7 @@ export function PageIntro({
   return (
     <div
       className={cn(
-        'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
+        'motion-reveal flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
         className,
       )}
     >

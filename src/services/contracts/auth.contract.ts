@@ -18,12 +18,13 @@ export interface RegisterProviderInput extends RegisterCustomerInput {
 export interface AuthSession {
   user: AppUser | null;
   providerStatus?: ProviderStatus;
+  emailVerificationSent?: boolean;
 }
 
 export interface AuthService {
   getCurrentSession(): Promise<AuthSession>;
   subscribeToSession(onSession: (session: AuthSession) => void): () => void;
-  login(email: string, password: string): Promise<AuthSession>;
+  login(identifier: string, password: string): Promise<AuthSession>;
   loginWithGoogle(): Promise<AuthSession>;
   logout(): Promise<void>;
   registerCustomer(input: RegisterCustomerInput): Promise<AuthSession>;

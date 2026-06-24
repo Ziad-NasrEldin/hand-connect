@@ -109,7 +109,7 @@ export function RegisterPage() {
           className="motion-stagger grid gap-4"
           onSubmit={(event) => void submit(event)}
         >
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="motion-stagger grid gap-2 md:grid-cols-2">
             <Button
               className="w-full"
               type="button"
@@ -238,7 +238,7 @@ export function RegisterPage() {
                     setIdentityFile(file);
                   }}
                 />
-                <p className="text-xs leading-6 text-muted-foreground">
+                <p className="motion-reveal text-xs leading-6 text-muted-foreground">
                   {t('auth.identityHelp')}
                 </p>
               </div>

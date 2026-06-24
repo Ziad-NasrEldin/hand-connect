@@ -14,7 +14,7 @@
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "profession", "order": "ASCENDING" },
-        { "fieldPath": "serviceAreaKeys", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "coverageAreaKeys", "arrayConfig": "CONTAINS" },
         { "fieldPath": "avgRating", "order": "DESCENDING" }
       ]
     },

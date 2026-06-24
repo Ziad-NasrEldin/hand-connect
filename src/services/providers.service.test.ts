@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reportMessage, startConversation } from './messaging.service';
 import { providerContacts, reportProvider, revealWhatsApp } from './providers.service';
 import { readDb, resetDemoDb, writeDb } from './demo/demo-db';
@@ -6,7 +6,10 @@ import { nowIso } from '@/lib/dates';
 import { dailyRateLimits } from '@/lib/rate-limits';
 
 describe('providers service contacts', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('deduplicates repeated WhatsApp reveals for a customer/provider pair', async () => {
     await revealWhatsApp('customer-nour', 'provider-cleaning');

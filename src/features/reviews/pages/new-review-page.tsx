@@ -19,18 +19,30 @@ export function NewReviewPage() {
   const eligible = useContactCheck(user?.uid, providerId);
   const [rating, setRating] = useState<Review['rating']>(5);
   const [comment, setComment] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  function readableError(error: unknown) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.startsWith('error.')) return t(message);
+    return t('reviews.submitFailed');
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!user || !providerId) return;
-    await createReview(user.uid, providerId, rating, comment);
-    navigate(`/providers/${providerId}`);
+    setError(null);
+    try {
+      await createReview(user.uid, providerId, rating, comment);
+      navigate(`/providers/${providerId}`);
+    } catch (error) {
+      setError(readableError(error));
+    }
   }
 
   if (eligible.data === false) {
     return (
-      <Card variant="subtle">
-        <CardContent className="p-8 text-center">
+      <Card className="motion-reveal" variant="subtle">
+        <CardContent className="motion-reveal p-8 text-center">
           {t('reviews.notEligible')}
         </CardContent>
       </Card>
@@ -38,7 +50,7 @@ export function NewReviewPage() {
   }
 
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('reviews.shareExperience')}</p>
@@ -77,6 +89,11 @@ export function NewReviewPage() {
           <Button className="w-full sm:w-auto" type="submit">
             {t('common.save')}
           </Button>
+          {error ? (
+            <p className="motion-pop soft-note p-3 text-sm font-semibold text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
         </form>
       </CardContent>
     </Card>

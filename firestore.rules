@@ -30,26 +30,181 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/providers/$(providerId)).data.userId == request.auth.uid;
     }
 
+    function providerOwnerActive(provider) {
+      return exists(/databases/$(database)/documents/users/$(provider.data.userId))
+        && get(/databases/$(database)/documents/users/$(provider.data.userId)).data.status != 'banned';
+    }
+
+    function policyCoverageRadius(profession, serviceAreaKey) {
+      return serviceAreaKey in ['new-cairo', 'shorouk'] ? 14
+        : profession == 'plumbing' ? 12
+        : profession == 'electrical' ? 10
+        : profession == 'cleaning' ? 5
+        : 8;
+    }
+
+    function hasPolicyCoverageRadius(provider) {
+      return provider.coverageRadiusKm == policyCoverageRadius(
+        provider.profession,
+        provider.initialServiceAreaKey
+      );
+    }
+
+    function providerCreateKeysAreSafe() {
+      return request.resource.data.keys().hasOnly([
+        'userId',
+        'id',
+        'ownerStatus',
+        'displayName',
+        'phone',
+        'profession',
+        'bio',
+        'nationalIdVerified',
+        'status',
+        'serviceAreas',
+        'serviceAreaKeys',
+        'initialServiceAreaKey',
+        'coverageRadiusKm',
+        'coverageAreaKeys',
+        'whatsappNumber',
+        'whatsappVisible',
+        'visibilityTier',
+        'visibilityPaidUntil',
+        'paidVisibilityStartedAt',
+        'activeVisibilityRequestId',
+        'activeVisibilityProductId',
+        'activeVisibilityProductVersion',
+        'paidVisibilityHoldUntil',
+        'rankingPenalty',
+        'rankingPenaltyUntil',
+        'verificationStatus',
+        'verificationReviewedAt',
+        'verificationReviewedBy',
+        'verificationNotes',
+        'profileViews',
+        'avgRating',
+        'reviewCount',
+        'activityScore',
+        'photos',
+        'createdAt',
+        'approvedAt'
+      ]);
+    }
+
+    function providerCreateValuesAreSafe(providerId) {
+      return request.resource.data.userId == request.auth.uid
+        && request.resource.data.id == providerId
+        && request.resource.data.ownerStatus == 'active'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.nationalIdVerified == false
+        && request.resource.data.serviceAreaKeys is list
+        && request.resource.data.serviceAreaKeys.size() == 1
+        && request.resource.data.initialServiceAreaKey == request.resource.data.serviceAreaKeys[0]
+        && request.resource.data.coverageAreaKeys is list
+        && request.resource.data.coverageAreaKeys.hasAll(request.resource.data.serviceAreaKeys)
+        && request.resource.data.serviceAreas is list
+        && request.resource.data.serviceAreas.size() == 1
+        && request.resource.data.serviceAreas[0].city == 'cairo'
+        && request.resource.data.serviceAreas[0].neighborhood == request.resource.data.initialServiceAreaKey
+        && request.resource.data.visibilityTier == 'organic'
+        && request.resource.data.visibilityPaidUntil == null
+        && request.resource.data.paidVisibilityStartedAt == null
+        && request.resource.data.activeVisibilityRequestId == null
+        && request.resource.data.activeVisibilityProductId == null
+        && request.resource.data.activeVisibilityProductVersion == null
+        && request.resource.data.paidVisibilityHoldUntil == null
+        && request.resource.data.rankingPenalty == 0
+        && request.resource.data.rankingPenaltyUntil == null
+        && request.resource.data.verificationStatus == 'submitted'
+        && request.resource.data.verificationReviewedAt == null
+        && request.resource.data.verificationReviewedBy == null
+        && request.resource.data.verificationNotes == null
+        && request.resource.data.profileViews == 0
+        && request.resource.data.avgRating == 0
+        && request.resource.data.reviewCount == 0
+        && request.resource.data.activityScore == 0
+        && request.resource.data.photos is list
+        && request.resource.data.approvedAt == null
+        && hasPolicyCoverageRadius(request.resource.data);
+    }
+
+    function visibilitySnapshotKeysAreSafe() {
+      return request.resource.data.productSnapshot is map
+        && request.resource.data.productSnapshot.keys().hasOnly([
+          'productId',
+          'productVersion',
+          'productType',
+          'durationDays',
+          'priceAmount',
+          'currency',
+          'billingModel',
+          'capPolicy',
+          'paymentProvider',
+          'renewalPolicy',
+          'snapshotAt'
+        ]);
+    }
+
+    function boostSnapshotIsTrusted() {
+      return request.resource.data.productSnapshot.productId == 'visibility_boost_30_paymob'
+        && request.resource.data.productSnapshot.productVersion == 2
+        && request.resource.data.productSnapshot.productType == 'visibility_boost'
+        && request.resource.data.productSnapshot.durationDays == 30
+        && request.resource.data.productSnapshot.priceAmount == 500
+        && request.resource.data.productSnapshot.currency == 'EGP'
+        && request.resource.data.productSnapshot.billingModel == 'pay_as_you_go'
+        && request.resource.data.productSnapshot.capPolicy == 'none'
+        && request.resource.data.productSnapshot.paymentProvider == 'paymob'
+        && request.resource.data.productSnapshot.renewalPolicy == 'none'
+        && request.resource.data.productSnapshot.snapshotAt == request.resource.data.requestedAt;
+    }
+
+    function areaExpansionSnapshotIsTrusted() {
+      return request.resource.data.productSnapshot.productId == 'area_expansion_30_paymob'
+        && request.resource.data.productSnapshot.productVersion == 2
+        && request.resource.data.productSnapshot.productType == 'area_expansion'
+        && request.resource.data.productSnapshot.durationDays == 30
+        && request.resource.data.productSnapshot.priceAmount == 250
+        && request.resource.data.productSnapshot.currency == 'EGP'
+        && request.resource.data.productSnapshot.billingModel == 'monthly_auto_renew'
+        && request.resource.data.productSnapshot.capPolicy == 'coverage_only'
+        && request.resource.data.productSnapshot.paymentProvider == 'paymob'
+        && request.resource.data.productSnapshot.renewalPolicy == 'auto_charge_card'
+        && request.resource.data.productSnapshot.snapshotAt == request.resource.data.requestedAt;
+    }
+
+    function visibilityRequestSnapshotIsTrusted() {
+      return visibilitySnapshotKeysAreSafe()
+        && (
+          (request.resource.data.type == 'boost' && boostSnapshotIsTrusted())
+          || (request.resource.data.type == 'area_expansion' && areaExpansionSnapshotIsTrusted())
+        );
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId)
         && request.resource.data.role in ['customer', 'provider']
         && request.resource.data.status == 'active';
-      allow update: if isAdmin()
-        || (isOwner(userId)
+      allow update: if isOwner(userId)
         && activeUser()
         && request.resource.data.role == resource.data.role
         && request.resource.data.uid == resource.data.uid
         && request.resource.data.status == resource.data.status
         && request.resource.data.banReason == resource.data.banReason
         && request.resource.data.bannedAt == resource.data.bannedAt
-        && request.resource.data.bannedBy == resource.data.bannedBy);
+        && request.resource.data.bannedBy == resource.data.bannedBy;
       allow delete: if false;
     }
 
     match /providers/{providerId} {
-      allow read: if resource.data.status == 'approved' || isOwner(resource.data.userId) || isAdmin();
-      allow create: if activeUser() && request.resource.data.userId == request.auth.uid && request.resource.data.status == 'pending';
+      allow read: if (
+          resource.data.status == 'approved'
+          && providerOwnerActive(resource)
+        ) || (activeUser() && isOwner(resource.data.userId)) || isAdmin();
+      allow create: if activeUser()
+        && providerCreateKeysAreSafe()
+        && providerCreateValuesAreSafe(providerId);
       allow update: if isAdmin()
         || (activeUser()
           && isOwner(resource.data.userId)
@@ -74,13 +229,13 @@ service cloud.firestore {
 
     match /professions/{professionId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if false;
     }
 
     match /contacts/{contactId} {
       allow read: if isAdmin() || isOwner(resource.data.customerId) || isOwner(resource.data.providerId);
       allow create: if false;
-      allow update: if isAdmin();
+      allow update: if false;
       allow delete: if false;
     }
 
@@ -89,18 +244,12 @@ service cloud.firestore {
       allow create: if false;
       allow update: if activeUser()
         && request.auth.uid in resource.data.participants
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          'lastMessage',
-          'lastMessageAt',
-          'unreadCount'
-        ]);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['unreadCount']);
 
       match /messages/{messageId} {
         allow read: if activeUser()
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        allow create: if activeUser()
-          && request.auth.uid == request.resource.data.senderId
-          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        allow create: if false;
         allow update: if activeUser()
           && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
           && resource.data.senderId != request.auth.uid
@@ -112,7 +261,7 @@ service cloud.firestore {
     match /reviews/{reviewId} {
       allow read: if resource.data.status == 'visible' || isAdmin();
       allow create: if false;
-      allow update: if isAdmin();
+      allow update: if false;
       allow delete: if false;
     }
 
@@ -127,6 +276,11 @@ service cloud.firestore {
           'status',
           'paymentConfirmedBy',
           'paymentMethod',
+          'paymentStatus',
+          'paymentReference',
+          'productSnapshot',
+          'disclosureVersion',
+          'disclosureAcceptedAt',
           'notes',
           'requestedAt',
           'processedAt'
@@ -137,7 +291,15 @@ service cloud.firestore {
         && request.resource.data.tier == 'paid'
         && request.resource.data.status == 'pending'
         && request.resource.data.paymentConfirmedBy == null
+        && request.resource.data.paymentMethod in ['manual_cash', 'manual_wallet', 'manual_bank_transfer']
+        && request.resource.data.paymentStatus == 'pending'
+        && request.resource.data.paymentReference == null
         && request.resource.data.processedAt == null
+        && request.resource.data.disclosureVersion == 'visibility-no-guarantee-v1'
+        && request.resource.data.disclosureAcceptedAt == request.resource.data.requestedAt
+        && request.resource.data.notes is string
+        && (request.resource.data.requestedAt is timestamp || request.resource.data.requestedAt is string)
+        && visibilityRequestSnapshotIsTrusted()
         && (
           (request.resource.data.type == 'boost'
             && request.resource.data.serviceArea in get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.serviceAreaKeys)
@@ -145,8 +307,13 @@ service cloud.firestore {
             && !(request.resource.data.serviceArea in get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.serviceAreaKeys)
             && get(/databases/$(database)/documents/providers/$(request.resource.data.providerId)).data.reviewCount >= 30)
         );
-      allow update: if isAdmin();
+      allow update: if false;
       allow delete: if false;
+    }
+
+    match /analyticsEvents/{eventId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
     }
 
     match /adminActions/{actionId} {
@@ -164,7 +331,7 @@ service cloud.firestore {
     match /reports/{reportId} {
       allow read: if isAdmin();
       allow create: if false;
-      allow update: if isAdmin();
+      allow update: if false;
       allow delete: if false;
     }
   }

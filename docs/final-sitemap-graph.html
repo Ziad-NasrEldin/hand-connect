@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Herafy Visual Sitemap</title>
+    <style>
+      :root {
+        --background: hsl(32 45% 97%);
+        --foreground: hsl(24 20% 18%);
+        --card: hsl(35 42% 99%);
+        --card-foreground: hsl(24 20% 18%);
+        --primary: hsl(22 90% 58%);
+        --primary-foreground: hsl(35 60% 98%);
+        --muted: hsl(31 26% 92%);
+        --muted-foreground: hsl(24 12% 42%);
+        --border: hsl(28 26% 83%);
+        --destructive: hsl(8 72% 58%);
+        --hc-orange: oklch(0.68 0.24 35);
+        --hc-orange-soft: oklch(0.79 0.11 47);
+        --hc-orange-ring: oklch(0.88 0.07 43);
+        --hc-ink: oklch(0.32 0.02 43);
+        --hc-paper: oklch(0.98 0.01 63);
+        --hc-paper-deep: oklch(0.94 0.015 55);
+        --hc-surface: oklch(0.965 0.012 55);
+        --hc-cream: oklch(0.975 0.02 72);
+        --hc-rule: oklch(0.83 0.02 55);
+        --hc-shadow: 40 28 14;
+        --radius: 16px;
+        --s-1: 4px;
+        --s-2: 8px;
+        --s-3: 12px;
+        --s-4: 16px;
+        --s-5: 20px;
+        --s-6: 24px;
+        --s-7: 32px;
+        --s-8: 40px;
+        --s-9: 56px;
+        --shadow-sm: 0 10px 24px rgba(var(--hc-shadow), 0.045);
+        --shadow-md: 0 18px 45px rgba(var(--hc-shadow), 0.075);
+        --shadow-lg: 0 28px 70px rgba(var(--hc-shadow), 0.11);
+        --motion-fast: 140ms;
+        --motion-base: 220ms;
+        --motion-slow: 420ms;
+        --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-width: 320px;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          radial-gradient(circle at top right, color-mix(in oklch, var(--hc-orange) 11%, transparent) 0, transparent 31%),
+          radial-gradient(circle at left 8% bottom 14%, color-mix(in oklch, var(--hc-orange) 6%, transparent) 0, transparent 24%),
+          linear-gradient(180deg, color-mix(in oklch, var(--hc-paper) 94%, white) 0%, color-mix(in oklch, var(--hc-paper-deep) 90%, white) 100%);
+        color: var(--foreground);
+        font-family: Cairo, "Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-rendering: geometricPrecision;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      .page {
+        width: min(1360px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: var(--s-7) 0 var(--s-9);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: var(--s-5);
+        align-items: stretch;
+        margin-bottom: var(--s-5);
+      }
+
+      .hero-main,
+      .summary-card,
+      .surface,
+      .route-card,
+      .lane,
+      .metric,
+      .table-shell {
+        border: 1px solid var(--hc-rule);
+        border-radius: calc(var(--radius) + 2px);
+        background: var(--hc-paper);
+        box-shadow: var(--shadow-md);
+      }
+
+      .hero-main {
+        min-height: 312px;
+        padding: clamp(24px, 4vw, 44px);
+        overflow: hidden;
+      }
+
+      .eyebrow-bar {
+        display: block;
+        width: 64px;
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, color-mix(in oklch, var(--hc-orange) 88%, white), color-mix(in oklch, var(--hc-orange) 58%, white));
+        transform-origin: left center;
+        animation: hc-bar-arrive var(--motion-slow) var(--ease-out-expo) both;
+      }
+
+      .section-label {
+        margin: var(--s-5) 0 var(--s-3);
+        color: color-mix(in oklch, var(--hc-orange) 72%, var(--hc-ink));
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .hero-title {
+        max-width: 940px;
+        margin: 0;
+        color: color-mix(in oklch, var(--hc-ink) 94%, black);
+        font-family: "Archivo Black", Cairo, Impact, ui-sans-serif, system-ui, sans-serif;
+        font-size: clamp(3rem, 7vw, 6.25rem);
+        letter-spacing: -0.07em;
+        line-height: 0.88;
+        text-transform: uppercase;
+      }
+
+      .hero-copy {
+        max-width: 74ch;
+        margin: var(--s-5) 0 0;
+        color: var(--muted-foreground);
+        font-size: clamp(1rem, 1.6vw, 1.18rem);
+        line-height: 1.8;
+      }
+
+      .summary-card {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4);
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-3);
+      }
+
+      .metric {
+        min-height: 114px;
+        padding: var(--s-4);
+        background: linear-gradient(180deg, color-mix(in oklch, var(--hc-paper) 92%, white), color-mix(in oklch, var(--hc-surface) 94%, white));
+        box-shadow: var(--shadow-sm);
+      }
+
+      .metric-label {
+        margin: 0;
+        color: var(--muted-foreground);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .metric-value {
+        margin: var(--s-2) 0 0;
+        color: var(--hc-orange);
+        font-family: "Archivo Black", Cairo, Impact, ui-sans-serif, system-ui, sans-serif;
+        font-size: 2.8rem;
+        letter-spacing: -0.07em;
+        line-height: 0.94;
+      }
+
+      .metric-note {
+        margin: var(--s-2) 0 0;
+        color: var(--muted-foreground);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .topology {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2);
+        align-items: center;
+        margin-top: var(--s-6);
+      }
+
+      .chip,
+      .pill,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .chip {
+        min-height: 38px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--foreground);
+        padding: 0 var(--s-4);
+      }
+
+      .arrow {
+        color: var(--primary);
+        font-weight: 900;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 248px minmax(0, 1fr);
+        gap: var(--s-5);
+        align-items: start;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: var(--s-4);
+        z-index: 5;
+        border: 1px solid var(--border);
+        border-radius: calc(var(--radius) + 2px);
+        background: color-mix(in oklch, var(--card) 92%, white);
+        box-shadow: var(--shadow-md);
+        padding: var(--s-3);
+      }
+
+      .filter {
+        width: 100%;
+        min-height: 46px;
+        margin-bottom: var(--s-3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+        color: var(--foreground);
+        outline: none;
+        padding: 0 var(--s-3);
+        transition: border-color var(--motion-base) var(--ease-out-quart), box-shadow var(--motion-base) var(--ease-out-quart);
+      }
+
+      .filter:focus {
+        border-color: var(--hc-orange-soft);
+        box-shadow: 0 0 0 4px color-mix(in oklch, var(--hc-orange-ring) 44%, transparent);
+      }
+
+      .tabs {
+        display: grid;
+        gap: var(--s-2);
+      }
+
+      .tab {
+        min-height: 46px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: color-mix(in oklch, var(--hc-ink) 82%, white);
+        cursor: pointer;
+        font-weight: 900;
+        padding: 0 var(--s-3);
+        text-align: left;
+        transition: background var(--motion-base) var(--ease-out-quart), color var(--motion-base) var(--ease-out-quart), transform var(--motion-base) var(--ease-out-quart), box-shadow var(--motion-base) var(--ease-out-quart);
+      }
+
+      .tab:hover {
+        background: color-mix(in oklch, var(--hc-orange) 10%, white);
+        color: color-mix(in oklch, var(--hc-ink) 94%, black);
+        transform: translateY(-1px);
+      }
+
+      .tab[aria-selected="true"] {
+        background: var(--hc-cream);
+        color: var(--foreground);
+        box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--hc-orange-soft) 58%, white);
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .panel {
+        display: none;
+      }
+
+      .panel.is-active {
+        display: block;
+      }
+
+      .panel-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--s-4);
+        align-items: end;
+        margin-bottom: var(--s-4);
+      }
+
+      .panel-kicker {
+        margin: 0 0 var(--s-2);
+        color: color-mix(in oklch, var(--hc-orange) 72%, var(--hc-ink));
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .panel-title {
+        margin: 0;
+        color: color-mix(in oklch, var(--hc-ink) 94%, black);
+        font-size: clamp(2rem, 4vw, 3.7rem);
+        letter-spacing: -0.055em;
+        line-height: 0.96;
+      }
+
+      .panel-desc {
+        max-width: 68ch;
+        margin: var(--s-3) 0 0;
+        color: var(--muted-foreground);
+        line-height: 1.7;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: var(--s-2);
+      }
+
+      .pill {
+        min-height: 30px;
+        border: 1px solid color-mix(in oklch, var(--hc-orange-soft) 50%, var(--border));
+        background: color-mix(in oklch, var(--hc-cream) 78%, white);
+        color: color-mix(in oklch, var(--hc-ink) 90%, white);
+        font-size: 0.74rem;
+        padding: 0 var(--s-3);
+      }
+
+      .route-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--s-4);
+        align-items: start;
+      }
+
+      .lane {
+        min-width: 0;
+        background: color-mix(in oklch, var(--hc-surface) 86%, white);
+        box-shadow: var(--shadow-sm);
+        padding: var(--s-3);
+      }
+
+      .lane-header {
+        display: flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2);
+        margin-bottom: var(--s-3);
+        padding: 0 var(--s-1);
+      }
+
+      .lane-title {
+        margin: 0;
+        color: var(--foreground);
+        font-size: 1rem;
+        letter-spacing: -0.01em;
+      }
+
+      .lane-count {
+        min-width: 30px;
+        min-height: 30px;
+        border-radius: 999px;
+        background: var(--hc-cream);
+        color: var(--primary);
+        display: grid;
+        font-size: 0.8rem;
+        font-weight: 900;
+        place-items: center;
+      }
+
+      .route-stack {
+        display: grid;
+        gap: var(--s-3);
+        min-width: 0;
+      }
+
+      .route-card {
+        width: 100%;
+        min-width: 0;
+        min-height: 148px;
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: var(--s-2);
+        border-color: var(--border);
+        background: var(--card);
+        box-shadow: var(--shadow-sm);
+        padding: var(--s-4);
+        transition: border-color var(--motion-base) var(--ease-out-quart), box-shadow var(--motion-base) var(--ease-out-quart), transform var(--motion-base) var(--ease-out-quart);
+      }
+
+      .route-card:hover {
+        border-color: color-mix(in oklch, var(--hc-orange-soft) 62%, var(--hc-rule));
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .route-card.featured {
+        border-color: color-mix(in oklch, var(--hc-orange-soft) 70%, var(--border));
+        background: var(--hc-cream);
+      }
+
+      .path {
+        min-width: 0;
+        color: var(--primary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-size: 0.86rem;
+        font-weight: 900;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .component {
+        min-width: 0;
+        color: var(--foreground);
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .purpose {
+        min-width: 0;
+        color: var(--muted-foreground);
+        font-size: 0.86rem;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tag {
+        min-height: 25px;
+        background: color-mix(in oklch, var(--muted) 84%, white);
+        color: color-mix(in oklch, var(--hc-ink) 82%, white);
+        font-size: 0.69rem;
+        padding: 0 8px;
+      }
+
+      .tag.customer {
+        background: color-mix(in oklch, oklch(0.74 0.1 145) 16%, white);
+      }
+
+      .tag.provider {
+        background: color-mix(in oklch, var(--hc-orange-soft) 22%, white);
+      }
+
+      .tag.admin {
+        background: color-mix(in oklch, var(--hc-orange) 16%, white);
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: var(--s-4);
+        align-items: stretch;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .surface {
+        min-width: 0;
+        padding: var(--s-5);
+      }
+
+      .surface-title {
+        margin: 0 0 var(--s-3);
+        color: var(--foreground);
+        font-size: 1.2rem;
+        letter-spacing: -0.02em;
+      }
+
+      .surface-copy {
+        margin: 0;
+        color: var(--muted-foreground);
+        line-height: 1.65;
+      }
+
+      .tree-list {
+        display: grid;
+        gap: var(--s-2);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .tree-list li {
+        min-height: 44px;
+        border-left: 3px solid color-mix(in oklch, var(--hc-orange-soft) 48%, var(--border));
+        border-radius: 0 12px 12px 0;
+        background: color-mix(in oklch, var(--hc-surface) 78%, white);
+        color: var(--muted-foreground);
+        line-height: 1.55;
+        padding: 10px var(--s-3);
+      }
+
+      .tree-list strong {
+        color: var(--foreground);
+      }
+
+      .flow-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2);
+        align-items: center;
+      }
+
+      .flow-card {
+        flex: 1 1 150px;
+        min-height: 74px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--card);
+        padding: var(--s-3);
+      }
+
+      .flow-card strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .soft-note {
+        border: 1px solid color-mix(in oklch, var(--hc-orange-soft) 40%, var(--hc-rule));
+        border-radius: calc(var(--radius) - 2px);
+        background: color-mix(in oklch, var(--hc-cream) 78%, white);
+        color: color-mix(in oklch, var(--hc-ink) 90%, white);
+        line-height: 1.7;
+        padding: var(--s-4);
+      }
+
+      .table-shell {
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .table-scroll {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 13px var(--s-4);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: color-mix(in oklch, var(--hc-cream) 74%, white);
+        color: color-mix(in oklch, var(--hc-ink) 94%, black);
+        font-size: 0.74rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td {
+        color: var(--muted-foreground);
+        line-height: 1.55;
+      }
+
+      td strong,
+      td code {
+        color: var(--foreground);
+      }
+
+      .hidden-by-filter {
+        display: none !important;
+      }
+
+      .tab-empty {
+        display: none;
+        margin-top: var(--s-4);
+      }
+
+      .tab-empty.is-visible {
+        display: block;
+      }
+
+      .footer {
+        margin-top: var(--s-7);
+        color: var(--muted-foreground);
+        font-size: 0.9rem;
+        line-height: 1.7;
+      }
+
+      @keyframes hc-bar-arrive {
+        from {
+          opacity: 0;
+          transform: scaleX(0.35);
+        }
+        to {
+          opacity: 1;
+          transform: scaleX(1);
+        }
+      }
+
+      @keyframes hc-route-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px) scale(0.992);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .grid-4 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 900px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .tabs {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .tab {
+          text-align: center;
+        }
+
+        .panel-head,
+        .grid-2,
+        .grid-3,
+        .grid-4 {
+          grid-template-columns: 1fr;
+        }
+
+        .legend {
+          justify-content: flex-start;
+        }
+
+        .route-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .page {
+          width: min(100% - 20px, 1360px);
+          padding-top: var(--s-4);
+        }
+
+        .hero-main {
+          min-height: 0;
+        }
+
+        .metric-grid,
+        .route-grid,
+        .tabs {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-delay: 0ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        .route-card:hover,
+        .tab:hover {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero" aria-label="Herafy visual sitemap summary">
+        <div class="hero-main">
+          <span class="eyebrow-bar"></span>
+          <p class="section-label">Hand Connect / Herafy</p>
+          <h1 class="hero-title">Visual Sitemap</h1>
+          <p class="hero-copy">
+            A cleaned-up graphical map of the project: route hierarchy, role journeys, design system, data model, backend surface, and platform/deployment structure. Styled with the existing Herafy warm paper, orange, rounded-card visual language.
+          </p>
+          <div class="topology" aria-label="Product topology">
+            <span class="chip">Directory</span>
+            <span class="arrow">-></span>
+            <span class="chip">Verified profiles</span>
+            <span class="arrow">-></span>
+            <span class="chip">Direct contact</span>
+            <span class="arrow">-></span>
+            <span class="chip">Contact-gated reviews</span>
+          </div>
+        </div>
+
+        <aside class="summary-card" aria-label="Project totals">
+          <div class="metric-grid">
+            <div class="metric">
+              <p class="metric-label">Routes</p>
+              <p class="metric-value">20</p>
+              <p class="metric-note">Implemented app paths.</p>
+            </div>
+            <div class="metric">
+              <p class="metric-label">Roles</p>
+              <p class="metric-value">4</p>
+              <p class="metric-note">Guest, customer, provider, admin.</p>
+            </div>
+            <div class="metric">
+              <p class="metric-label">API</p>
+              <p class="metric-value">5</p>
+              <p class="metric-note">Vercel endpoints.</p>
+            </div>
+            <div class="metric">
+              <p class="metric-label">Functions</p>
+              <p class="metric-value">12</p>
+              <p class="metric-note">Firebase callable/business exports.</p>
+            </div>
+          </div>
+          <div class="soft-note">
+            Product boundary: Cairo connection layer, not booking, scheduling, service payments, escrow, job assignment, or service guarantees.
+          </div>
+        </aside>
+      </section>
+
+      <section class="workspace" aria-label="Interactive sitemap workspace">
+        <aside class="sidebar">
+          <input id="filter" class="filter" type="search" placeholder="Filter this map..." aria-label="Filter sitemap" />
+          <div class="tabs" role="tablist" aria-label="Sitemap sections">
+            <button class="tab" type="button" role="tab" aria-selected="true" aria-controls="routes-panel" data-tab="routes">Routes</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="journeys-panel" data-tab="journeys">Journeys</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="design-panel" data-tab="design">Design</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="data-panel" data-tab="data">Data</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="backend-panel" data-tab="backend">Backend</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="platform-panel" data-tab="platform">Platform</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="inventory-panel" data-tab="inventory">Inventory</button>
+          </div>
+        </aside>
+
+        <div class="content">
+          <section id="routes-panel" class="panel is-active" role="tabpanel" data-panel="routes">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Canonical App Router</p>
+                <h2 class="panel-title">Route Matrix</h2>
+                <p class="panel-desc">The full app route tree grouped by user access and nested layout. Cards are equalized inside lanes to keep scan lines clean.</p>
+              </div>
+              <div class="legend">
+                <span class="pill">public</span>
+                <span class="pill">customer</span>
+                <span class="pill">provider</span>
+                <span class="pill">admin</span>
+              </div>
+            </header>
+
+            <div class="route-grid">
+              <article class="lane" data-search="public app layout landing search provider profile pending guest">
+                <div class="lane-header"><h3 class="lane-title">Public</h3><span class="lane-count">4</span></div>
+                <div class="route-stack">
+                  <div class="route-card featured" data-search="/ LandingPage public home landing cta search join provider">
+                    <div class="path">/</div><div class="component">LandingPage</div><div class="purpose">Brand entry with search and provider-join CTAs.</div><div class="tag-row"><span class="tag">public</span></div>
+                  </div>
+                  <div class="route-card" data-search="/search SearchPage public profession area geolocation providers results featured">
+                    <div class="path">/search</div><div class="component">SearchPage</div><div class="purpose">Search approved providers by profession and neighborhood.</div><div class="tag-row"><span class="tag">public</span></div>
+                  </div>
+                  <div class="route-card" data-search="/providers/:id ProviderProfilePage public profile reviews whatsapp message report">
+                    <div class="path">/providers/:id</div><div class="component">ProviderProfilePage</div><div class="purpose">Profile, photos, reviews, WhatsApp, messages, reports.</div><div class="tag-row"><span class="tag">public view</span><span class="tag customer">auth actions</span></div>
+                  </div>
+                  <div class="route-card" data-search="/pending PendingProviderPage provider status pending rejected">
+                    <div class="path">/pending</div><div class="component">PendingProviderPage</div><div class="purpose">Provider application status card.</div><div class="tag-row"><span class="tag provider">status</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lane" data-search="auth public only route login register join provider">
+                <div class="lane-header"><h3 class="lane-title">Auth</h3><span class="lane-count">3</span></div>
+                <div class="route-stack">
+                  <div class="route-card" data-search="/login LoginPage guest auth email password google redirect">
+                    <div class="path">/login</div><div class="component">LoginPage</div><div class="purpose">Email/password and Google login with role redirect.</div><div class="tag-row"><span class="tag">guest only</span></div>
+                  </div>
+                  <div class="route-card" data-search="/register RegisterPage customer provider registration identity file">
+                    <div class="path">/register</div><div class="component">RegisterPage</div><div class="purpose">Customer or provider registration.</div><div class="tag-row"><span class="tag">guest only</span></div>
+                  </div>
+                  <div class="route-card" data-search="/join-provider RegisterPage provider alias preselected identity">
+                    <div class="path">/join-provider</div><div class="component">RegisterPage</div><div class="purpose">Provider alias with provider role preselected.</div><div class="tag-row"><span class="tag provider">provider applicant</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lane" data-search="authenticated messages reviews customer conversations chat review">
+                <div class="lane-header"><h3 class="lane-title">Authenticated</h3><span class="lane-count">3</span></div>
+                <div class="route-stack">
+                  <div class="route-card" data-search="/messages ConversationsPage authenticated inbox conversation list unread">
+                    <div class="path">/messages</div><div class="component">ConversationsPage</div><div class="purpose">Conversation list with unread count and last message.</div><div class="tag-row"><span class="tag customer">customer</span><span class="tag provider">provider</span></div>
+                  </div>
+                  <div class="route-card" data-search="/messages/:id ConversationPage authenticated chat thread report message send">
+                    <div class="path">/messages/:id</div><div class="component">ConversationPage</div><div class="purpose">Chat thread, send message, report incoming message.</div><div class="tag-row"><span class="tag customer">customer</span><span class="tag provider">provider</span></div>
+                  </div>
+                  <div class="route-card" data-search="/reviews/new/:providerId NewReviewPage customer contact eligibility rating comment">
+                    <div class="path">/reviews/new/:providerId</div><div class="component">NewReviewPage</div><div class="purpose">Contact-gated review form.</div><div class="tag-row"><span class="tag customer">customer only</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lane" data-search="provider layout dashboard profile edit visibility paid metrics">
+                <div class="lane-header"><h3 class="lane-title">Provider</h3><span class="lane-count">3</span></div>
+                <div class="route-stack">
+                  <div class="route-card" data-search="/dashboard ProviderDashboardPage provider approved metrics views contacts rating conversations response reviews chart">
+                    <div class="path">/dashboard</div><div class="component">ProviderDashboardPage</div><div class="purpose">Metrics dashboard with chart and latest reviews.</div><div class="tag-row"><span class="tag provider">approved</span></div>
+                  </div>
+                  <div class="route-card" data-search="/profile/edit EditProviderProfilePage provider bio profession whatsapp photo profile settings">
+                    <div class="path">/profile/edit</div><div class="component">EditProviderProfilePage</div><div class="purpose">Edit bio, profession, WhatsApp, visibility, and photo.</div><div class="tag-row"><span class="tag provider">approved</span></div>
+                  </div>
+                  <div class="route-card" data-search="/visibility VisibilityPage provider paid visibility area expansion request history manual payment">
+                    <div class="path">/visibility</div><div class="component">VisibilityPage</div><div class="purpose">Paid visibility and area-expansion requests.</div><div class="tag-row"><span class="tag provider">approved</span></div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="lane" data-search="admin layout applications providers professions visibility reports actions audit moderation">
+                <div class="lane-header"><h3 class="lane-title">Admin</h3><span class="lane-count">7</span></div>
+                <div class="route-stack">
+                  <div class="route-card featured" data-search="/admin AdminDashboardPage admin overview applications providers suspended visibility reviews">
+                    <div class="path">/admin</div><div class="component">AdminDashboardPage</div><div class="purpose">Overview of pending and moderation counts.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/applications ApplicationsPage identity document approve reject provider applications">
+                    <div class="path">/admin/applications</div><div class="component">ApplicationsPage</div><div class="purpose">Review identity documents and provider applications.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/providers ProvidersPage suspend ban unban account moderation provider status">
+                    <div class="path">/admin/providers</div><div class="component">ProvidersPage</div><div class="purpose">Suspend providers and ban/unban users.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/professions ProfessionsPage create profession slug active inactive toggle">
+                    <div class="path">/admin/professions</div><div class="component">ProfessionsPage</div><div class="purpose">Create professions and toggle active state.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/visibility VisibilityRequestsPage confirm payment reject paid visibility area expansion">
+                    <div class="path">/admin/visibility</div><div class="component">VisibilityRequestsPage</div><div class="purpose">Confirm manual payment or reject requests.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/reports ReportsPage abuse moderation reports hide review resolve">
+                    <div class="path">/admin/reports</div><div class="component">ReportsPage</div><div class="purpose">Resolve abuse reports and hide reported reviews.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                  <div class="route-card" data-search="/admin/actions AuditLogPage admin actions audit log reason target">
+                    <div class="path">/admin/actions</div><div class="component">AuditLogPage</div><div class="purpose">Read admin action audit trail.</div><div class="tag-row"><span class="tag admin">admin</span></div>
+                  </div>
+                </div>
+              </article>
+            </div>
+            <div class="tab-empty soft-note">No route cards match the current filter.</div>
+          </section>
+
+          <section id="journeys-panel" class="panel" role="tabpanel" data-panel="journeys">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Role Flows</p>
+                <h2 class="panel-title">Journey Boards</h2>
+                <p class="panel-desc">Each board shows the intended path through the product without mixing it into the route matrix.</p>
+              </div>
+            </header>
+            <div class="grid-3">
+              <article class="surface" data-search="customer journey guest search profile contact whatsapp message review report">
+                <span class="eyebrow-bar"></span>
+                <h3 class="surface-title" style="margin-top: 20px">Customer</h3>
+                <ul class="tree-list">
+                  <li><strong>Discover:</strong> / -> /search -> /providers/:id</li>
+                  <li><strong>Authenticate:</strong> /login or /register</li>
+                  <li><strong>Contact:</strong> reveal WhatsApp or start message</li>
+                  <li><strong>Message:</strong> /messages -> /messages/:id</li>
+                  <li><strong>Review:</strong> /reviews/new/:providerId after contact</li>
+                  <li><strong>Safety:</strong> report provider, review, or message</li>
+                </ul>
+              </article>
+              <article class="surface" data-search="provider journey join pending dashboard edit profile visibility messages approval">
+                <span class="eyebrow-bar"></span>
+                <h3 class="surface-title" style="margin-top: 20px">Provider</h3>
+                <ul class="tree-list">
+                  <li><strong>Apply:</strong> /join-provider with identity upload</li>
+                  <li><strong>Wait:</strong> /pending until admin approval</li>
+                  <li><strong>Measure:</strong> /dashboard metrics and reviews</li>
+                  <li><strong>Edit:</strong> /profile/edit settings</li>
+                  <li><strong>Promote:</strong> /visibility boosts and area expansion</li>
+                  <li><strong>Respond:</strong> shared /messages routes</li>
+                </ul>
+              </article>
+              <article class="surface" data-search="admin journey applications providers professions visibility reports actions moderation audit">
+                <span class="eyebrow-bar"></span>
+                <h3 class="surface-title" style="margin-top: 20px">Admin</h3>
+                <ul class="tree-list">
+                  <li><strong>Overview:</strong> /admin stats</li>
+                  <li><strong>Applications:</strong> approve/reject providers</li>
+                  <li><strong>Providers:</strong> suspend, ban, unban</li>
+                  <li><strong>Professions:</strong> create/toggle categories</li>
+                  <li><strong>Visibility:</strong> confirm/reject manual payment</li>
+                  <li><strong>Moderate:</strong> reports and audit log</li>
+                </ul>
+              </article>
+            </div>
+            <div class="tab-empty soft-note">No journey cards match the current filter.</div>
+          </section>
+
+          <section id="design-panel" class="panel" role="tabpanel" data-panel="design">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Implemented Visual Language</p>
+                <h2 class="panel-title">Design System</h2>
+                <p class="panel-desc">The graph uses the same Herafy design direction: paper surfaces, orange accents, Cairo typography, rounded cards, soft motion, and mobile-first spacing.</p>
+              </div>
+            </header>
+            <div class="grid-4">
+              <article class="surface" data-search="design tokens orange cream paper border radius colors globals css"><h3 class="surface-title">Tokens</h3><p class="surface-copy">Warm paper background, orange primary, cream highlights, border/rule colors, 16px radius, semantic Tailwind colors.</p></article>
+              <article class="surface" data-search="typography cairo source sans archivo black fonts arabic rtl ltr"><h3 class="surface-title">Typography</h3><p class="surface-copy">Cairo Arabic-first body, Source Sans 3 Latin fallback, Archivo Black for brand and display numerals.</p></article>
+              <article class="surface" data-search="motion route animation stagger hover reduced motion shimmer bubble"><h3 class="surface-title">Motion</h3><p class="surface-copy">Route entry, card hover lift, staggered reveals, message bubbles, shimmer, and reduced-motion support.</p></article>
+              <article class="surface" data-search="components button card input select textarea label empty loading error boundary page intro language toggle"><h3 class="surface-title">Primitives</h3><p class="surface-copy">Button, Card, Input, Select, Textarea, Label, EmptyState, LoadingState, ErrorBoundary, PageIntro, LanguageToggle.</p></article>
+            </div>
+            <div class="surface" style="margin-top: 16px" data-search="layout design app auth provider admin sidebar top nav">
+              <h3 class="surface-title">Layout Flow</h3>
+              <div class="flow-line">
+                <div class="flow-card"><strong>AppLayout</strong><span class="purpose">Global shell and top navigation.</span></div>
+                <span class="arrow">-></span>
+                <div class="flow-card"><strong>AuthLayout</strong><span class="purpose">Guest login/register shell.</span></div>
+                <span class="arrow">+</span>
+                <div class="flow-card"><strong>ProviderLayout</strong><span class="purpose">Provider sidebar workspace.</span></div>
+                <span class="arrow">+</span>
+                <div class="flow-card"><strong>AdminLayout</strong><span class="purpose">Admin sidebar workspace.</span></div>
+              </div>
+            </div>
+            <div class="tab-empty soft-note">No design cards match the current filter.</div>
+          </section>
+
+          <section id="data-panel" class="panel" role="tabpanel" data-panel="data">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Firebase And Demo DB</p>
+                <h2 class="panel-title">Data Model</h2>
+                <p class="panel-desc">Domain entities mirrored by TypeScript types, demo localStorage data, Firebase collections, rules, indexes, and storage paths.</p>
+              </div>
+            </header>
+            <div class="grid-3">
+              <article class="surface" data-search="users providers identity documents professions contacts conversations messages reviews">
+                <h3 class="surface-title">Core Collections</h3>
+                <ul class="tree-list">
+                  <li><strong>users:</strong> role, status, profile, phone, language</li>
+                  <li><strong>providers:</strong> status, profession, areas, coverage, WhatsApp, paid visibility, metrics</li>
+                  <li><strong>providerIdentityDocuments:</strong> private provider/admin identity review</li>
+                  <li><strong>professions:</strong> Arabic/English category metadata</li>
+                  <li><strong>contacts:</strong> WhatsApp reveal or platform message contact events</li>
+                  <li><strong>conversations/messages:</strong> participants, unread counts, message records</li>
+                  <li><strong>reviews:</strong> contact-gated rating and comment records</li>
+                </ul>
+              </article>
+              <article class="surface" data-search="visibility requests analytics events admin actions reports paid monetization">
+                <h3 class="surface-title">Operations Collections</h3>
+                <ul class="tree-list">
+                  <li><strong>visibilityRequests:</strong> boost or area expansion, payment status, product snapshot</li>
+                  <li><strong>analyticsEvents:</strong> server-owned event records, admin-readable</li>
+                  <li><strong>adminActions:</strong> audit entries for admin decisions</li>
+                  <li><strong>reports:</strong> provider, review, or message abuse reports</li>
+                </ul>
+              </article>
+              <article class="surface" data-search="storage provider photos identity documents rules public private">
+                <h3 class="surface-title">Storage Paths</h3>
+                <ul class="tree-list">
+                  <li><strong>providerPhotos/{providerId}/{fileName}:</strong> public read, owner write</li>
+                  <li><strong>identityDocuments/{providerId}/{fileName}:</strong> admin or owner read, owner write</li>
+                  <li><strong>all other paths:</strong> denied</li>
+                </ul>
+              </article>
+            </div>
+            <div class="tab-empty soft-note">No data cards match the current filter.</div>
+          </section>
+
+          <section id="backend-panel" class="panel" role="tabpanel" data-panel="backend">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Server Surface</p>
+                <h2 class="panel-title">Backend</h2>
+                <p class="panel-desc">Firebase callable/business exports plus Vercel utility endpoints.</p>
+              </div>
+            </header>
+            <div class="grid-2">
+              <article class="surface" data-search="firebase functions approve provider reject suspend review visibility engagement report whatsapp conversation analytics">
+                <h3 class="surface-title">Firebase Functions</h3>
+                <ul class="tree-list">
+                  <li><strong>providers:</strong> approveProvider, rejectProvider, suspendProvider</li>
+                  <li><strong>reviews:</strong> createReview, hideReview, recalculateRating</li>
+                  <li><strong>analytics:</strong> trackProfileView, writeAnalyticsEvent</li>
+                  <li><strong>visibility:</strong> approveVisibility, approveVisibilityRequest, rejectVisibilityRequest, expiredVisibilityPatch</li>
+                  <li><strong>engagement:</strong> revealWhatsApp, startConversation, reportProvider, reportReview, reportMessage</li>
+                  <li><strong>abuse/audit:</strong> isPotentialLeadSpam, writeAudit</li>
+                </ul>
+              </article>
+              <article class="surface" data-search="vercel api health abuse check admin assert reason reviews recalculate visibility approve">
+                <h3 class="surface-title">Vercel API</h3>
+                <ul class="tree-list">
+                  <li><strong>GET /api/health:</strong> ok, service, provider, environment, region, timestamp</li>
+                  <li><strong>POST /api/abuse/check:</strong> lead-spam helper</li>
+                  <li><strong>POST /api/admin/assert-reason:</strong> validates admin reason</li>
+                  <li><strong>POST /api/reviews/recalculate:</strong> rating aggregate helper</li>
+                  <li><strong>POST /api/visibility/approve:</strong> paid-until calculation helper</li>
+                </ul>
+              </article>
+            </div>
+            <div class="tab-empty soft-note">No backend cards match the current filter.</div>
+          </section>
+
+          <section id="platform-panel" class="panel" role="tabpanel" data-panel="platform">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Deployment Map</p>
+                <h2 class="panel-title">Platform</h2>
+                <p class="panel-desc">Web build, Firebase/Vercel hosting behavior, emulator topology, and Capacitor iOS wrapper.</p>
+              </div>
+            </header>
+            <div class="grid-3">
+              <article class="surface" data-search="vite react web app firebase hosting vercel spa rewrite"><h3 class="surface-title">Web App</h3><ul class="tree-list"><li>Vite, React, TypeScript</li><li>React Router, React Query, Zustand</li><li>Firebase and Vercel SPA rewrites to /index.html</li></ul></article>
+              <article class="surface" data-search="firebase firestore storage functions emulators auth rules indexes"><h3 class="surface-title">Firebase</h3><ul class="tree-list"><li>Firestore rules and indexes</li><li>Storage rules</li><li>Functions source in functions/</li><li>Emulators: auth, firestore, storage, functions, hosting, UI</li></ul></article>
+              <article class="surface" data-search="capacitor ios herafy app store wrapper com herafy eg app"><h3 class="surface-title">iOS Wrapper</h3><ul class="tree-list"><li>appId: com.herafy-eg.app</li><li>appName: Herafy</li><li>webDir: dist</li><li>iOS contentInset: automatic</li></ul></article>
+            </div>
+            <div class="tab-empty soft-note">No platform cards match the current filter.</div>
+          </section>
+
+          <section id="inventory-panel" class="panel" role="tabpanel" data-panel="inventory">
+            <header class="panel-head">
+              <div>
+                <p class="panel-kicker">Exact List</p>
+                <h2 class="panel-title">Route Inventory</h2>
+                <p class="panel-desc">A compact source-backed table for cross-checking the graphical matrix.</p>
+              </div>
+            </header>
+            <div class="table-shell">
+              <div class="table-scroll">
+                <table>
+                  <thead><tr><th>Path</th><th>Component</th><th>Guard</th><th>Users</th><th>Purpose</th></tr></thead>
+                  <tbody>
+                    <tr data-search="/ LandingPage public landing"><td><code>/</code></td><td><strong>LandingPage</strong></td><td>public</td><td>all</td><td>Brand/product entry and CTAs</td></tr>
+                    <tr data-search="/search SearchPage public"><td><code>/search</code></td><td><strong>SearchPage</strong></td><td>public</td><td>guest/customer</td><td>Provider search by profession and area</td></tr>
+                    <tr data-search="/providers/:id ProviderProfilePage public"><td><code>/providers/:id</code></td><td><strong>ProviderProfilePage</strong></td><td>public view</td><td>guest/customer</td><td>Profile, reviews, contact actions</td></tr>
+                    <tr data-search="/login LoginPage guest"><td><code>/login</code></td><td><strong>LoginPage</strong></td><td>guest only</td><td>guest</td><td>Email/password and Google login</td></tr>
+                    <tr data-search="/register RegisterPage guest"><td><code>/register</code></td><td><strong>RegisterPage</strong></td><td>guest only</td><td>guest</td><td>Customer or provider registration</td></tr>
+                    <tr data-search="/join-provider RegisterPage provider"><td><code>/join-provider</code></td><td><strong>RegisterPage</strong></td><td>guest only</td><td>provider applicant</td><td>Provider registration alias</td></tr>
+                    <tr data-search="/pending PendingProviderPage"><td><code>/pending</code></td><td><strong>PendingProviderPage</strong></td><td>public route</td><td>provider applicant</td><td>Provider review status</td></tr>
+                    <tr data-search="/messages ConversationsPage auth"><td><code>/messages</code></td><td><strong>ConversationsPage</strong></td><td>authenticated</td><td>customer/provider</td><td>Conversation list</td></tr>
+                    <tr data-search="/messages/:id ConversationPage auth"><td><code>/messages/:id</code></td><td><strong>ConversationPage</strong></td><td>authenticated</td><td>participants</td><td>Chat thread</td></tr>
+                    <tr data-search="/reviews/new/:providerId NewReviewPage customer"><td><code>/reviews/new/:providerId</code></td><td><strong>NewReviewPage</strong></td><td>customer</td><td>customer</td><td>Contact-gated review form</td></tr>
+                    <tr data-search="/dashboard ProviderDashboardPage provider"><td><code>/dashboard</code></td><td><strong>ProviderDashboardPage</strong></td><td>approved provider</td><td>provider</td><td>Metrics dashboard</td></tr>
+                    <tr data-search="/profile/edit EditProviderProfilePage provider"><td><code>/profile/edit</code></td><td><strong>EditProviderProfilePage</strong></td><td>approved provider</td><td>provider</td><td>Profile settings</td></tr>
+                    <tr data-search="/visibility VisibilityPage provider"><td><code>/visibility</code></td><td><strong>VisibilityPage</strong></td><td>approved provider</td><td>provider</td><td>Paid visibility and area expansion request</td></tr>
+                    <tr data-search="/admin AdminDashboardPage admin"><td><code>/admin</code></td><td><strong>AdminDashboardPage</strong></td><td>admin</td><td>admin</td><td>Admin overview</td></tr>
+                    <tr data-search="/admin/applications ApplicationsPage admin"><td><code>/admin/applications</code></td><td><strong>ApplicationsPage</strong></td><td>admin</td><td>admin</td><td>Provider application review</td></tr>
+                    <tr data-search="/admin/providers ProvidersPage admin"><td><code>/admin/providers</code></td><td><strong>ProvidersPage</strong></td><td>admin</td><td>admin</td><td>Provider/account moderation</td></tr>
+                    <tr data-search="/admin/professions ProfessionsPage admin"><td><code>/admin/professions</code></td><td><strong>ProfessionsPage</strong></td><td>admin</td><td>admin</td><td>Profession management</td></tr>
+                    <tr data-search="/admin/visibility VisibilityRequestsPage admin"><td><code>/admin/visibility</code></td><td><strong>VisibilityRequestsPage</strong></td><td>admin</td><td>admin</td><td>Paid visibility moderation</td></tr>
+                    <tr data-search="/admin/reports ReportsPage admin"><td><code>/admin/reports</code></td><td><strong>ReportsPage</strong></td><td>admin</td><td>admin</td><td>Abuse report moderation</td></tr>
+                    <tr data-search="/admin/actions AuditLogPage admin"><td><code>/admin/actions</code></td><td><strong>AuditLogPage</strong></td><td>admin</td><td>admin</td><td>Audit log</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tab-empty soft-note">No table rows match the current filter.</div>
+          </section>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Source-backed by <code>docs/final-sitemap.md</code> and the current router in <code>src/router/app-router.tsx</code>. This HTML is self-contained and uses Herafy design tokens from the implemented app.
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        const tabs = Array.from(document.querySelectorAll('.tab'));
+        const panels = Array.from(document.querySelectorAll('.panel'));
+        const filter = document.getElementById('filter');
+
+        function activate(name) {
+          tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.dataset.tab === name)));
+          panels.forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === name));
+          applyFilter();
+        }
+
+        function applyFilter() {
+          const query = filter.value.trim().toLowerCase();
+          const active = panels.find((panel) => panel.classList.contains('is-active'));
+          if (!active) return;
+
+          const items = Array.from(active.querySelectorAll('[data-search]')).filter((item) => !item.classList.contains('lane'));
+          let visible = 0;
+          items.forEach((item) => {
+            const matches = !query || (item.dataset.search || '').toLowerCase().includes(query);
+            item.classList.toggle('hidden-by-filter', !matches);
+            if (matches) visible += 1;
+          });
+
+          active.querySelectorAll('.lane').forEach((lane) => {
+            const visibleCards = lane.querySelectorAll('.route-card:not(.hidden-by-filter)').length;
+            lane.classList.toggle('hidden-by-filter', Boolean(query) && visibleCards === 0);
+          });
+
+          const empty = active.querySelector('.tab-empty');
+          if (empty) empty.classList.toggle('is-visible', Boolean(query) && visible === 0);
+        }
+
+        tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+        filter.addEventListener('input', applyFilter);
+      })();
+    </script>
+  </body>
+</html>

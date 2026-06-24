@@ -5,6 +5,7 @@ test-results
 playwright-report
 coverage
 .firebase
+.codegraph
 .mcp_data
 .tmp-brand
 .symdex

@@ -1,9 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getProviderMetrics } from './analytics.service';
 import { resetDemoDb } from './demo/demo-db';
 
 describe('analytics service', () => {
-  beforeEach(() => resetDemoDb());
+  beforeEach(() => {
+    vi.stubEnv('VITE_HAND_CONNECT_DATA_SOURCE', 'demo');
+    resetDemoDb();
+  });
 
   it('returns provider contact, response, and review metrics', async () => {
     const metrics = await getProviderMetrics('provider-demo');

@@ -109,16 +109,24 @@ export async function approveVisibilityRequest(adminId: string, requestId: strin
   if (!provider) throw new Error('error.provider.notFound');
   request.status = 'approved';
   request.paymentConfirmedBy = adminId;
+  request.paymentStatus = 'matched';
   request.notes = [request.notes, notes].filter(Boolean).join('\n');
   request.processedAt = nowIso();
   if (request.type === 'area_expansion') {
     if (!provider.serviceAreaKeys.includes(request.serviceArea)) {
       provider.serviceAreaKeys.push(request.serviceArea);
+      provider.coverageAreaKeys = [...new Set([...provider.coverageAreaKeys, request.serviceArea])].sort();
       provider.serviceAreas.push({ neighborhood: request.serviceArea, city: 'cairo' });
     }
   } else {
+    const durationDays = request.productSnapshot?.durationDays ?? 30;
+    const now = Date.now();
     provider.visibilityTier = 'paid';
-    provider.visibilityPaidUntil = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+    provider.visibilityPaidUntil = new Date(now + 1000 * 60 * 60 * 24 * durationDays).toISOString();
+    provider.paidVisibilityStartedAt = nowIso();
+    provider.activeVisibilityRequestId = requestId;
+    provider.activeVisibilityProductId = request.productSnapshot?.productId ?? null;
+    provider.activeVisibilityProductVersion = request.productSnapshot?.productVersion ?? null;
   }
   db.adminActions.push(audit(adminId, 'visibilityRequest', requestId, 'approve_visibility', notes));
   writeDb(db);
@@ -130,6 +138,7 @@ export async function rejectVisibilityRequest(adminId: string, requestId: string
   if (!request) throw new Error('error.request.notFound');
   if (request.status !== 'pending') throw new Error('error.request.notPending');
   request.status = 'rejected';
+  request.paymentStatus = 'rejected';
   request.rejectionReason = reason;
   request.processedAt = nowIso();
   db.adminActions.push(audit(adminId, 'visibilityRequest', requestId, 'reject_visibility', reason));

@@ -59,7 +59,7 @@ export function ProfessionsPage() {
 
   return (
     <div className="motion-stagger space-y-5">
-      <Card>
+      <Card className="motion-reveal">
         <CardHeader>
           <CardTitle>{t('admin.professions')}</CardTitle>
         </CardHeader>
@@ -87,7 +87,7 @@ export function ProfessionsPage() {
           </form>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="motion-reveal">
         <CardContent className="motion-stagger space-y-3 p-5">
           {query.data?.map((profession) => (
             <div key={profession.id} className="soft-list-item flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">

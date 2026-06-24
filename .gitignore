@@ -21,3 +21,12 @@ tsconfig.node.tsbuildinfo
 
 .vercel
 .vite/
+
+.codegraph/
+tmp/
+output/
+FINAL OUTPUT/
+firestore-debug.log
+docs/product/.DS_Store
+public/.well-known/acme-challenge/
+/LNHVK3TvJGykZL3TAqW6-ZPoiESBSfKLq4ch0JupETCg1wJJ15Hu-BRwqhrIig-k

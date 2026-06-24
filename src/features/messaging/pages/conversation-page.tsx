@@ -16,16 +16,51 @@ export function ConversationPage() {
   const sendMessage = useSendMessage(id!);
   const reportMessage = useReportMessage();
   const [text, setText] = useState('');
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [pendingReportId, setPendingReportId] = useState<string | null>(null);
+
+  function readableError(error: unknown, fallbackKey: string) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.startsWith('error.')) return t(message);
+    return t(fallbackKey);
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!user || !text.trim()) return;
-    sendMessage.mutate({ senderId: user.uid, text });
-    setText('');
+    setSendError(null);
+    sendMessage.mutate(
+      { senderId: user.uid, text },
+      {
+        onSuccess: () => setText(''),
+        onError: (error) => setSendError(readableError(error, 'messages.sendFailed')),
+      },
+    );
+  }
+
+  async function report(messageId: string) {
+    if (!user || pendingReportId) return;
+    setPendingReportId(messageId);
+    setReportStatus(null);
+    setReportError(null);
+    try {
+      await reportMessage.mutateAsync({
+        reporterId: user.uid,
+        messageId,
+        reason: 'report.reason.messageAbuse',
+      });
+      setReportStatus(t('messages.reportSubmitted'));
+    } catch (error) {
+      setReportError(readableError(error, 'messages.reportFailed'));
+    } finally {
+      setPendingReportId(null);
+    }
   }
 
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('messages.title')}</CardTitle>
       </CardHeader>
@@ -46,14 +81,9 @@ export function ConversationPage() {
                 <Button
                   className="mt-2 h-auto px-0 py-0 text-xs underline"
                   type="button"
+                  disabled={pendingReportId === message.id}
                   variant="ghost"
-                  onClick={() =>
-                    reportMessage.mutate({
-                      reporterId: user.uid,
-                      messageId: message.id,
-                      reason: 'report.reason.messageAbuse',
-                    })
-                  }
+                  onClick={() => void report(message.id)}
                 >
                   {t('messages.report')}
                 </Button>
@@ -61,6 +91,21 @@ export function ConversationPage() {
             </div>
           ))}
         </div>
+        {reportStatus ? (
+          <p className="motion-pop soft-note p-3 text-sm font-semibold" role="status">
+            {reportStatus}
+          </p>
+        ) : null}
+        {reportError ? (
+          <p className="motion-pop soft-note p-3 text-sm font-semibold text-destructive" role="alert">
+            {reportError}
+          </p>
+        ) : null}
+        {sendError ? (
+          <p className="motion-pop soft-note p-3 text-sm font-semibold text-destructive" role="alert">
+            {sendError}
+          </p>
+        ) : null}
         <form
           className="motion-stagger grid gap-2 md:grid-cols-[1fr_auto]"
           onSubmit={submit}

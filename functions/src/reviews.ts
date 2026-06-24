@@ -1,6 +1,7 @@
 import { getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, type Firestore, type Transaction } from 'firebase-admin/firestore';
+import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { writeAnalyticsEvent } from './analytics.js';
 
 export interface RatingReview {
   rating: number;
@@ -19,6 +20,13 @@ interface ReviewRecord extends RatingReview {
 interface UserRecord {
   role?: string;
   status?: string;
+}
+
+const dayMs = 24 * 60 * 60 * 1000;
+const limits = { reviewCreates: 20 };
+
+export function isReviewRateLimited(reviewsInDay: number) {
+  return reviewsInDay >= limits.reviewCreates;
 }
 
 export function isActiveUser(user: UserRecord | undefined) {
@@ -76,25 +84,22 @@ async function requireAdmin(firestore: Firestore, uid: string) {
   }
 }
 
-async function requireActiveUser(firestore: Firestore, uid: string) {
+async function requireActiveCustomer(firestore: Firestore, uid: string) {
   const user = await firestore.collection('users').doc(uid).get();
-  if (!isActiveUser(user.data() as UserRecord | undefined)) {
-    throw new HttpsError('permission-denied', 'Active account is required.');
+  const data = user.data() as UserRecord | undefined;
+  if (!isActiveUser(data) || data?.role !== 'customer') {
+    throw new HttpsError('permission-denied', 'Customer access is required.');
   }
 }
 
-async function recalculateProviderRating(
-  transaction: Transaction,
-  firestore: Firestore,
-  providerId: string,
-) {
-  const reviewsSnapshot = await transaction.get(
-    firestore.collection('reviews').where('providerId', '==', providerId),
-  );
-  const rating = recalculateRating(
-    reviewsSnapshot.docs.map((review) => review.data() as RatingReview),
-  );
-  transaction.update(firestore.collection('providers').doc(providerId), rating);
+async function assertDailyReviewLimit(firestore: Firestore, customerId: string) {
+  const since = new Date(Date.now() - dayMs).toISOString();
+  const reviews = await firestore
+    .collection('reviews')
+    .where('customerId', '==', customerId)
+    .where('createdAt', '>=', since)
+    .get();
+  if (isReviewRateLimited(reviews.size)) throw new HttpsError('resource-exhausted', 'error.rateLimit.exceeded');
 }
 
 export const createReview = onCall(async (request) => {
@@ -103,7 +108,8 @@ export const createReview = onCall(async (request) => {
   const rating = readRating(request.data?.rating);
   const comment = readString(request.data?.comment, 'comment', 2000);
   const firestore = db();
-  await requireActiveUser(firestore, customerId);
+  await requireActiveCustomer(firestore, customerId);
+  await assertDailyReviewLimit(firestore, customerId);
   const review = await firestore.runTransaction(async (transaction) => {
     const existingReviews = await transaction.get(
       firestore
@@ -161,6 +167,18 @@ export const createReview = onCall(async (request) => {
       reviewData,
     ]);
     transaction.update(providerRef, aggregate);
+    writeAnalyticsEvent(transaction, firestore, {
+      type: 'review_created',
+      actorId: customerId,
+      targetType: 'provider',
+      targetId: providerId,
+      metadata: {
+        rating,
+        avgRating: aggregate.avgRating,
+        reviewCount: aggregate.reviewCount,
+      },
+      createdAt: timestamp,
+    });
     return { id: reviewRef.id, ...reviewData };
   });
   return review;
@@ -179,12 +197,24 @@ export const hideReview = onCall(async (request) => {
     const review = await transaction.get(reviewRef);
     if (!review.exists) throw new HttpsError('not-found', 'Review not found.');
     const reviewData = review.data() as ReviewRecord;
+    const timestamp = new Date().toISOString();
+    const visibleReviews = await transaction.get(
+      firestore
+        .collection('reviews')
+        .where('providerId', '==', reviewData.providerId)
+        .where('status', '==', 'visible'),
+    );
+    const aggregate = recalculateRating(
+      visibleReviews.docs
+        .filter((item) => item.id !== reviewId)
+        .map((item) => item.data() as RatingReview),
+    );
     transaction.update(reviewRef, { status: 'removed' });
     if (reportId) {
       transaction.update(firestore.collection('reports').doc(reportId), {
         status: 'closed',
         resolvedBy: adminId,
-        resolvedAt: new Date().toISOString(),
+        resolvedAt: timestamp,
         resolutionReason: reason,
       });
     }
@@ -195,8 +225,16 @@ export const hideReview = onCall(async (request) => {
       targetId: reviewId,
       action: 'hide_review',
       reason,
-      createdAt: new Date().toISOString(),
+      createdAt: timestamp,
     });
-    await recalculateProviderRating(transaction, firestore, reviewData.providerId);
+    transaction.update(firestore.collection('providers').doc(reviewData.providerId), aggregate);
+    writeAnalyticsEvent(transaction, firestore, {
+      type: 'review_moderated',
+      actorId: adminId,
+      targetType: 'review',
+      targetId: reviewId,
+      metadata: { providerId: reviewData.providerId, status: 'removed' },
+      createdAt: timestamp,
+    });
   });
 });

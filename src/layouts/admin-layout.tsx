@@ -14,10 +14,10 @@ const adminLinks = [
 export function AdminLayout() {
   const { t } = useTranslation();
   return (
-    <div className="grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
-      <aside className="motion-reveal rounded-[calc(var(--radius)+2px)] border border-border bg-card p-3 shadow-[0_18px_40px_rgba(73,55,38,0.05)]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+      <aside className="motion-reveal min-w-0 overflow-hidden rounded-[calc(var(--radius)+2px)] border border-border bg-card p-3 shadow-[0_18px_40px_rgba(73,55,38,0.05)]">
         <div className="brand-eyebrow mb-4" />
-        <nav className="motion-stagger flex gap-2 overflow-x-auto lg:grid lg:gap-1">
+        <nav className="motion-stagger flex max-w-full gap-2 overflow-x-auto lg:grid lg:gap-1">
           {adminLinks.map(([href, key]) => (
             <NavLink
               key={href}
@@ -32,7 +32,9 @@ export function AdminLayout() {
           ))}
         </nav>
       </aside>
-      <Outlet />
+      <div className="motion-reveal min-w-0">
+        <Outlet />
+      </div>
     </div>
   );
 }

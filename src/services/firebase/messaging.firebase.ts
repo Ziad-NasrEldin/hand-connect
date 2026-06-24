@@ -6,14 +6,12 @@ import {
   onSnapshot,
   orderBy,
   query,
-  runTransaction,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/firebase/db';
 import { callFirebaseFunction } from '@/firebase/functions';
 import { conversationConverter, messageConverter } from '@/firebase/converters';
-import { nowIso } from '@/lib/dates';
 import type { Conversation, Message } from '@/types/messaging';
 import type { ConversationDetails, MessagingService } from '../contracts/messaging.contract';
 
@@ -23,49 +21,16 @@ function requireFirebaseDb() {
   return db;
 }
 
-function createId(prefix: string) {
-  return `${prefix}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
-}
-
 export const firebaseMessagingService: MessagingService = {
   conversationIdFor: (customerId: string, providerId: string) => `${customerId}_${providerId}`,
   startConversation: async (customerId, providerId, text) => {
     return callFirebaseFunction<{ providerId: string; text: string }, Conversation>('startConversation', { providerId, text });
   },
-  sendMessage: async (conversationId, senderId, text) => {
-    const db = requireFirebaseDb();
-    const conversationRef = doc(db, 'conversations', conversationId).withConverter(conversationConverter);
-    const messageRef = doc(
-      collection(db, 'conversations', conversationId, 'messages'),
-      createId('message'),
-    ).withConverter(messageConverter);
-    const timestamp = nowIso();
-
-    return runTransaction(db, async (transaction) => {
-      const conversationSnapshot = await transaction.get(conversationRef);
-      if (!conversationSnapshot.exists()) throw new Error('error.conversation.notFound');
-      const conversation = conversationSnapshot.data();
-      if (!conversation.participants.includes(senderId)) {
-        throw new Error('error.conversation.notFound');
-      }
-      const recipientId = conversation.participants.find((item) => item !== senderId)!;
-      const message: Message = {
-        id: messageRef.id,
-        conversationId,
-        senderId,
-        text,
-        createdAt: timestamp,
-        read: false,
-      };
-      transaction.set(messageRef, message);
-      transaction.update(conversationRef, {
-        lastMessage: text,
-        lastMessageAt: timestamp,
-        [`unreadCount.${recipientId}`]: (conversation.unreadCount[recipientId] ?? 0) + 1,
-      });
-      return message;
-    });
-  },
+  sendMessage: async (_conversationId, _senderId, text) =>
+    callFirebaseFunction<{ conversationId: string; text: string }, Message>('sendMessage', {
+      conversationId: _conversationId,
+      text,
+    }),
   listConversations: async (userId) => {
     const db = requireFirebaseDb();
     const snapshot = await getDocs(

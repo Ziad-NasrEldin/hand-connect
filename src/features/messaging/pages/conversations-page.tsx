@@ -11,7 +11,7 @@ export function ConversationsPage() {
   const conversations = useConversations(user?.uid);
 
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('messages.title')}</CardTitle>
       </CardHeader>
@@ -23,12 +23,14 @@ export function ConversationsPage() {
           <Link
             key={conversation.id}
             to={`/messages/${conversation.id}`}
-            className="soft-list-item block p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-[color:var(--hc-cream)] sm:p-5"
+            className="soft-list-item block p-4 sm:p-5"
           >
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-semibold text-foreground">{conversation.id}</p>
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <p className="min-w-0 break-words font-semibold text-foreground [overflow-wrap:anywhere]">
+                {conversation.id}
+              </p>
               {user && conversation.unreadCount[user.uid] ? (
-                <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+                <span className="shrink-0 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
                   {conversation.unreadCount[user.uid]}
                 </span>
               ) : null}

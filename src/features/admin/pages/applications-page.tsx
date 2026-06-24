@@ -26,7 +26,7 @@ export function ApplicationsPage() {
   }
 
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('admin.applications')}</CardTitle>
       </CardHeader>
@@ -78,6 +78,10 @@ export function ApplicationsPage() {
                       <a
                         className="text-sm font-semibold text-primary underline-offset-4 hover:underline"
                         href={identityUrl}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          void openIdentityDocument(identityUrl);
+                        }}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -90,12 +94,12 @@ export function ApplicationsPage() {
                     )}
                   </div>
                 ) : (
-                  <p className="mt-1 text-xs text-destructive">
+                  <p className="motion-pop mt-1 text-xs text-destructive">
                     {t('admin.identityDocumentMissing')}
                   </p>
                 )}
               </div>
-              <div className="flex flex-col gap-2 md:flex-row">
+              <div className="motion-stagger flex flex-col gap-2 md:flex-row">
                 <Button onClick={() => void approve(provider.id)}>
                   {t('common.approve')}
                 </Button>
@@ -116,6 +120,31 @@ export function ApplicationsPage() {
 
 function documentPreviewUrl(identityDocument: { previewDataUrl?: string; downloadUrl?: string }) {
   return identityDocument.previewDataUrl || identityDocument.downloadUrl || '';
+}
+
+async function openIdentityDocument(url: string) {
+  const tab = window.open('about:blank', '_blank');
+
+  if (!tab) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  tab.opener = null;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('identity-document-open-failed');
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    tab.location.href = blobUrl;
+
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+  } catch {
+    tab.location.href = url;
+  }
 }
 
 function formatFileSize(size: number) {

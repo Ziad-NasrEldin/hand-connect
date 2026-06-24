@@ -1,4 +1,4 @@
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select';
 import { neighborhoods, getNeighborhoodName } from '@/config/neighborhoods';
 import { getProfessionName } from '@/config/professions';
 import { useSearchProviders } from '@/hooks/use-search-providers';
+import { findNearestNeighborhood } from '@/lib/location';
 import { isPaidVisibilityActive } from '@/lib/ranking';
 import { normalizeSearchFilters } from '@/lib/search-filters';
 import { listProfessions } from '@/services/search.service';
@@ -20,6 +21,8 @@ export function SearchPage() {
   const { t, i18n } = useTranslation();
   const language = i18n.language === 'en' ? 'en' : 'ar';
   const [params, setParams] = useSearchParams();
+  const [locationMessageKey, setLocationMessageKey] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   const [, startTransition] = useTransition();
   const professionsQuery = useQuery({
     queryKey: ['professions', 'active'],
@@ -45,6 +48,36 @@ export function SearchPage() {
     });
   }
 
+  function useCurrentLocation() {
+    setLocationMessageKey(null);
+    if (!navigator.geolocation) {
+      setLocationMessageKey('search.locationUnavailable');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nearest = findNearestNeighborhood({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        updateFilters({ neighborhood: nearest.slug });
+        setLocationMessageKey('search.locationSelected');
+        setIsLocating(false);
+      },
+      (error) => {
+        setLocationMessageKey(
+          error.code === error.PERMISSION_DENIED
+            ? 'search.locationDenied'
+            : 'search.locationUnavailable',
+        );
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
+    );
+  }
+
   return (
     <div className="motion-stagger space-y-5 sm:space-y-7">
       <PageIntro
@@ -52,7 +85,7 @@ export function SearchPage() {
         title={t('search.title')}
         lead={t('search.lead')}
       />
-      <Card variant="subtle">
+      <Card className="motion-reveal" variant="subtle">
         <CardContent className="p-4 sm:p-5">
           <div className="grid gap-2.5 md:grid-cols-2">
             <Select
@@ -78,9 +111,36 @@ export function SearchPage() {
               }))}
             />
           </div>
+          <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={useCurrentLocation}
+              disabled={isLocating}
+            >
+              {isLocating ? t('search.locating') : t('search.useLocation')}
+            </Button>
+            {locationMessageKey ? (
+              <p className="motion-pop text-sm text-muted-foreground" role="status">
+                {t(locationMessageKey)}
+              </p>
+            ) : null}
+          </div>
+          {professionsQuery.isError ? (
+            <p className="motion-pop mt-3 text-sm text-destructive" role="status">
+              {t('search.professionLoadError')}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
       {query.isLoading ? <LoadingState label={t('common.loading')} /> : null}
+      {query.isError ? (
+        <EmptyState title={t('search.error')}>
+          <Button type="button" onClick={() => void query.refetch()}>
+            {t('search.retry')}
+          </Button>
+        </EmptyState>
+      ) : null}
       {query.data?.length === 0 ? (
         <EmptyState title={t('search.empty')} />
       ) : null}
@@ -108,6 +168,7 @@ function ProviderResultCard({
   const paidActive = isPaidVisibilityActive(provider);
   return (
     <Card
+      className="motion-reveal"
       variant={paidActive ? 'highlight' : 'default'}
     >
       <CardContent className="flex h-full flex-col gap-4 p-5">
@@ -115,7 +176,7 @@ function ProviderResultCard({
           <img
             src={provider.photos[0].url}
             alt={provider.displayName}
-            className="h-44 w-full rounded-2xl object-cover"
+            className="motion-reveal h-44 w-full rounded-2xl object-cover"
           />
         ) : null}
         <div className="flex items-start justify-between gap-3">
@@ -139,6 +200,9 @@ function ProviderResultCard({
           {provider.serviceAreaKeys
             .map((area) => getNeighborhoodName(area, language))
             .join(language === 'ar' ? '، ' : ', ')}
+        </p>
+        <p className="text-sm font-semibold text-muted-foreground">
+          {t('provider.coverageRadius', { count: provider.coverageRadiusKm })}
         </p>
         <div className="mt-auto flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="brand-number text-3xl">{provider.avgRating} / 5</p>

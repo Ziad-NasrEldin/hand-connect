@@ -18,7 +18,7 @@ export function AdminDashboardPage() {
       <PageIntro eyebrow={t('admin.overview')} title={t('admin.title')} />
       <div className="motion-stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map(([label, value]) => (
-          <Card key={label} className="stat-tile">
+          <Card key={label} className="motion-reveal stat-tile">
             <CardContent className="p-5">
               <p className="text-sm font-semibold text-muted-foreground">
                 {label}

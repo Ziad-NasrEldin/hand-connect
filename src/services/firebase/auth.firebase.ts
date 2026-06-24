@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -24,6 +25,7 @@ import { getFirebaseDb } from '@/firebase/db';
 import { getFirebaseStorage } from '@/firebase/storage';
 import { providerConverter, providerIdentityDocumentConverter, userConverter } from '@/firebase/converters';
 import { nowIso } from '@/lib/dates';
+import { computeCoverageAreaKeys, getPlatformCoverageRadiusKm } from '@/lib/provider-coverage';
 import type { ProviderIdentityDocument, ProviderProfile, ProviderStatus } from '@/types/provider';
 import type { AppUser, UserRole } from '@/types/user';
 import type {
@@ -76,12 +78,18 @@ async function getProviderStatus(userId: string): Promise<ProviderStatus | undef
   return fallback.docs[0]?.data().status;
 }
 
-async function createAppUser(input: RegisterCustomerInput, role: UserRole): Promise<AppUser> {
+async function createAppUser(
+  input: RegisterCustomerInput,
+  role: UserRole,
+): Promise<{ user: AppUser; emailVerificationSent: boolean }> {
   const auth = requireFirebaseAuth();
   const db = requireFirebaseDb();
   try {
     const credential = await createUserWithEmailAndPassword(auth, input.email, input.password);
     await updateProfile(credential.user, { displayName: input.displayName });
+    const emailVerificationSent = await sendEmailVerification(credential.user)
+      .then(() => true)
+      .catch(() => false);
 
     const user: AppUser = {
       uid: credential.user.uid,
@@ -97,10 +105,15 @@ async function createAppUser(input: RegisterCustomerInput, role: UserRole): Prom
       createdAt: nowIso(),
     };
     await setDoc(doc(db, 'users', user.uid).withConverter(userConverter), user);
-    return user;
+    return { user, emailVerificationSent };
   } catch (error) {
     throw mapFirebaseAuthError(error);
   }
+}
+
+export async function resolveLoginEmail(identifier: string) {
+  if (identifier.includes('@')) return identifier.trim();
+  throw new Error('error.auth.invalidCredentials');
 }
 
 async function ensureOAuthCustomer(firebaseUser: User): Promise<void> {
@@ -165,9 +178,15 @@ async function uploadIdentityDocument(
 
 async function createProviderProfile(user: AppUser, input: RegisterProviderInput) {
   const db = requireFirebaseDb();
+  const coverageRadiusKm = getPlatformCoverageRadiusKm({
+    city: 'cairo',
+    profession: input.profession,
+    serviceAreaKey: input.serviceArea,
+  });
   const provider: ProviderProfile = {
     id: user.uid,
     userId: user.uid,
+    ownerStatus: 'active',
     displayName: input.displayName,
     phone: input.phone,
     profession: input.profession,
@@ -176,10 +195,24 @@ async function createProviderProfile(user: AppUser, input: RegisterProviderInput
     status: 'pending',
     serviceAreas: [{ neighborhood: input.serviceArea, city: 'cairo' }],
     serviceAreaKeys: [input.serviceArea],
+    initialServiceAreaKey: input.serviceArea,
+    coverageRadiusKm,
+    coverageAreaKeys: computeCoverageAreaKeys([input.serviceArea], coverageRadiusKm),
     whatsappNumber: input.whatsappNumber,
     whatsappVisible: true,
     visibilityTier: 'organic',
     visibilityPaidUntil: null,
+    paidVisibilityStartedAt: null,
+    activeVisibilityRequestId: null,
+    activeVisibilityProductId: null,
+    activeVisibilityProductVersion: null,
+    paidVisibilityHoldUntil: null,
+    rankingPenalty: 0,
+    rankingPenaltyUntil: null,
+    verificationStatus: 'submitted',
+    verificationReviewedAt: null,
+    verificationReviewedBy: null,
+    verificationNotes: null,
     profileViews: 0,
     avgRating: 0,
     reviewCount: 0,
@@ -220,8 +253,9 @@ export const firebaseAuthService: AuthService = {
         .then(onSession)
         .catch(() => onSession({ user: null, providerStatus: undefined }));
     }),
-  login: async (email, password) => {
+  login: async (identifier, password) => {
     try {
+      const email = await resolveLoginEmail(identifier);
       const credential = await signInWithEmailAndPassword(requireFirebaseAuth(), email, password);
       return buildSession(credential.user);
     } catch (error) {
@@ -239,12 +273,12 @@ export const firebaseAuthService: AuthService = {
   },
   logout: async () => signOut(requireFirebaseAuth()),
   registerCustomer: async (input) => {
-    const user = await createAppUser(input, 'customer');
-    return { user, providerStatus: undefined };
+    const { user, emailVerificationSent } = await createAppUser(input, 'customer');
+    return { user, providerStatus: undefined, emailVerificationSent };
   },
   registerProvider: async (input) => {
-    const user = await createAppUser(input, 'provider');
+    const { user, emailVerificationSent } = await createAppUser(input, 'provider');
     await createProviderProfile(user, input);
-    return buildSession(requireFirebaseAuth().currentUser);
+    return { ...(await buildSession(requireFirebaseAuth().currentUser)), emailVerificationSent };
   },
 };

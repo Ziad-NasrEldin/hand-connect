@@ -6,7 +6,7 @@ export function LandingPage() {
   const { t } = useTranslation();
   return (
     <section className="motion-stagger grid gap-5 lg:min-h-[calc(100vh-15rem)] lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
-      <div className="brand-panel overflow-hidden">
+      <div className="motion-reveal brand-panel overflow-hidden">
         <div className="grid h-full gap-8 p-6 sm:p-8 lg:p-10">
           <div className="motion-stagger space-y-6">
             <div className="brand-eyebrow" />
@@ -22,7 +22,7 @@ export function LandingPage() {
               <Button asChild size="lg" variant="outline">
                 <Link to="/join-provider">{t('home.providerCta')}</Link>
               </Button>
-              <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm leading-7 text-muted-foreground">
+              <div className="motion-reveal rounded-xl border border-border bg-card px-4 py-3 text-sm leading-7 text-muted-foreground">
                 {t('home.directContact')}
               </div>
             </div>

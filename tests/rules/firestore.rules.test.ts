@@ -31,8 +31,18 @@ rulesDescribe('firestore security rules: users and providers', () => {
       await setDoc(doc(db, 'users/customer-a'), userDoc('customer-a', 'customer'));
       await setDoc(doc(db, 'users/customer-b'), userDoc('customer-b', 'customer'));
       await setDoc(doc(db, 'users/provider-a'), userDoc('provider-a', 'provider'));
+      await setDoc(doc(db, 'users/provider-banned'), {
+        ...userDoc('provider-banned', 'provider'),
+        status: 'banned',
+        banReason: 'admin.reason.manualBan',
+        bannedAt: '2026-01-02T00:00:00.000Z',
+        bannedBy: 'admin',
+      });
       await setDoc(doc(db, 'providers/provider-a'), providerDoc('provider-a', 'approved'));
+      await setDoc(doc(db, 'providers/provider-banned'), providerDoc('provider-banned', 'approved'));
       await setDoc(doc(db, 'providers/provider-pending'), providerDoc('provider-pending', 'pending'));
+      await setDoc(doc(db, 'providers/provider-rejected'), providerDoc('provider-rejected', 'rejected'));
+      await setDoc(doc(db, 'providers/provider-suspended'), providerDoc('provider-suspended', 'suspended'));
     });
   });
 
@@ -62,7 +72,10 @@ rulesDescribe('firestore security rules: users and providers', () => {
     const admin = testEnv.authenticatedContext('admin').firestore();
 
     await assertSucceeds(getDoc(doc(anon, 'providers/provider-a')));
+    await assertFails(getDoc(doc(anon, 'providers/provider-banned')));
     await assertFails(getDoc(doc(anon, 'providers/provider-pending')));
+    await assertFails(getDoc(doc(anon, 'providers/provider-rejected')));
+    await assertFails(getDoc(doc(anon, 'providers/provider-suspended')));
     await assertSucceeds(getDoc(doc(owner, 'providers/provider-a')));
     await assertSucceeds(getDoc(doc(admin, 'providers/provider-pending')));
 
@@ -82,11 +95,24 @@ rulesDescribe('firestore security rules: users and providers', () => {
     const provider = testEnv.authenticatedContext('provider-new').firestore();
 
     await assertSucceeds(setDoc(doc(provider, 'providers/provider-new'), providerDoc('provider-new', 'pending')));
+    await assertFails(setDoc(doc(provider, 'providers/provider-new-tampered'), {
+      ...providerDoc('provider-new', 'pending'),
+      visibilityTier: 'paid',
+      visibilityPaidUntil: '2026-02-01T00:00:00.000Z',
+    }));
+    await assertFails(setDoc(doc(provider, 'providers/provider-new-extra'), {
+      ...providerDoc('provider-new', 'pending'),
+      unreviewedRankingBoost: 100,
+    }));
+    await assertFails(setDoc(doc(provider, 'providers/provider-new-radius'), {
+      ...providerDoc('provider-new', 'pending'),
+      coverageRadiusKm: 25,
+    }));
     await assertFails(setDoc(doc(provider, 'providers/provider-new-approved'), providerDoc('provider-new', 'approved')));
     await assertFails(setDoc(doc(provider, 'providers/provider-other'), providerDoc('other-user', 'pending')));
   });
 
-  it('allows admin-owned direct moderation writes without Cloud Functions', async () => {
+  it('blocks callable-owned admin mutation writes from clients', async () => {
     const admin = testEnv.authenticatedContext('admin').firestore();
     const customer = testEnv.authenticatedContext('customer-a').firestore();
 
@@ -99,31 +125,31 @@ rulesDescribe('firestore security rules: users and providers', () => {
     await assertSucceeds(setDoc(doc(admin, 'adminActions/action-approve'), adminActionDoc('admin', 'provider', 'provider-pending', 'approve_provider')));
     await assertSucceeds(setDoc(doc(admin, 'adminActions/action-visibility'), adminActionDoc('admin', 'visibilityRequest', 'visibility-a', 'approve_visibility')));
     await assertSucceeds(setDoc(doc(admin, 'adminActions/action-ban'), adminActionDoc('admin', 'user', 'customer-a', 'ban_user')));
-    await assertFails(setDoc(doc(customer, 'adminActions/action-fake'), adminActionDoc('customer-a', 'provider', 'provider-pending', 'approve_provider')));
-  });
-
-  it('allows admins to ban accounts and blocks banned user writes', async () => {
-    const admin = testEnv.authenticatedContext('admin').firestore();
-    const customer = testEnv.authenticatedContext('customer-a').firestore();
-
-    await assertSucceeds(updateDoc(doc(admin, 'users/customer-a'), {
+    await assertFails(updateDoc(doc(admin, 'users/customer-a'), {
       status: 'banned',
       banReason: 'admin.reason.manualBan',
       bannedAt: '2026-01-02T00:00:00.000Z',
       bannedBy: 'admin',
     }));
+    await assertFails(setDoc(doc(admin, 'professions/painting'), professionDoc('painting')));
+    await assertFails(setDoc(doc(customer, 'adminActions/action-fake'), adminActionDoc('customer-a', 'provider', 'provider-pending', 'approve_provider')));
+  });
+
+  it('blocks banned user writes', async () => {
+    const customer = testEnv.authenticatedContext('customer-a').firestore();
+
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), 'users/customer-a'), {
+        status: 'banned',
+        banReason: 'admin.reason.manualBan',
+        bannedAt: '2026-01-02T00:00:00.000Z',
+        bannedBy: 'admin',
+      });
+    });
 
     await assertFails(setDoc(doc(customer, 'reports/report-banned'), reportDoc('customer-a')));
     await assertFails(setDoc(doc(customer, 'contacts/customer-a_provider-a_whatsapp_reveal'), contactDoc('customer-a', 'provider-a')));
     await assertFails(updateDoc(doc(customer, 'users/customer-a'), { displayName: 'Banned edit' }));
-
-    await assertSucceeds(updateDoc(doc(admin, 'users/customer-a'), {
-      status: 'active',
-      banReason: null,
-      bannedAt: null,
-      bannedBy: null,
-    }));
-    await assertSucceeds(updateDoc(doc(customer, 'users/customer-a'), { displayName: 'Allowed edit' }));
   });
 
   it('blocks direct abuse report creation so callable rate limits are required', async () => {
@@ -133,6 +159,15 @@ rulesDescribe('firestore security rules: users and providers', () => {
     await assertFails(setDoc(doc(customer, 'reports/report-spoofed'), reportDoc('customer-b')));
     await assertFails(setDoc(doc(customer, 'reports/report-closed'), { ...reportDoc('customer-a'), status: 'closed' }));
     await assertFails(setDoc(doc(customer, 'reports/report-resolved'), { ...reportDoc('customer-a'), resolvedBy: 'admin' }));
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'reports/report-admin-resolution'), reportDoc('customer-a'));
+    });
+    await assertFails(updateDoc(doc(testEnv.authenticatedContext('admin').firestore(), 'reports/report-admin-resolution'), {
+      status: 'closed',
+      resolvedBy: 'admin',
+      resolvedAt: '2026-01-02T00:00:00.000Z',
+      resolutionReason: 'admin.reason.reportResolved',
+    }));
   });
 
   it('allows provider-owned visibility requests and admin-only processing', async () => {
@@ -141,10 +176,26 @@ rulesDescribe('firestore security rules: users and providers', () => {
     const admin = testEnv.authenticatedContext('admin').firestore();
 
     await assertSucceeds(setDoc(doc(provider, 'visibilityRequests/visibility-a'), visibilityRequestDoc('provider-a')));
+    await assertFails(setDoc(doc(provider, 'visibilityRequests/visibility-paymob-direct'), {
+      ...visibilityRequestDoc('provider-a'),
+      paymentMethod: 'paymob_card',
+    }));
+    await assertFails(setDoc(doc(provider, 'visibilityRequests/visibility-tampered'), {
+      ...visibilityRequestDoc('provider-a'),
+      productSnapshot: {
+        ...visibilityRequestDoc('provider-a').productSnapshot,
+        durationDays: 365,
+      },
+    }));
+    await assertFails(setDoc(doc(provider, 'visibilityRequests/visibility-payment-ref'), {
+      ...visibilityRequestDoc('provider-a'),
+      paymentReference: 'provider-controlled-ref',
+    }));
     await assertFails(setDoc(doc(provider, 'visibilityRequests/visibility-area-expansion'), {
       ...visibilityRequestDoc('provider-a'),
       type: 'area_expansion',
       serviceArea: 'maadi',
+      productSnapshot: areaExpansionSnapshot(),
     }));
     await testEnv.withSecurityRulesDisabled(async (context) => {
       await updateDoc(doc(context.firestore(), 'providers/provider-a'), { reviewCount: 30 });
@@ -153,19 +204,30 @@ rulesDescribe('firestore security rules: users and providers', () => {
       ...visibilityRequestDoc('provider-a'),
       type: 'area_expansion',
       serviceArea: 'maadi',
+      productSnapshot: areaExpansionSnapshot(),
     }));
     await assertFails(setDoc(doc(provider, 'visibilityRequests/visibility-area-expansion-existing'), {
       ...visibilityRequestDoc('provider-a'),
       type: 'area_expansion',
       serviceArea: 'new-cairo',
+      productSnapshot: areaExpansionSnapshot(),
     }));
     await assertFails(setDoc(doc(other, 'visibilityRequests/visibility-b'), visibilityRequestDoc('provider-a')));
     await assertFails(updateDoc(doc(provider, 'visibilityRequests/visibility-a'), { status: 'approved' }));
-    await assertSucceeds(updateDoc(doc(admin, 'visibilityRequests/visibility-a'), {
+    await assertFails(updateDoc(doc(admin, 'visibilityRequests/visibility-a'), {
       status: 'approved',
       paymentConfirmedBy: 'admin',
+      paymentStatus: 'matched',
       processedAt: '2026-01-02T00:00:00.000Z',
     }));
+  });
+
+  it('denies direct analytics event writes', async () => {
+    const admin = testEnv.authenticatedContext('admin').firestore();
+    const customer = testEnv.authenticatedContext('customer-a').firestore();
+
+    await assertFails(setDoc(doc(customer, 'analyticsEvents/event-a'), analyticsEventDoc('customer-a')));
+    await assertFails(setDoc(doc(admin, 'analyticsEvents/event-b'), analyticsEventDoc('admin')));
   });
 
   it('blocks direct review creation so callable aggregate path is required', async () => {
@@ -194,10 +256,14 @@ rulesDescribe('firestore security rules: users and providers', () => {
     const provider = testEnv.authenticatedContext('provider-a').firestore();
 
     await assertSucceeds(updateDoc(doc(customer, 'conversations/customer-a_provider-a'), {
+      unreadCount: { 'customer-a': 0, 'provider-a': 1 },
+    }));
+    await assertFails(updateDoc(doc(customer, 'conversations/customer-a_provider-a'), {
       lastMessage: 'Updated',
       lastMessageAt: '2026-01-02T00:00:00.000Z',
       unreadCount: { 'customer-a': 0, 'provider-a': 1 },
     }));
+    await assertFails(setDoc(doc(customer, 'conversations/customer-a_provider-a/messages/message-new'), messageDoc('message-new', 'customer-a')));
     await assertFails(updateDoc(doc(customer, 'conversations/customer-a_provider-a'), {
       participants: ['customer-a', 'customer-b'],
     }));
@@ -213,6 +279,22 @@ if (!hasFirestoreEmulator) {
       expect(process.env.FIRESTORE_EMULATOR_HOST).toBeUndefined();
     });
   });
+}
+
+function areaExpansionSnapshot() {
+  return {
+    productId: 'area_expansion_30_paymob',
+    productVersion: 2,
+    productType: 'area_expansion',
+    durationDays: 30,
+    priceAmount: 250,
+    currency: 'EGP',
+    billingModel: 'monthly_auto_renew',
+    capPolicy: 'coverage_only',
+    paymentProvider: 'paymob',
+    renewalPolicy: 'auto_charge_card',
+    snapshotAt: '2026-01-01T00:00:00.000Z',
+  };
 }
 
 function userDoc(uid: string, role: 'admin' | 'customer' | 'provider') {
@@ -235,6 +317,7 @@ function providerDoc(userId: string, status: 'pending' | 'approved' | 'suspended
   return {
     id: userId,
     userId,
+    ownerStatus: 'active',
     displayName: userId,
     phone: '+201****0000',
     profession: 'cleaning',
@@ -243,10 +326,24 @@ function providerDoc(userId: string, status: 'pending' | 'approved' | 'suspended
     status,
     serviceAreas: [{ neighborhood: 'new-cairo', city: 'cairo' }],
     serviceAreaKeys: ['new-cairo'],
+    initialServiceAreaKey: 'new-cairo',
+    coverageRadiusKm: 14,
+    coverageAreaKeys: ['new-cairo'],
     whatsappNumber: '+201****0000',
     whatsappVisible: true,
     visibilityTier: 'organic',
     visibilityPaidUntil: null,
+    paidVisibilityStartedAt: null,
+    activeVisibilityRequestId: null,
+    activeVisibilityProductId: null,
+    activeVisibilityProductVersion: null,
+    paidVisibilityHoldUntil: null,
+    rankingPenalty: 0,
+    rankingPenaltyUntil: null,
+    verificationStatus: status === 'approved' ? 'verified' : 'submitted',
+    verificationReviewedAt: status === 'approved' ? '2026-01-01T00:00:00.000Z' : null,
+    verificationReviewedBy: status === 'approved' ? 'admin' : null,
+    verificationNotes: null,
     profileViews: 0,
     avgRating: 0,
     reviewCount: 0,
@@ -297,6 +394,18 @@ function reportDoc(reporterId: string) {
   };
 }
 
+function professionDoc(id: string) {
+  return {
+    id,
+    slug: id,
+    nameAr: 'دهان',
+    nameEn: 'Painting',
+    icon: 'Brush',
+    active: true,
+    sortOrder: 99,
+  };
+}
+
 function adminActionDoc(adminId: string, targetType: 'provider' | 'profession' | 'visibilityRequest' | 'review' | 'report' | 'user', targetId: string, action: string) {
   return {
     adminId,
@@ -316,10 +425,38 @@ function visibilityRequestDoc(providerId: string) {
     serviceArea: 'new-cairo',
     status: 'pending',
     paymentConfirmedBy: null,
-    paymentMethod: 'manual',
+    paymentMethod: 'manual_cash',
+    paymentStatus: 'pending',
+    paymentReference: null,
+    productSnapshot: {
+      productId: 'visibility_boost_30_paymob',
+      productVersion: 2,
+      productType: 'visibility_boost',
+      durationDays: 30,
+      priceAmount: 500,
+      currency: 'EGP',
+      billingModel: 'pay_as_you_go',
+      capPolicy: 'none',
+      paymentProvider: 'paymob',
+      renewalPolicy: 'none',
+      snapshotAt: '2026-01-01T00:00:00.000Z',
+    },
+    disclosureVersion: 'visibility-no-guarantee-v1',
+    disclosureAcceptedAt: '2026-01-01T00:00:00.000Z',
     notes: 'manual cash payment pending',
     requestedAt: '2026-01-01T00:00:00.000Z',
     processedAt: null,
+  };
+}
+
+function analyticsEventDoc(actorId: string) {
+  return {
+    type: 'profile_view',
+    actorId,
+    targetType: 'provider',
+    targetId: 'provider-a',
+    metadata: { source: 'test' },
+    createdAt: '2026-01-02T00:00:00.000Z',
   };
 }
 

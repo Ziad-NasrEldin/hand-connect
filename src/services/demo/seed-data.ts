@@ -6,6 +6,8 @@ import type { Profession, ProviderIdentityDocument, ProviderProfile } from '../.
 import type { Review } from '../../types/review';
 import type { AppUser } from '../../types/user';
 import type { VisibilityRequest } from '../../types/visibility';
+import { computeCoverageAreaKeys, getPlatformCoverageRadiusKm } from '../../lib/provider-coverage';
+import { productForVisibilityRequest } from '../../config/paid-products';
 
 export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v7';
 
@@ -355,10 +357,16 @@ export function createDemoSeedData(): DemoSeedData {
       id: 'visibility-cleaning-new-cairo',
       providerId: 'provider-cleaning',
       tier: 'paid',
+      type: 'boost',
       serviceArea: 'new-cairo',
       status: 'approved',
       paymentConfirmedBy: 'admin-demo',
       paymentMethod: 'manual_cash',
+      paymentStatus: 'matched',
+      paymentReference: null,
+      productSnapshot: visibilityProductSnapshot('boost', '2026-05-01T11:00:00.000Z'),
+      disclosureVersion: 'visibility-no-guarantee-v1',
+      disclosureAcceptedAt: '2026-05-01T11:00:00.000Z',
       notes: 'visibility.note.manualCashPaymentConfirmed',
       requestedAt: '2026-05-01T11:00:00.000Z',
       processedAt: '2026-05-01T16:30:00.000Z',
@@ -367,10 +375,16 @@ export function createDemoSeedData(): DemoSeedData {
       id: 'visibility-carpenter-heliopolis',
       providerId: 'provider-carpenter',
       tier: 'paid',
+      type: 'area_expansion',
       serviceArea: 'heliopolis',
       status: 'pending',
       paymentConfirmedBy: null,
       paymentMethod: 'manual_wallet',
+      paymentStatus: 'pending',
+      paymentReference: null,
+      productSnapshot: visibilityProductSnapshot('area_expansion', '2026-05-04T07:20:00.000Z'),
+      disclosureVersion: 'visibility-no-guarantee-v1',
+      disclosureAcceptedAt: '2026-05-04T07:20:00.000Z',
       notes: 'visibility.note.walletTransferPending',
       requestedAt: '2026-05-04T07:20:00.000Z',
       processedAt: null,
@@ -379,10 +393,16 @@ export function createDemoSeedData(): DemoSeedData {
       id: 'visibility-electric-shorouk-rejected',
       providerId: 'provider-heliopolis-electric',
       tier: 'paid',
+      type: 'area_expansion',
       serviceArea: 'shorouk',
       status: 'rejected',
       paymentConfirmedBy: 'admin-demo',
       paymentMethod: 'manual_wallet',
+      paymentStatus: 'rejected',
+      paymentReference: null,
+      productSnapshot: visibilityProductSnapshot('area_expansion', '2026-05-02T10:10:00.000Z'),
+      disclosureVersion: 'visibility-no-guarantee-v1',
+      disclosureAcceptedAt: '2026-05-02T10:10:00.000Z',
       notes: 'visibility.note.walletTransferMismatch',
       requestedAt: '2026-05-02T10:10:00.000Z',
       processedAt: '2026-05-02T14:00:00.000Z',
@@ -472,6 +492,11 @@ function provider(input: {
   photo?: string;
   rejectionReason?: string;
 }): ProviderProfile {
+  const coverageRadiusKm = getPlatformCoverageRadiusKm({
+    city: 'cairo',
+    profession: input.profession,
+    serviceAreaKey: input.areas[0],
+  });
   return {
     id: input.id,
     userId: input.id,
@@ -484,10 +509,24 @@ function provider(input: {
     rejectionReason: input.rejectionReason,
     serviceAreas: input.areas.map((neighborhood) => ({ neighborhood, city: 'cairo' })),
     serviceAreaKeys: input.areas,
+    initialServiceAreaKey: input.areas[0],
+    coverageRadiusKm,
+    coverageAreaKeys: computeCoverageAreaKeys(input.areas, coverageRadiusKm),
     whatsappNumber: input.whatsappNumber,
     whatsappVisible: true,
     visibilityTier: input.tier,
     visibilityPaidUntil: input.tier === 'paid' ? paidUntil : null,
+    paidVisibilityStartedAt: input.tier === 'paid' ? baseDate : null,
+    activeVisibilityRequestId: null,
+    activeVisibilityProductId: input.tier === 'paid' ? 'visibility_boost_30_manual' : null,
+    activeVisibilityProductVersion: input.tier === 'paid' ? 1 : null,
+    paidVisibilityHoldUntil: null,
+    rankingPenalty: 0,
+    rankingPenaltyUntil: null,
+    verificationStatus: input.verified === false ? 'submitted' : 'verified',
+    verificationReviewedAt: input.verified === false ? null : baseDate,
+    verificationReviewedBy: input.verified === false ? null : 'admin-demo',
+    verificationNotes: null,
     profileViews: input.views,
     avgRating: input.rating,
     reviewCount: input.reviews,
@@ -495,6 +534,24 @@ function provider(input: {
     photos: input.photo ? [{ id: `${input.id}-photo-1`, url: input.photo, alt: `${input.displayName} work sample` }] : [],
     createdAt: baseDate,
     approvedAt: input.status && input.status !== 'approved' ? null : baseDate,
+  };
+}
+
+function visibilityProductSnapshot(type: NonNullable<VisibilityRequest['type']>, snapshotAt: string) {
+  const product = productForVisibilityRequest(type);
+  if (!product) throw new Error(`Missing paid product for ${type}`);
+  return {
+    productId: product.id,
+    productVersion: product.version,
+    productType: product.type,
+    durationDays: product.durationDays,
+    priceAmount: product.priceAmount,
+    currency: product.currency,
+    billingModel: product.billingModel,
+    capPolicy: product.capPolicy,
+    paymentProvider: product.paymentProvider,
+    renewalPolicy: product.renewalPolicy,
+    snapshotAt,
   };
 }
 

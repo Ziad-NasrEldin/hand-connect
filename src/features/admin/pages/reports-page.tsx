@@ -13,7 +13,7 @@ export function ReportsPage() {
   const resolveReport = useResolveReport();
   const hideReview = useHideReview();
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('admin.reports')}</CardTitle>
       </CardHeader>
@@ -45,7 +45,7 @@ export function ReportsPage() {
                   ) : null}
                 </div>
                 {report.status === 'open' && user ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="motion-stagger flex flex-wrap gap-2">
                     {report.targetType === 'review' ? (
                       <Button
                         type="button"

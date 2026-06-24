@@ -13,7 +13,7 @@ export function LoginPage() {
   const { t } = useTranslation();
   const { login, loginWithGoogle, user, providerStatus } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('customer@hand.test');
+  const [identifier, setIdentifier] = useState('customer@hand.test');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
 
@@ -21,7 +21,7 @@ export function LoginPage() {
     event.preventDefault();
     setError('');
     try {
-      const state = await login(email, password);
+      const state = await login(identifier, password);
       navigate(
         getPostLoginRedirect(
           state.user ?? user,
@@ -69,17 +69,21 @@ export function LoginPage() {
           onSubmit={(event) => void submit(event)}
         >
           <div className="space-y-2">
-            <Label htmlFor="email">{t('auth.email')}</Label>
+            <Label htmlFor="login-identifier">{t('auth.emailOrPhone')}</Label>
             <Input
-              id="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              id="login-identifier"
+              required
+              autoComplete="username"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">{t('auth.password')}</Label>
             <Input
               id="password"
+              required
+              autoComplete="current-password"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -100,7 +104,7 @@ export function LoginPage() {
             {t('auth.googleLogin')}
           </Button>
           <Link
-            className="text-center text-sm font-semibold text-primary"
+            className="motion-press text-center text-sm font-semibold text-primary"
             to="/register"
           >
             {t('nav.register')}

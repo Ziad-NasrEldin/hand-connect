@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isActiveAdmin, isActiveUser, recalculateRating } from '../src/reviews.js';
+import { isActiveAdmin, isActiveUser, isReviewRateLimited, recalculateRating } from '../src/reviews.js';
 
 describe('recalculateRating', () => {
   it('excludes removed reviews from provider reputation', () => {
@@ -19,5 +19,12 @@ describe('review callable account guards', () => {
     expect(isActiveUser({ status: 'banned' })).toBe(false);
     expect(isActiveAdmin({ role: 'admin', status: 'active' })).toBe(true);
     expect(isActiveAdmin({ role: 'admin', status: 'banned' })).toBe(false);
+  });
+});
+
+describe('review callable rate limits', () => {
+  it('limits daily review submissions at the configured cap', () => {
+    expect(isReviewRateLimited(19)).toBe(false);
+    expect(isReviewRateLimited(20)).toBe(true);
   });
 });

@@ -12,7 +12,7 @@ export function AuditLogPage() {
   const { t } = useTranslation();
   const actions = useAuditLog();
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('admin.actions')}</CardTitle>
       </CardHeader>

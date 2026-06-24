@@ -7,7 +7,18 @@ export interface RevealWhatsAppResult {
   whatsappUrl: string;
 }
 
-export type ProviderProfileUpdateInput = Partial<ProviderProfile> & {
+export type ProviderProfileUpdateInput = Partial<
+  Pick<
+    ProviderProfile,
+    | 'displayName'
+    | 'phone'
+    | 'profession'
+    | 'bio'
+    | 'whatsappNumber'
+    | 'whatsappVisible'
+    | 'photos'
+  >
+> & {
   profilePhotoFile?: File | null;
 };
 

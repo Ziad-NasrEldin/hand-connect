@@ -9,6 +9,7 @@ export default tseslint.config(
     ignores: [
       'dist',
       '.vite',
+      '.vercel/output',
       '.firebase',
       'node_modules',
       'functions/node_modules',

@@ -26,7 +26,7 @@ export function ProvidersPage() {
     });
   }
   return (
-    <Card>
+    <Card className="motion-reveal">
       <CardHeader>
         <CardTitle>{t('admin.providers')}</CardTitle>
       </CardHeader>
@@ -49,7 +49,7 @@ export function ProvidersPage() {
                   : t('admin.accountActive')}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="motion-stagger flex flex-wrap gap-2">
               {provider.status !== 'suspended' ? (
                 <Button
                   variant="destructive"

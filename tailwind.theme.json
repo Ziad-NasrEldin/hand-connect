@@ -1,0 +1,136 @@
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#f26f36",
+        "secondary": "#6b5b4f",
+        "tertiary": "#f4c18a",
+        "neutral": "#fcf8f3",
+        "background": "#fcf8f3",
+        "foreground": "#372d25",
+        "card": "#fefcf9",
+        "cardForeground": "#372d25",
+        "muted": "#eeeae5",
+        "mutedForeground": "#6b5b4f",
+        "border": "#dbd2ca",
+        "destructive": "#e0543f",
+        "destructiveForeground": "#ffffff",
+        "hcOrange": "#f26f36",
+        "hcOrangeSoft": "#f4c18a",
+        "hcOrangeRing": "#f3d8be",
+        "hcInk": "#48413c",
+        "hcPaper": "#fbfaf6",
+        "hcPaperDeep": "#f0ece4",
+        "hcSurface": "#f7f4ee",
+        "hcCream": "#fbf5df",
+        "hcRule": "#d4c9bb"
+      },
+      "fontFamily": {
+        "display-xl": [
+          "Cairo"
+        ],
+        "display-latin": [
+          "Archivo Black"
+        ],
+        "h1": [
+          "Cairo"
+        ],
+        "h2": [
+          "Cairo"
+        ],
+        "h3": [
+          "Cairo"
+        ],
+        "body-lg": [
+          "Cairo"
+        ],
+        "body-md": [
+          "Cairo"
+        ],
+        "body-sm": [
+          "Cairo"
+        ],
+        "label": [
+          "Cairo"
+        ]
+      },
+      "fontSize": {
+        "display-xl": [
+          "3.5rem",
+          {
+            "letterSpacing": "-0.035em",
+            "fontWeight": "700"
+          }
+        ],
+        "display-latin": [
+          "3.5rem",
+          {
+            "letterSpacing": "-0.05em",
+            "fontWeight": "400"
+          }
+        ],
+        "h1": [
+          "2.5rem",
+          {
+            "letterSpacing": "-0.035em",
+            "fontWeight": "700"
+          }
+        ],
+        "h2": [
+          "1.75rem",
+          {
+            "letterSpacing": "-0.02em",
+            "fontWeight": "700"
+          }
+        ],
+        "h3": [
+          "1.25rem",
+          {
+            "letterSpacing": "-0.01em",
+            "fontWeight": "700"
+          }
+        ],
+        "body-lg": [
+          "1.125rem",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "body-md": [
+          "1rem",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "body-sm": [
+          "0.875rem",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "label": [
+          "0.78rem",
+          {
+            "letterSpacing": "0.14em",
+            "fontWeight": "700"
+          }
+        ]
+      },
+      "borderRadius": {
+        "sm": "12px",
+        "md": "14px",
+        "lg": "16px",
+        "xl": "18px",
+        "pill": "999px"
+      },
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "32px",
+        "2xl": "48px"
+      }
+    }
+  }
+}

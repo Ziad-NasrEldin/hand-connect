@@ -10,6 +10,7 @@ import { professions as seededProfessions } from '@/config/professions';
 import { getFirebaseDb } from '@/firebase/db';
 import { professionConverter, providerConverter } from '@/firebase/converters';
 import { rankProviders } from '@/lib/ranking';
+import { providerCoversNeighborhood } from '@/lib/provider-coverage';
 import { maxSearchLimit } from '@/lib/search-filters';
 import type { SearchService } from '../contracts/search.contract';
 
@@ -41,13 +42,17 @@ export const firebaseSearchService: SearchService = {
         collection(db, 'providers').withConverter(providerConverter),
         where('status', '==', 'approved'),
         where('profession', '==', input.profession),
-        where('serviceAreaKeys', 'array-contains', input.neighborhood),
+        where('coverageAreaKeys', 'array-contains', input.neighborhood),
         orderBy('avgRating', 'desc'),
         firestoreLimit(maxSearchLimit),
       ),
     );
+    const candidates = snapshot.docs
+      .map((item) => item.data())
+      .filter((provider) => provider.ownerStatus === 'active')
+      .filter((provider) => providerCoversNeighborhood(provider, input.neighborhood));
     return rankProviders(
-      snapshot.docs.map((item) => item.data()),
+      candidates,
       input,
     ).slice(0, input.limit);
   },

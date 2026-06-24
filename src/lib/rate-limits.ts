@@ -3,6 +3,7 @@ const dayMs = 24 * 60 * 60 * 1000;
 export const dailyRateLimits = {
   whatsappReveals: 20,
   conversationStarts: 20,
+  reviewCreates: 20,
   reports: 10,
 } as const;
 
