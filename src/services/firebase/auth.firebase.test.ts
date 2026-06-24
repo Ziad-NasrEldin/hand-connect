@@ -16,6 +16,13 @@ const firestoreMocks = vi.hoisted(() => ({
   setDoc: vi.fn(),
 }));
 
+const storageMocks = vi.hoisted(() => ({
+  getDownloadURL: vi.fn(),
+  ref: vi.fn(),
+  uploadBytes: vi.fn(),
+  storageInstance: {},
+}));
+
 const firebaseUser = {
   uid: 'created-provider',
   email: 'created@example.test',
@@ -52,9 +59,9 @@ vi.mock('firebase/firestore', () => ({
 }));
 
 vi.mock('firebase/storage', () => ({
-  getDownloadURL: vi.fn(),
-  ref: vi.fn(),
-  uploadBytes: vi.fn(),
+  getDownloadURL: storageMocks.getDownloadURL,
+  ref: storageMocks.ref,
+  uploadBytes: storageMocks.uploadBytes,
 }));
 
 vi.mock('@/firebase/auth', () => ({
@@ -66,7 +73,7 @@ vi.mock('@/firebase/db', () => ({
 }));
 
 vi.mock('@/firebase/storage', () => ({
-  getFirebaseStorage: () => null,
+  getFirebaseStorage: () => storageMocks.storageInstance,
 }));
 
 describe('firebase auth identifier resolution', () => {
@@ -89,6 +96,11 @@ describe('firebase provider registration rollback', () => {
     authMocks.updateProfile.mockResolvedValue(undefined);
     authMocks.deleteUser.mockResolvedValue(undefined);
     firestoreMocks.deleteDoc.mockResolvedValue(undefined);
+    firestoreMocks.getDoc.mockResolvedValue({ exists: () => false });
+    firestoreMocks.getDocs.mockResolvedValue({ docs: [] });
+    storageMocks.ref.mockReturnValue({ fullPath: 'identityDocuments/created-provider/national-id.pdf' });
+    storageMocks.uploadBytes.mockResolvedValue(undefined);
+    storageMocks.getDownloadURL.mockResolvedValue('https://storage.example.test/national-id.pdf');
     firestoreMocks.setDoc
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error('provider write failed'));
@@ -122,5 +134,73 @@ describe('firebase provider registration rollback', () => {
       'providers/created-provider',
       'users/created-provider',
     ]);
+  });
+
+  it('uploads provider identity documents to storage before writing review metadata', async () => {
+    firestoreMocks.setDoc.mockReset();
+    firestoreMocks.setDoc.mockResolvedValue(undefined);
+    firestoreMocks.getDoc.mockImplementation(async (ref: { path: string }) => {
+      if (ref.path === 'users/created-provider') {
+        return {
+          exists: () => true,
+          data: () => ({
+            uid: 'created-provider',
+            email: 'created@example.test',
+            role: 'provider',
+            status: 'active',
+            displayName: 'Created Provider',
+            phone: '+201001112222',
+          }),
+        };
+      }
+      if (ref.path === 'providers/created-provider') {
+        return {
+          exists: () => true,
+          data: () => ({ status: 'pending' }),
+        };
+      }
+      return { exists: () => false };
+    });
+
+    await expect(
+      firebaseAuthService.registerProvider({
+        displayName: 'Created Provider',
+        email: 'created@example.test',
+        password: 'password',
+        phone: '+201001112222',
+        profession: 'plumbing',
+        serviceArea: 'new-cairo',
+        whatsappNumber: '+201001112222',
+        identityDocument: {
+          fileName: 'national id.pdf',
+          fileType: 'application/pdf',
+          fileSize: 128,
+          uploadedAt: new Date().toISOString(),
+          previewDataUrl: 'data:application/pdf;base64,JVBERi0xLjQK',
+        },
+      }),
+    ).resolves.toMatchObject({
+      providerStatus: 'pending',
+    });
+
+    expect(storageMocks.ref).toHaveBeenCalledWith(
+      storageMocks.storageInstance,
+      expect.stringMatching(/^identityDocuments\/created-provider\/\d+-national_id\.pdf$/),
+    );
+    expect(storageMocks.uploadBytes).toHaveBeenCalledOnce();
+    const [storageRef, blob, metadata] = storageMocks.uploadBytes.mock.calls[0];
+    expect(storageRef).toEqual({ fullPath: 'identityDocuments/created-provider/national-id.pdf' });
+    expect(blob).toMatchObject({ type: 'application/pdf', size: 9 });
+    expect(metadata).toEqual({ contentType: 'application/pdf' });
+    expect(firestoreMocks.setDoc).toHaveBeenLastCalledWith(
+      expect.objectContaining({ path: 'providerIdentityDocuments/created-provider' }),
+      expect.objectContaining({
+        providerId: 'created-provider',
+        downloadUrl: 'https://storage.example.test/national-id.pdf',
+        storagePath: 'identityDocuments/created-provider/national-id.pdf',
+        previewDataUrl: undefined,
+      }),
+    );
+    expect(authMocks.deleteUser).not.toHaveBeenCalled();
   });
 });

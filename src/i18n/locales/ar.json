@@ -317,6 +317,7 @@
   "error.auth.emailExists": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
   "error.auth.accountBanned": "تم حظر هذا الحساب.",
   "error.auth.identityReadFailed": "تعذر قراءة مستند الهوية.",
+  "error.auth.identityUploadFailed": "تعذر رفع مستند الهوية. جرّب ملفاً أصغر أو صورة أوضح.",
   "error.provider.notFound": "تعذر العثور على مزود الخدمة.",
   "error.provider.whatsappUnavailable": "التواصل عبر واتساب غير متاح لهذا المزود.",
   "error.provider.identityRequired": "مستند الهوية مطلوب قبل الموافقة على الطلب.",

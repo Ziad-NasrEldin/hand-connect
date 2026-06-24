@@ -164,8 +164,23 @@ async function ensureOAuthCustomer(firebaseUser: User): Promise<void> {
 }
 
 function optionalFirebaseStorage() {
-  if (import.meta.env.VITE_FIREBASE_STORAGE_ENABLED !== 'true') return null;
+  if (import.meta.env.VITE_FIREBASE_STORAGE_ENABLED === 'false') return null;
   return getFirebaseStorage();
+}
+
+function isSafeFirestoreIdentityFallback(identityDocument: Omit<ProviderIdentityDocument, 'providerId'>) {
+  return (identityDocument.previewDataUrl?.length ?? 0) <= 700_000;
+}
+
+function identityDocumentFirestoreFallback(identityDocument: Omit<ProviderIdentityDocument, 'providerId'>) {
+  if (!isSafeFirestoreIdentityFallback(identityDocument)) {
+    throw new Error('error.auth.identityUploadFailed');
+  }
+
+  return {
+    ...identityDocument,
+    storageFallback: 'firestore-preview-data-url' as const,
+  };
 }
 
 async function uploadIdentityDocument(
@@ -176,10 +191,7 @@ async function uploadIdentityDocument(
 
   const storage = optionalFirebaseStorage();
   if (!storage) {
-    return {
-      ...identityDocument,
-      storageFallback: 'firestore-preview-data-url',
-    };
+    return identityDocumentFirestoreFallback(identityDocument);
   }
 
   try {
@@ -195,10 +207,7 @@ async function uploadIdentityDocument(
       previewDataUrl: undefined,
     };
   } catch {
-    return {
-      ...identityDocument,
-      storageFallback: 'firestore-preview-data-url',
-    };
+    return identityDocumentFirestoreFallback(identityDocument);
   }
 }
 

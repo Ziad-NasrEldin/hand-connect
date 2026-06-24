@@ -317,6 +317,7 @@
   "error.auth.emailExists": "An account with this email already exists.",
   "error.auth.accountBanned": "This account has been banned.",
   "error.auth.identityReadFailed": "Could not read the identity document.",
+  "error.auth.identityUploadFailed": "Could not upload the identity document. Try a smaller file or a clearer image.",
   "error.provider.notFound": "Provider not found.",
   "error.provider.whatsappUnavailable": "WhatsApp contact is not available for this provider.",
   "error.provider.identityRequired": "Identity document is required before approval.",

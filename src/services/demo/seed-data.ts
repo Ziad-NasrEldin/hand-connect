@@ -9,10 +9,11 @@ import type { VisibilityRequest } from '../../types/visibility';
 import { computeCoverageAreaKeys, getPlatformCoverageRadiusKm } from '../../lib/provider-coverage';
 import { productForVisibilityRequest } from '../../config/paid-products';
 
-export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v7';
+export const demoSeedVersion = '2026-06-24-provider-35-reviews-v8';
 
 export const demoSeedCredentials: Record<string, string> = {
   'customer@hand.test': 'pass1234',
+  'provider35@hand.test': 'provider35pass',
 };
 
 const baseDate = '2026-05-04T08:00:00.000Z';
@@ -40,6 +41,7 @@ export function createDemoSeedData(): DemoSeedData {
     user('customer-salma', 'salma.ali@hand.test', 'customer', 'سلمى علي', '+201001117070'),
     user('customer-youssef', 'youssef.adel@hand.test', 'customer', 'يوسف عادل', '+201221117171'),
     user('provider-demo', 'provider@hand.test', 'provider', 'أحمد السبّاك', '+201011113333'),
+    user('provider-35-reviews', 'provider35@hand.test', 'provider', 'يوسف صيانة', '+201001113535'),
     user('provider-plumbing-fifth', 'tarek.plumbing@hand.test', 'provider', 'طارق سباكة', '+201001113030'),
     user('provider-plumbing-settlement', 'mostafa.plumbing@hand.test', 'provider', 'مصطفى للتسليك', '+201001114040'),
     user('provider-plumbing-nasr', 'ali.plumbing@hand.test', 'provider', 'علي صيانة مياه', '+201001115050'),
@@ -73,6 +75,21 @@ export function createDemoSeedData(): DemoSeedData {
       reviews: 24,
       activity: 94,
       photo: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=900&q=80',
+    }),
+    provider({
+      id: 'provider-35-reviews',
+      displayName: 'يوسف صيانة',
+      phone: '+201001113535',
+      profession: 'plumbing',
+      bio: 'فني صيانة وسباكة في القاهرة الجديدة ومدينة نصر، متخصص في التسريبات وتركيب الخلاطات وصيانة السخانات مع توضيح التكلفة قبل بدء الشغل.',
+      areas: ['new-cairo', 'nasr-city'],
+      whatsappNumber: '+201001113535',
+      tier: 'paid',
+      views: 212,
+      rating: 4.9,
+      reviews: 35,
+      activity: 96,
+      photo: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=900&q=80',
     }),
     provider({
       id: 'provider-plumbing-fifth',
@@ -304,8 +321,11 @@ export function createDemoSeedData(): DemoSeedData {
     }),
   ];
 
+  const reviewProvider35Records = provider35ReviewRecords();
+
   const contacts: Contact[] = [
     contact('contact-seed', 'customer-demo', 'provider-demo', 'platform_message', true),
+    ...reviewProvider35Records.map((item) => item.contact),
     contact('contact-nour-cleaning', 'customer-nour', 'provider-cleaning', 'whatsapp_reveal', false),
     contact('contact-omar-electric', 'customer-omar', 'provider-electric', 'platform_message', true),
     contact('contact-nour-carpenter', 'customer-nour', 'provider-carpenter', 'platform_message', true),
@@ -348,6 +368,7 @@ export function createDemoSeedData(): DemoSeedData {
 
   const reviews: Review[] = [
     review('review-1', 'provider-demo', 'customer-demo', 'مريم حسن', 'contact-seed', 5, 'وصل بسرعة وكان واضح في السعر قبل بدء الشغل.'),
+    ...reviewProvider35Records.map((item) => item.review),
     review('review-2', 'provider-electric', 'customer-omar', 'عمر محمود', 'contact-omar-electric', 4, 'حل العطل في نفس اليوم، وكان محتاج متابعة بسيطة بعدها.'),
     review('review-3', 'provider-carpenter', 'customer-nour', 'نور السيد', 'contact-nour-carpenter', 5, 'ضبط أبواب المطبخ وركب الرفوف بشكل نظيف.'),
     review('review-4', 'provider-cleaning', 'customer-nour', 'نور السيد', 'contact-nour-cleaning', 5, 'الفريق كان ملتزم بالميعاد والتنظيف العميق ممتاز.'),
@@ -627,6 +648,55 @@ function review(
   status: Review['status'] = 'visible',
 ): Review {
   return { id, providerId, customerId, customerName, contactId, rating, comment, status, createdAt: baseDate };
+}
+
+function provider35ReviewRecords() {
+  const names = [
+    'مريم حسن',
+    'نور السيد',
+    'عمر محمود',
+    'سلمى علي',
+    'يوسف عادل',
+    'هبة مصطفى',
+    'كريم سامي',
+    'دينا خالد',
+    'أحمد عادل',
+    'منى إبراهيم',
+  ];
+  const comments = [
+    'وصل في المعاد وشرح التكلفة قبل ما يبدأ.',
+    'الشغل كان نظيف والتواصل واضح من أول مكالمة.',
+    'حل المشكلة بسرعة وساب المكان مرتب.',
+    'السعر كان مناسب مقارنة بجودة الشغل.',
+    'تابع معايا بعد الزيارة للتأكد إن العطل متحل.',
+  ];
+
+  return Array.from({ length: 35 }, (_, index) => {
+    const number = index + 1;
+    const customerId = `provider35-customer-${String(number).padStart(2, '0')}`;
+    const contactId = `provider35-contact-${String(number).padStart(2, '0')}`;
+    const createdAt = new Date(Date.UTC(2026, 4, number, 8, 0, 0)).toISOString();
+    const contactRecord = contact(
+      contactId,
+      customerId,
+      'provider-35-reviews',
+      number % 3 === 0 ? 'whatsapp_reveal' : 'platform_message',
+      true,
+    );
+    const reviewRecord = review(
+      `provider35-review-${String(number).padStart(2, '0')}`,
+      'provider-35-reviews',
+      customerId,
+      names[index % names.length],
+      contactId,
+      number % 7 === 0 ? 4 : 5,
+      comments[index % comments.length],
+    );
+    return {
+      contact: { ...contactRecord, createdAt },
+      review: { ...reviewRecord, createdAt },
+    };
+  });
 }
 
 function adminAction(
