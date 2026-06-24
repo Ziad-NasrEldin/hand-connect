@@ -242,6 +242,7 @@
   "admin.applicationRejected": "Provider rejected. The request was removed from the pending list.",
   "admin.applicationProcessing": "Processing...",
   "admin.paymobCallbackOnly": "Paymob card requests are activated only after Paymob sends a signed matching callback. Manual admin confirmation is disabled for this payment method.",
+  "admin.paymobManualConfirmationHint": "Paymob has not sent a matching callback yet. Confirm manually only after checking the payment in Paymob.",
   "admin.noVisibilityRequests": "No visibility requests.",
   "admin.actionReason": "Admin reason",
   "admin.actionReasonPlaceholder": "Add payment, rejection, or moderation context",
