@@ -43,7 +43,9 @@ export function NewReviewPage() {
     return (
       <Card className="motion-reveal" variant="subtle">
         <CardContent className="motion-reveal p-8 text-center">
-          {t('reviews.notEligible')}
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            {t('reviews.notEligible')}
+          </h1>
         </CardContent>
       </Card>
     );
@@ -54,7 +56,7 @@ export function NewReviewPage() {
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('reviews.shareExperience')}</p>
-        <CardTitle>{t('reviews.new')}</CardTitle>
+        <CardTitle as="h1">{t('reviews.new')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form

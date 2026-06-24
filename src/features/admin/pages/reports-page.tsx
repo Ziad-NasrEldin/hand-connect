@@ -15,7 +15,7 @@ export function ReportsPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('admin.reports')}</CardTitle>
+        <CardTitle as="h1">{t('admin.reports')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {reports.data?.length ? (

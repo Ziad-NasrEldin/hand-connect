@@ -97,7 +97,7 @@ export function VisibilityPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('visibility.title')}</CardTitle>
+        <CardTitle as="h1">{t('visibility.title')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-5">
         <p className="motion-reveal soft-note p-4 text-sm leading-7">

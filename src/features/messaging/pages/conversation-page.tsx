@@ -62,7 +62,7 @@ export function ConversationPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('messages.title')}</CardTitle>
+        <CardTitle as="h1">{t('messages.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="motion-stagger grid min-h-[380px] content-end gap-3 rounded-[calc(var(--radius)+2px)] border border-border bg-[color:var(--hc-surface)] p-4 sm:p-5">

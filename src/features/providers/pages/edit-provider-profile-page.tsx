@@ -70,7 +70,7 @@ export function EditProviderProfilePage() {
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('provider.settingsEyebrow')}</p>
-        <CardTitle>{t('provider.edit')}</CardTitle>
+        <CardTitle as="h1">{t('provider.edit')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form

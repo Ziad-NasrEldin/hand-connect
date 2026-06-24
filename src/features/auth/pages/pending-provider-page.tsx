@@ -11,7 +11,7 @@ export function PendingProviderPage() {
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('auth.applicationStatus')}</p>
-        <CardTitle>
+        <CardTitle as="h1">
           {providerStatus === 'rejected'
             ? t('auth.rejectedTitle')
             : t('auth.pendingTitle')}

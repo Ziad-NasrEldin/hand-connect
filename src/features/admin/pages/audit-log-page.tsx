@@ -14,7 +14,7 @@ export function AuditLogPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('admin.actions')}</CardTitle>
+        <CardTitle as="h1">{t('admin.actions')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {actions.data?.length ? (

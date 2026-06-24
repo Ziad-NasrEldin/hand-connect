@@ -39,6 +39,8 @@
   "auth.emailOrPhone": "Email or phone",
   "auth.emailVerificationSent": "We sent a verification email. Open it from your inbox to verify the address.",
   "auth.password": "Password",
+  "auth.showPassword": "Show password",
+  "auth.hidePassword": "Hide password",
   "auth.confirmPassword": "Confirm password",
   "auth.name": "Name",
   "auth.phone": "Phone",

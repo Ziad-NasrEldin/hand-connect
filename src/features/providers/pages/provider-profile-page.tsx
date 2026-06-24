@@ -53,7 +53,7 @@ export function ProviderProfilePage() {
   }, [id, user?.uid]);
 
   if (!providerQuery.data)
-    return <EmptyState title={t('provider.unavailable')} />;
+    return <EmptyState asPageTitle title={t('provider.unavailable')} />;
   const provider = providerQuery.data;
   const paidActive = isPaidVisibilityActive(provider);
   const visibleReviews = reviewsQuery.data ?? [];

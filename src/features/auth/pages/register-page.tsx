@@ -102,7 +102,7 @@ export function RegisterPage() {
       <CardHeader>
         <div className="brand-eyebrow" />
         <p className="section-label">{t('auth.join')}</p>
-        <CardTitle>{t('nav.register')}</CardTitle>
+        <CardTitle as="h1">{t('nav.register')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form

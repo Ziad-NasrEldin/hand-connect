@@ -13,7 +13,7 @@ export function ConversationsPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('messages.title')}</CardTitle>
+        <CardTitle as="h1">{t('messages.title')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {conversations.data?.length === 0 ? (

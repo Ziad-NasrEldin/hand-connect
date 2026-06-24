@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Herafy">
+  <rect width="64" height="64" rx="16" fill="#f26a2e"/>
+  <path d="M16 43V21h8v8h16v-8h8v22h-8v-8H24v8h-8Z" fill="#fff8ee"/>
+  <path d="M24 35h16v8h8V21h-8v8H24v-8h-8v22h8v-8Z" fill="none" stroke="#8f351c" stroke-opacity=".18" stroke-width="2"/>
+  <path d="M17 47h30" stroke="#8f351c" stroke-opacity=".22" stroke-width="3" stroke-linecap="round"/>
+</svg>

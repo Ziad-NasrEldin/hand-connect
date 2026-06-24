@@ -27,6 +27,7 @@ import { ProfessionsPage } from '@/features/admin/pages/professions-page';
 import { VisibilityRequestsPage } from '@/features/admin/pages/visibility-requests-page';
 import { ReportsPage } from '@/features/admin/pages/reports-page';
 import { AuditLogPage } from '@/features/admin/pages/audit-log-page';
+import { GraduationPresentationPage } from '@/features/presentation/pages/graduation-presentation-page';
 
 export function AppRouter() {
   const initialize = useAuthStore((state) => state.initialize);
@@ -41,6 +42,7 @@ export function AppRouter() {
     <ErrorBoundary>
       <BrowserRouter>
         <Routes>
+          <Route path="presentation" element={<GraduationPresentationPage />} />
           <Route element={<AppLayout />}>
             <Route index element={<LandingPage />} />
             <Route path="search" element={<SearchPage />} />

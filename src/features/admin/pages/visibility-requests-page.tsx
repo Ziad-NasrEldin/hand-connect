@@ -62,7 +62,7 @@ export function VisibilityRequestsPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('admin.visibility')}</CardTitle>
+        <CardTitle as="h1">{t('admin.visibility')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {requests.isLoading ? (

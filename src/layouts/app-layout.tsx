@@ -25,7 +25,10 @@ export function AppLayout() {
         <div className="mx-auto flex max-w-7xl min-w-0 flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center justify-between gap-3">
-              <Link to="/" className="brand-title text-[1.45rem] sm:text-3xl">
+              <Link
+                to="/"
+                className="brand-title inline-flex min-h-11 items-center text-[1.45rem] sm:text-3xl"
+              >
                 {t('app.name')}
               </Link>
               <LanguageToggle />

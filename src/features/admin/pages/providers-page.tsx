@@ -28,7 +28,7 @@ export function ProvidersPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('admin.providers')}</CardTitle>
+        <CardTitle as="h1">{t('admin.providers')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {query.data?.map((provider) => (

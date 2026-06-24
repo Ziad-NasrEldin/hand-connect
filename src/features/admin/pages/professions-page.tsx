@@ -61,7 +61,7 @@ export function ProfessionsPage() {
     <div className="motion-stagger space-y-5">
       <Card className="motion-reveal">
         <CardHeader>
-          <CardTitle>{t('admin.professions')}</CardTitle>
+          <CardTitle as="h1">{t('admin.professions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="motion-stagger grid gap-3 md:grid-cols-2" onSubmit={(event) => void submit(event)}>

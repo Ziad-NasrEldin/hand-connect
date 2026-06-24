@@ -8,9 +8,9 @@ export function AuthLayout() {
       <div className="motion-reveal brand-panel hidden p-8 lg:block">
         <div className="brand-eyebrow mb-6" />
         <p className="section-label">{t('app.name')}</p>
-        <h1 className="mt-4 max-w-md text-4xl font-bold leading-tight tracking-tight text-foreground">
+        <h2 className="mt-4 max-w-md text-4xl font-bold leading-tight tracking-tight text-foreground">
           {t('auth.layoutTitle')}
-        </h1>
+        </h2>
         <p className="mt-4 max-w-xl text-base leading-8 text-muted-foreground">
           {t('auth.layoutCopy')}
         </p>

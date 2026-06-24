@@ -39,6 +39,8 @@
   "auth.emailOrPhone": "البريد الإلكتروني أو رقم الهاتف",
   "auth.emailVerificationSent": "أرسلنا رسالة تحقق إلى بريدك الإلكتروني. افتحها من صندوق الوارد لتأكيد العنوان.",
   "auth.password": "كلمة المرور",
+  "auth.showPassword": "إظهار كلمة المرور",
+  "auth.hidePassword": "إخفاء كلمة المرور",
   "auth.confirmPassword": "تأكيد كلمة المرور",
   "auth.name": "الاسم",
   "auth.phone": "رقم الهاتف",

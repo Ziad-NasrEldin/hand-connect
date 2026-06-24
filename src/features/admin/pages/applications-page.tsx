@@ -28,7 +28,7 @@ export function ApplicationsPage() {
   return (
     <Card className="motion-reveal">
       <CardHeader>
-        <CardTitle>{t('admin.applications')}</CardTitle>
+        <CardTitle as="h1">{t('admin.applications')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
         {query.data?.map((provider) => {

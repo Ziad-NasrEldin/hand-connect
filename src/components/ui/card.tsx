@@ -39,11 +39,14 @@ export function CardHeader({
 }
 
 export function CardTitle({
+  as: Component = 'h3',
   className,
   ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) {
+}: React.HTMLAttributes<HTMLHeadingElement> & {
+  as?: 'h1' | 'h2' | 'h3';
+}) {
   return (
-    <h3
+    <Component
       className={cn(
         'text-xl font-bold tracking-tight text-foreground sm:text-2xl',
         className,
