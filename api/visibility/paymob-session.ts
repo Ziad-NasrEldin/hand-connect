@@ -46,6 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       !body.idToken ||
       !body.providerId ||
       !body.requestId ||
+      typeof body.amountCents !== 'number' ||
       !Number.isInteger(body.amountCents) ||
       body.amountCents <= 0 ||
       body.currency !== 'EGP'
