@@ -394,6 +394,12 @@ describe('callable integration coverage with Firestore test double', () => {
         serviceAreas: [{ neighborhood: 'new-cairo', city: 'cairo' }],
         reviewCount: 40,
       },
+      'providers/provider-paymob': {
+        status: 'approved',
+        serviceAreaKeys: ['new-cairo'],
+        serviceAreas: [{ neighborhood: 'new-cairo', city: 'cairo' }],
+        reviewCount: 40,
+      },
       'providerIdentityDocuments/provider-pending': { uploadedAt: '2026-01-01T00:00:00.000Z' },
       'visibilityRequests/boost-1': {
         providerId: 'provider-approved',
@@ -415,6 +421,27 @@ describe('callable integration coverage with Firestore test double', () => {
         type: 'boost',
         serviceArea: 'new-cairo',
         status: 'pending',
+      },
+      'visibilityRequests/paymob-1': {
+        providerId: 'provider-paymob',
+        type: 'boost',
+        serviceArea: 'new-cairo',
+        status: 'pending',
+        notes: 'paymob pending',
+        paymentMethod: 'paymob_card',
+        paymentStatus: 'requires_action',
+        paymentReference: null,
+        paymentSession: {
+          provider: 'paymob',
+          mode: 'live',
+          status: 'requires_action',
+          checkoutUrl: 'https://accept.paymob.com/unifiedcheckout',
+          merchantOrderId: 'visibility_provider-paymob_paymob-1',
+          integrationId: '5425618',
+          orderId: 'order-1',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        productSnapshot: { productId: 'boost-30', productVersion: 1, durationDays: 30 },
       },
     });
 
@@ -441,6 +468,10 @@ describe('callable integration coverage with Firestore test double', () => {
       requestId: 'reject-1',
       reason: 'payment mismatch',
     });
+    await call(approveVisibilityRequest, 'admin-1', {
+      requestId: 'paymob-1',
+      notes: 'merchant dashboard confirmed',
+    });
     await call(suspendProvider, 'admin-1', {
       providerId: 'provider-approved',
       reason: 'Policy violation',
@@ -459,6 +490,12 @@ describe('callable integration coverage with Firestore test double', () => {
     expect(firestore.read('visibilityRequests/reject-1')).toMatchObject({
       status: 'rejected',
       paymentStatus: 'rejected',
+    });
+    expect(firestore.read('visibilityRequests/paymob-1')).toMatchObject({
+      status: 'approved',
+      paymentStatus: 'matched',
+      paymentConfirmedBy: 'admin-1',
+      paymentSession: expect.objectContaining({ status: 'paid' }),
     });
     expect(firestore.findCollection('adminActions').map((item) => item.data.action)).toContain(
       'approve_provider',
