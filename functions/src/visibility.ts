@@ -402,10 +402,6 @@ export const approveVisibilityRequest = onCall(async (request) => {
     if (requestData.status !== 'pending') {
       throw new HttpsError('failed-precondition', 'Only pending requests can be approved.');
     }
-    if (requestData.paymentMethod === 'paymob_card') {
-      throw new HttpsError('failed-precondition', 'Paymob card requests must be confirmed by Paymob callback.');
-    }
-
     const providerRef = firestore.collection('providers').doc(requestData.providerId);
     const providerSnapshot = await transaction.get(providerRef);
     if (!providerSnapshot.exists) throw new HttpsError('not-found', 'Provider not found.');
@@ -423,6 +419,11 @@ export const approveVisibilityRequest = onCall(async (request) => {
       status: 'approved',
       paymentConfirmedBy: adminId,
       paymentStatus: 'matched',
+      paymentReference: requestData.paymentReference ?? null,
+      paymentFailureReason: null,
+      paymentSession: requestData.paymentSession
+        ? { ...requestData.paymentSession, status: 'paid', updatedAt: timestamp }
+        : null,
       notes: [requestData.notes, notes].filter(Boolean).join('\n'),
       processedAt: timestamp,
     });
