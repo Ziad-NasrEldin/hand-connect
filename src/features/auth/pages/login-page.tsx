@@ -15,7 +15,7 @@ export function LoginPage() {
   const { login, loginWithGoogle, user, providerStatus } = useAuth();
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('customer@hand.test');
-  const [password, setPassword] = useState('password');
+  const [password, setPassword] = useState('pass1234');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
@@ -96,7 +96,7 @@ export function LoginPage() {
                 aria-label={t(
                   showPassword ? 'auth.hidePassword' : 'auth.showPassword',
                 )}
-                className="motion-press absolute end-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-[color:var(--hc-surface)] hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--hc-orange-ring)]"
+                className="password-reveal-button absolute end-2 top-1/2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-[color:var(--hc-surface)] hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--hc-orange-ring)]"
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
               >

@@ -22,7 +22,8 @@
     "release:check": "npm run lint && npm test && npm run test:rules && npm run build && npm run e2e",
     "firebase:emulators": "firebase emulators:start --import=.firebase-emulator-data --export-on-exit",
     "seed:dev": "tsx scripts/seed-dev.ts",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "admin:create": "tsx scripts/create-admin.ts",
+    "customer:reset": "tsx scripts/reset-customer.ts"
   },
   "dependencies": {
     "@capacitor/cli": "^8.4.0",

@@ -64,7 +64,7 @@ const slides: Slide[] = [
     copy: 'The product direction was controlled by strict business rules. They decided what could appear in the product and what had to stay out.',
     proof: 'Cairo only / direct contact only / verified before public',
     visualTitle: 'Decision matrix',
-    items: ['Cairo only', 'Four professions only', 'Direct contact only', 'No booking', 'No customer payments', 'No service guarantees', 'Verified before public', 'Paid visibility capped and labeled', 'Reviews after contact'],
+    items: ['Cairo only', 'Four professions only', 'Direct contact only', 'No platform appointments', 'Free customer contact', 'No service guarantees', 'Verified before public', 'Paid visibility capped and labeled', 'Reviews after contact'],
   },
   {
     kind: 'constraints',
@@ -542,7 +542,7 @@ function SlideFrame({ slide, index }: { slide: Slide; index: number }) {
   if (index === 16) return <SpecTrackerSlide slide={slide} />;
   if (index === 17) return <HardeningRadarSlide slide={slide} />;
   if (index === 18) return <GoLiveSlide slide={slide} />;
-  if (index === 19) return <FinalChainSlide slide={slide} />;
+  if (index === 19) return <FinalChainSlide />;
   return <DeckSlide slide={slide} />;
 }
 
@@ -626,11 +626,11 @@ function ProblemSlide({ slide }: { slide: Slide }) {
           </div>
 
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-            <div className="h-px bg-[color:var(--hc-rule)]" />
+                <div data-motion-line className="h-px bg-[color:var(--hc-rule)]" />
             <div className="rounded-full bg-primary px-4 py-2 text-sm font-black text-primary-foreground">
               Herafy replaces this with
             </div>
-            <div className="h-px bg-[color:var(--hc-rule)]" />
+                <div data-motion-line className="h-px bg-[color:var(--hc-rule)]" />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -665,7 +665,7 @@ function RulesConstellationSlide({ slide }: { slide: Slide }) {
               'left-[39%] bottom-0',
               'left-[5%] bottom-[10%]',
               'left-0 top-[42%]',
-              'left-[43%] top-[38%]',
+              'left-[41%] top-[76%]',
             ];
             return (
               <div key={item} className={`absolute ${positions[index]} soft-list-item w-44 px-4 py-3 text-center text-sm font-black`}>
@@ -749,7 +749,7 @@ function PathSlide({ slide, mode }: { slide: Slide; mode: 'customer' | 'provider
       <div className="grid min-h-[620px] gap-8">
         <SlideHeader slide={slide} />
         <div className="relative rounded-[calc(var(--radius)+12px)] border border-border bg-[color:var(--hc-paper)] p-5">
-          <div className="absolute left-8 right-8 top-1/2 hidden h-1 -translate-y-1/2 rounded-full bg-[color:var(--hc-rule)] lg:block" />
+          <div data-motion-line className="absolute left-8 right-8 top-1/2 hidden h-1 -translate-y-1/2 rounded-full bg-[color:var(--hc-rule)] lg:block" />
           <div className="relative grid gap-3 lg:grid-cols-7">
             {slide.items.map((item, index) => (
               <div key={item} className={`soft-list-item min-h-36 p-4 ${mode === 'provider' && index % 2 ? 'lg:translate-y-16' : ''}`}>
@@ -795,7 +795,7 @@ function BuildDocumentStackSlide({ slide }: { slide: Slide }) {
         <SlideHeader slide={slide} align="center" />
         <div className="mx-auto grid w-full max-w-6xl gap-3">
           {slide.items.map((item, index) => (
-            <div key={item} className="brand-panel px-6 py-4" style={{ transform: `translateX(${(index % 2 === 0 ? -1 : 1) * 28}px)` }}>
+            <div key={item} className={`brand-panel px-6 py-4 ${index % 2 === 0 ? 'lg:-translate-x-7' : 'lg:translate-x-7'}`}>
               <div className="flex items-center justify-between gap-4">
                 <p className="text-2xl font-black text-foreground">{item}</p>
                 <p className="brand-number text-4xl">{String(index + 1).padStart(2, '0')}</p>
@@ -809,18 +809,38 @@ function BuildDocumentStackSlide({ slide }: { slide: Slide }) {
 }
 
 function PrdBlueprintSlide({ slide }: { slide: Slide }) {
+  const left = slide.items.slice(0, 3);
+  const right = slide.items.slice(3);
   return (
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
-      <div className="grid min-h-[620px] gap-7">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
         <SlideHeader slide={slide} />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-          {slide.items.map((item) => (
-            <div key={item} className="rounded-[calc(var(--radius)+4px)] border border-dashed border-[color:var(--hc-orange-soft)] bg-[color:var(--hc-paper)] p-5">
-              <p className="text-xl font-black text-foreground">{item}</p>
-              <div className="mt-5 h-2 rounded-full bg-[color:var(--hc-rule)]" />
-              <div className="mt-3 h-2 w-2/3 rounded-full bg-primary" />
+        <div className="relative min-h-[520px] rounded-[calc(var(--radius)+16px)] border border-border bg-[color:var(--hc-paper)] p-8 shadow-[0_28px_80px_rgba(55,42,35,0.08)]">
+          <div className="absolute left-0 top-0 h-full w-3 rounded-l-[calc(var(--radius)+16px)] bg-primary" />
+          <div className="grid h-full grid-cols-1 items-center gap-6 lg:grid-cols-[1fr_auto_1fr]">
+            <div className="grid gap-6">
+              {left.map((item) => (
+                <div key={item} className="rounded-2xl border border-border bg-background p-5">
+                  <p className="text-sm font-black uppercase tracking-[0.14em] text-muted-foreground">Input</p>
+                  <p className="mt-2 text-2xl font-black text-foreground">{item}</p>
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="grid h-full items-center">
+              <div className="grid h-44 w-44 place-items-center rounded-full bg-primary text-center text-2xl font-black leading-tight text-primary-foreground">
+                PRD
+                <span className="block text-sm uppercase tracking-[0.14em]">Blueprint</span>
+              </div>
+            </div>
+            <div className="grid gap-6">
+              {right.map((item) => (
+                <div key={item} className="rounded-2xl border border-[color:var(--hc-orange-soft)] bg-[color:var(--hc-soft)] p-5">
+                  <p className="text-sm font-black uppercase tracking-[0.14em] text-primary">Output</p>
+                  <p className="mt-2 text-2xl font-black text-foreground">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -856,9 +876,9 @@ function TechDecisionConsoleSlide({ slide }: { slide: Slide }) {
         <SlideHeader slide={slide} align="center" />
         <div className="grid gap-3 rounded-[calc(var(--radius)+10px)] border border-border bg-[color:var(--hc-paper)] p-5">
           {rows.map((row, index) => (
-            <div key={row} className="grid grid-cols-[220px_1fr] items-center gap-4">
+            <div key={row} className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[220px_1fr]">
               <p className="text-sm font-black uppercase tracking-[0.14em] text-primary">{row}</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 {['Frontend route', 'Service contract', 'Backend rule'].map((cell) => (
                   <div key={cell} className="soft-list-item px-4 py-3 text-sm font-black text-foreground">
                     {index + 1}. {cell}
@@ -880,7 +900,7 @@ function SitemapSwimlanesSlide({ slide }: { slide: Slide }) {
         <SlideHeader slide={slide} />
         <div className="grid gap-3">
           {slide.items.map((item, index) => (
-            <div key={item} className="grid grid-cols-[180px_1fr] items-center gap-4">
+            <div key={item} className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[180px_1fr] sm:gap-4">
               <p className="text-sm font-black uppercase tracking-[0.14em] text-muted-foreground">Journey {index + 1}</p>
               <div className="rounded-full border border-border bg-[color:var(--hc-paper)] px-5 py-3">
                 <p className="text-lg font-black text-foreground">{item}</p>
@@ -911,17 +931,37 @@ function DesignMotionSlide({ slide }: { slide: Slide }) {
 }
 
 function UiSurfaceWallSlide({ slide }: { slide: Slide }) {
+  const surfaces = ['Landing', 'Search', 'Profile', 'Chat', 'Reviews', 'Onboarding', 'Dashboard', 'Admin'];
   return (
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
-      <div className="grid min-h-[620px] gap-6">
-        <SlideHeader slide={slide} align="center" />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {['Landing', 'Search results', 'Provider profile', 'Login/signup', 'Chat', 'Reviews', 'Onboarding', 'Provider dashboard', 'Admin dashboard', 'Verification', 'Review moderation'].map((item, index) => (
-            <div key={item} className={`soft-list-item p-4 ${index % 3 === 0 ? 'md:row-span-2' : ''}`}>
-              <p className="brand-number text-3xl">{String(index + 1).padStart(2, '0')}</p>
-              <p className="mt-3 text-sm font-black leading-6 text-foreground">{item}</p>
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <SlideHeader slide={slide} />
+        <div className="relative min-h-[520px]">
+          <div className="absolute left-10 top-6 h-[420px] w-[280px] rotate-[-7deg] rounded-[2rem] border border-border bg-[color:var(--hc-paper)] p-5 shadow-[0_24px_70px_rgba(55,42,35,0.10)]">
+            <div className="h-28 rounded-2xl bg-primary" />
+            <div className="mt-5 h-3 w-40 rounded-full bg-[color:var(--hc-rule)]" />
+            <div className="mt-3 h-3 w-56 rounded-full bg-[color:var(--hc-rule)]" />
+            <div className="mt-8 grid gap-3">
+              {surfaces.slice(0, 4).map((item) => (
+                <div key={item} className="rounded-xl border border-border bg-background px-4 py-3 text-sm font-black text-foreground">{item}</div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div className="absolute right-8 top-20 h-[400px] w-[360px] rotate-[5deg] rounded-[2rem] border border-border bg-background p-5 shadow-[0_24px_70px_rgba(55,42,35,0.10)]">
+            <div className="grid grid-cols-[90px_1fr] gap-4">
+              <div className="grid gap-3">
+                {surfaces.slice(4).map((item) => (
+                  <div key={item} className="rounded-xl bg-[color:var(--hc-soft)] px-3 py-4 text-xs font-black text-foreground">{item}</div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-[color:var(--hc-orange-soft)] bg-[color:var(--hc-paper)] p-4">
+                <p className="section-label">Contact path</p>
+                <p className="mt-5 text-4xl font-black leading-none text-foreground">Need to provider</p>
+                <div className="mt-8 h-3 rounded-full bg-primary" />
+                <div className="mt-3 h-3 w-2/3 rounded-full bg-[color:var(--hc-rule)]" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -933,15 +973,19 @@ function SpecTrackerSlide({ slide }: { slide: Slide }) {
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
       <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <SlideHeader slide={slide} />
-        <div className="brand-panel p-6">
-          <div className="grid gap-3">
-            {slide.items.map((item, index) => (
-              <div key={item} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border bg-[color:var(--hc-paper)] px-4 py-3">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">{index + 1}</span>
-                <p className="text-sm font-black text-foreground">{item}</p>
-                <span className="text-xs font-black uppercase tracking-[0.12em] text-muted-foreground">checked</span>
-              </div>
-            ))}
+        <div className="relative rounded-[calc(var(--radius)+16px)] border border-border bg-[color:var(--hc-paper)] p-7">
+          <div data-motion-line className="absolute bottom-12 left-12 top-12 w-px bg-[color:var(--hc-rule)]" />
+          <div className="grid gap-5">
+            {slide.items.map((item, index) => {
+              const labels = ['Decision', 'ID', 'Depends on', 'Proof', 'Milestone', 'Gate'];
+              return (
+                <div key={item} className="grid grid-cols-[56px_1fr] items-center gap-3 sm:grid-cols-[64px_1fr_auto] sm:gap-4">
+                  <span className="relative z-10 grid h-12 w-12 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">{String(index + 1).padStart(2, '0')}</span>
+                  <p className="text-2xl font-black text-foreground">{item}</p>
+                  <span className="rounded-full border border-border bg-background px-4 py-2 text-xs font-black uppercase tracking-[0.12em] text-muted-foreground">{labels[index]}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -951,16 +995,61 @@ function SpecTrackerSlide({ slide }: { slide: Slide }) {
 
 function HardeningRadarSlide({ slide }: { slide: Slide }) {
   const checks = ['Broken flows', 'Loading states', 'Empty states', 'Edge cases', 'Permissions', 'Admin actions', 'Search', 'Chat', 'Reviews', 'Security', 'Privacy'];
+  const positions = [
+    'left-[4%] top-[12%]',
+    'left-[22%] top-[5%]',
+    'right-[24%] top-[6%]',
+    'right-[5%] top-[18%]',
+    'left-[8%] top-[46%]',
+    'right-[8%] top-[44%]',
+    'left-[24%] bottom-[10%]',
+    'right-[28%] bottom-[10%]',
+    'left-[42%] top-[16%]',
+    'left-[38%] bottom-[2%]',
+    'right-[4%] bottom-[18%]',
+  ];
   return (
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
       <div className="grid min-h-[620px] gap-8">
         <SlideHeader slide={slide} align="center" />
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 md:grid-cols-4">
-          {checks.map((item, index) => (
-            <div key={item} className={`${index === 0 || index === checks.length - 1 ? 'bg-primary text-primary-foreground' : 'soft-note'} rounded-2xl p-4 text-center text-sm font-black`}>
-              {item}
+        <div className="relative mx-auto min-h-[360px] w-full max-w-6xl rounded-[calc(var(--radius)+18px)] border border-border bg-[color:var(--hc-paper)] p-6 shadow-[0_28px_80px_rgba(55,42,35,0.08)]">
+          <div data-motion-line className="absolute inset-x-10 top-1/2 hidden h-px bg-[color:var(--hc-rule)] lg:block" />
+          <div data-motion-orbit className="absolute left-1/2 top-1/2 hidden h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[color:var(--hc-orange-soft)] lg:block" />
+          <div data-motion-orbit className="absolute left-1/2 top-1/2 hidden h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[color:var(--hc-orange-soft)] lg:block" />
+          <div data-motion-scan className="absolute left-1/2 top-1/2 hidden h-3 w-[560px] -translate-x-1/2 -translate-y-1/2 rotate-[-14deg] rounded-full bg-primary/18 lg:block" />
+
+          <div className="relative z-10 mx-auto grid min-h-[308px] place-items-center">
+            <div className="grid h-44 w-44 place-items-center rounded-full bg-primary text-center text-primary-foreground shadow-[0_30px_90px_rgba(242,111,54,0.24)]">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] opacity-80">Release gate</p>
+                <p className="mt-2 text-3xl font-black leading-none">Stable enough to test</p>
+              </div>
             </div>
-          ))}
+          </div>
+
+          <div className="relative z-20 hidden lg:block">
+            {checks.map((item, index) => (
+              <div key={item} className={`absolute ${positions[index]} rounded-full border px-4 py-3 text-center text-sm font-black shadow-[0_12px_24px_rgba(73,55,38,0.06)] ${index === 0 || index === checks.length - 1 ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-foreground'}`}>
+                {item}
+              </div>
+            ))}
+          </div>
+
+          <div className="relative z-20 mt-6 grid grid-cols-2 gap-3 lg:hidden">
+            {checks.map((item, index) => (
+              <div key={item} className={`${index === 0 || index === checks.length - 1 ? 'bg-primary text-primary-foreground' : 'soft-note'} rounded-2xl p-4 text-center text-sm font-black`}>
+                {item}
+              </div>
+            ))}
+          </div>
+
+          <div className="relative z-20 mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-3">
+            {['Fix user paths', 'Protect permissions', 'Prepare beta confidence'].map((item) => (
+              <div key={item} className="rounded-full bg-background px-4 py-3 text-center text-xs font-black uppercase tracking-[0.12em] text-muted-foreground">
+                {item}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -968,36 +1057,76 @@ function HardeningRadarSlide({ slide }: { slide: Slide }) {
 }
 
 function GoLiveSlide({ slide }: { slide: Slide }) {
+  const lanes = [
+    ['Vercel', 'frontend + API'],
+    ['Cloudflare', 'domain + DNS'],
+    ['Apple', 'beta testing path'],
+    ['Google Play', 'beta testing path'],
+  ];
   return (
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
-      <div className="grid min-h-[620px] gap-8">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
         <SlideHeader slide={slide} />
-        <div className="grid gap-4 lg:grid-cols-4">
-          {['Vercel frontend', 'Cloudflare domain', 'Apple Store beta', 'Google Play beta'].map((item, index) => (
-            <div key={item} className="brand-panel grid min-h-72 content-between p-5">
-              <p className="brand-number text-6xl">{String(index + 1).padStart(2, '0')}</p>
-              <p className="text-2xl font-black leading-tight text-foreground">{item}</p>
-            </div>
-          ))}
+        <div className="relative min-h-[500px] rounded-[calc(var(--radius)+18px)] border border-border bg-[color:var(--hc-paper)] p-8">
+          <div data-motion-line className="absolute left-16 right-16 top-1/2 hidden h-1 -translate-y-1/2 bg-[color:var(--hc-rule)] lg:block" />
+          <div className="relative grid h-full grid-cols-1 items-center gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {lanes.map(([name, detail], index) => (
+              <div key={name} className={`grid min-h-72 min-w-0 content-between rounded-[calc(var(--radius)+8px)] border p-5 ${index === 0 ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-background text-foreground'}`}>
+                <p className={`text-xs font-black uppercase tracking-[0.16em] ${index === 0 ? 'text-primary-foreground/75' : 'text-muted-foreground'}`}>Step {index + 1}</p>
+                <div>
+                  <p className="min-w-0 text-[clamp(1.45rem,2.15vw,2.25rem)] font-black leading-[0.98] [overflow-wrap:anywhere]">{name}</p>
+                  <p className={`mt-3 text-sm font-black uppercase tracking-[0.12em] ${index === 0 ? 'text-primary-foreground/80' : 'text-primary'}`}>{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function FinalChainSlide({ slide }: { slide: Slide }) {
-  const chain = ['Market problem', 'Business rules', 'Requirements', 'Architecture', 'UI', 'Implementation tasks', 'Tested product', 'Beta launch'];
+function FinalChainSlide() {
+  const pillars = [
+    ['Not just screens', 'A real market problem became focused product decisions.'],
+    ['Not just code', 'Requirements, architecture, UI, tasks, and QA were connected.'],
+    ['Not just a demo', 'The result is a tested product prepared for beta validation.'],
+  ];
   return (
     <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
-      <div className="grid min-h-[620px] gap-8">
-        <SlideHeader slide={slide} align="center" />
-        <div className="grid gap-3">
-          {chain.map((item, index) => (
-            <div key={item} className="grid grid-cols-[auto_1fr] items-center gap-4">
-              <p className="brand-number text-5xl">{String(index + 1).padStart(2, '0')}</p>
-              <div className="rounded-full border border-border bg-[color:var(--hc-paper)] px-6 py-4 text-xl font-black text-foreground">
+      <div className="grid min-h-[620px] gap-10">
+        <div className="mx-auto max-w-6xl text-center">
+          <p className="section-label">Final message</p>
+          <h1 className="mt-8 text-[clamp(3.2rem,8vw,8.6rem)] font-black leading-[0.86] tracking-[-0.05em] text-foreground">
+            Not just an app.
+            <span className="mt-4 block text-primary">A product built from problem to beta.</span>
+          </h1>
+          <p className="mx-auto mt-8 max-w-4xl text-[clamp(1.05rem,1.8vw,1.55rem)] font-bold leading-8 text-muted-foreground">
+            Herafy started as a messy real-world problem: finding trusted home service providers. The project proves how that problem became business rules, requirements, architecture, interface decisions, implementation tasks, verification, and a beta-ready product.
+          </p>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-3">
+          {pillars.map(([title, body], index) => (
+            <div key={title} className={`rounded-[calc(var(--radius)+10px)] border p-6 ${index === 1 ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-[color:var(--hc-paper)] text-foreground'}`}>
+              <p className={`text-sm font-black uppercase tracking-[0.16em] ${index === 1 ? 'text-primary-foreground/70' : 'text-primary'}`}>
+                Proof {index + 1}
+              </p>
+              <p className="mt-8 text-3xl font-black leading-tight">{title}</p>
+              <p className={`mt-4 text-base font-bold leading-7 ${index === 1 ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                {body}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-2 items-center gap-3 sm:flex">
+          {['Problem', 'Rules', 'Build', 'Verify', 'Launch'].map((item, index) => (
+            <div key={item} className="flex min-w-0 flex-1 items-center gap-3">
+              <div className={`grid min-h-14 flex-1 place-items-center rounded-full px-4 text-center text-sm font-black uppercase tracking-[0.12em] ${index === 4 ? 'bg-primary text-primary-foreground' : 'border border-border bg-background text-foreground'}`}>
                 {item}
               </div>
+              {index < 4 ? <div data-motion-line className="hidden h-px w-8 bg-[color:var(--hc-rule)] sm:block" /> : null}
             </div>
           ))}
         </div>

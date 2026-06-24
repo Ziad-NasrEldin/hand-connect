@@ -106,9 +106,20 @@
     color: color-mix(in oklch, var(--hc-ink) 92%, black);
   }
 
+  .brand-wordmark {
+    font-family: Cairo, 'Source Sans 3', sans-serif;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
   html[dir='rtl'] .brand-title {
     font-family: Cairo, 'Archivo Black', sans-serif;
     letter-spacing: -0.035em;
+  }
+
+  html[dir='rtl'] .brand-wordmark {
+    letter-spacing: 0;
   }
 
   .brand-rule {
@@ -299,6 +310,19 @@
 
   .motion-press:active {
     transform: translateY(0) scale(0.98);
+  }
+
+  .password-reveal-button {
+    transform: translateY(-50%) translateZ(0);
+    transition:
+      transform var(--motion-fast) var(--ease-out-quart),
+      background-color var(--motion-base) var(--ease-out-quart),
+      color var(--motion-base) var(--ease-out-quart),
+      box-shadow var(--motion-base) var(--ease-out-quart);
+  }
+
+  .password-reveal-button:active {
+    transform: translateY(-50%) scale(0.96);
   }
 
   .motion-reveal {

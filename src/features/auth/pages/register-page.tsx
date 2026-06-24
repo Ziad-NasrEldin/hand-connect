@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,8 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [profession, setProfession] = useState('plumbing');
   const [serviceArea, setServiceArea] = useState('new-cairo');
@@ -148,27 +151,65 @@ export function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="register-password">{t('auth.password')}</Label>
-            <Input
-              id="register-password"
-              required
-              minLength={8}
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
+            <div className="relative">
+              <Input
+                id="register-password"
+                className="pe-12"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+              <button
+                aria-label={t(
+                  showPassword ? 'auth.hidePassword' : 'auth.showPassword',
+                )}
+                className="password-reveal-button absolute end-2 top-1/2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-[color:var(--hc-surface)] hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--hc-orange-ring)]"
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="register-confirm-password">
               {t('auth.confirmPassword')}
             </Label>
-            <Input
-              id="register-confirm-password"
-              required
-              minLength={8}
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-            />
+            <div className="relative">
+              <Input
+                id="register-confirm-password"
+                className="pe-12"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+              <button
+                aria-label={t(
+                  showConfirmPassword
+                    ? 'auth.hidePassword'
+                    : 'auth.showPassword',
+                )}
+                className="password-reveal-button absolute end-2 top-1/2 inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-[color:var(--hc-surface)] hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--hc-orange-ring)]"
+                type="button"
+                onClick={() => setShowConfirmPassword((current) => !current)}
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="register-phone">{t('auth.phone')}</Label>

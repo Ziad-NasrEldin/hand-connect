@@ -34,6 +34,7 @@ export function VisibilityPage() {
   const [serviceArea, setServiceArea] = useState('new-cairo');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutRequestId, setCheckoutRequestId] = useState<string | null>(null);
   const isAreaExpansion = provider.data ? !provider.data.serviceAreaKeys.includes(serviceArea) : false;
@@ -67,6 +68,7 @@ export function VisibilityPage() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError('');
+    setNotice('');
     if (!provider.data) return;
     if (!canRequestAreaExpansion) {
       setError(t('visibility.areaExpansionLocked'));
@@ -85,10 +87,15 @@ export function VisibilityPage() {
       } else if (request.paymentSession?.checkoutUrl) {
         window.location.assign(request.paymentSession.checkoutUrl);
       }
+      setNotice(t('visibility.requestCreated'));
       setNotes('');
       void queryClient.invalidateQueries({ queryKey: ['visibility'] });
-    } catch {
-      setError(t('visibility.submitError'));
+    } catch (caught) {
+      setError(
+        caught instanceof Error && caught.message === 'error.visibility.paymobCheckoutUnavailable'
+          ? t('error.visibility.paymobCheckoutUnavailable')
+          : t('visibility.submitError'),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -188,7 +195,12 @@ export function VisibilityPage() {
             {isSubmitting ? t('common.loading') : t('visibility.request')}
           </Button>
         </form>
-        {error ? <p className="motion-pop text-sm text-destructive">{error}</p> : null}
+        {notice ? (
+          <p className="motion-pop soft-note p-3 text-sm font-semibold" role="status">
+            {notice}
+          </p>
+        ) : null}
+        {error ? <p className="motion-pop text-sm text-destructive" role="alert">{error}</p> : null}
         {checkoutRequestId ? (
           <div className="motion-reveal soft-note flex flex-col gap-3 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span>{t('visibility.mockCheckoutReady')}</span>

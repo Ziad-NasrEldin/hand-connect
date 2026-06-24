@@ -1,6 +1,7 @@
 import type { AppUser, UserRole } from '@/types/user';
 import type { ProviderIdentityDocument, ProviderProfile } from '@/types/provider';
 import { createId, getSessionUserId, readDb, setSessionUserId, writeDb } from './demo-db';
+import { demoSeedCredentials } from './seed-data';
 import { nowIso } from '@/lib/dates';
 import { normalizeEgyptPhone } from '@/lib/phone';
 import { computeCoverageAreaKeys, getPlatformCoverageRadiusKm } from '@/lib/provider-coverage';
@@ -46,6 +47,10 @@ export async function login(identifier: string, password: string) {
     normalizeEgyptPhone(item.phone) === normalizedIdentifier,
   );
   if (!user) throw new Error('error.auth.invalidCredentials');
+  const seededPassword = demoSeedCredentials[user.email.toLowerCase()];
+  if (seededPassword && seededPassword !== password) {
+    throw new Error('error.auth.invalidCredentials');
+  }
   if (user.status === 'banned') throw new Error('error.auth.accountBanned');
   setSessionUserId(user.uid);
   return getCurrentSession();

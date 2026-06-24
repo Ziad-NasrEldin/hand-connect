@@ -27,7 +27,7 @@ export function AppLayout() {
             <div className="flex items-center justify-between gap-3">
               <Link
                 to="/"
-                className="brand-title inline-flex min-h-11 items-center text-[1.45rem] sm:text-3xl"
+                className="brand-title brand-wordmark inline-flex min-h-11 items-center text-[1.45rem] sm:text-3xl"
               >
                 {t('app.name')}
               </Link>

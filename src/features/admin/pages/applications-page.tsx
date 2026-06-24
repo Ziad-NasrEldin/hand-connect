@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -14,15 +15,56 @@ export function ApplicationsPage() {
   const query = useProviderApplications();
   const queryClient = useQueryClient();
   const language = i18n.language === 'en' ? 'en' : 'ar';
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{
+    kind: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   async function approve(id: string) {
-    await approveProvider(user!.uid, id);
-    void queryClient.invalidateQueries({ queryKey: ['admin'] });
+    if (!user) return;
+    setNotice(null);
+    setPendingActionId(id);
+    try {
+      await approveProvider(user.uid, id);
+      queryClient.setQueryData(['admin', 'applications'], (current: typeof query.data) =>
+        current?.filter((provider) => provider.id !== id),
+      );
+      setNotice({ kind: 'success', message: t('admin.applicationApproved') });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'applications'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'overview'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'actions'] });
+    } catch (caught) {
+      setNotice({
+        kind: 'error',
+        message: t(applicationActionErrorKey(caught)),
+      });
+    } finally {
+      setPendingActionId(null);
+    }
   }
 
   async function reject(id: string) {
-    await rejectProvider(user!.uid, id, 'admin.reason.identityRejected');
-    void queryClient.invalidateQueries({ queryKey: ['admin'] });
+    if (!user) return;
+    setNotice(null);
+    setPendingActionId(id);
+    try {
+      await rejectProvider(user.uid, id, 'admin.reason.identityRejected');
+      queryClient.setQueryData(['admin', 'applications'], (current: typeof query.data) =>
+        current?.filter((provider) => provider.id !== id),
+      );
+      setNotice({ kind: 'success', message: t('admin.applicationRejected') });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'applications'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'overview'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'actions'] });
+    } catch (caught) {
+      setNotice({
+        kind: 'error',
+        message: t(applicationActionErrorKey(caught)),
+      });
+    } finally {
+      setPendingActionId(null);
+    }
   }
 
   return (
@@ -31,6 +73,16 @@ export function ApplicationsPage() {
         <CardTitle as="h1">{t('admin.applications')}</CardTitle>
       </CardHeader>
       <CardContent className="motion-stagger space-y-3">
+        {notice ? (
+          <p
+            className={`motion-pop soft-note p-3 text-sm font-semibold ${
+              notice.kind === 'error' ? 'text-destructive' : 'text-foreground'
+            }`}
+            role={notice.kind === 'error' ? 'alert' : 'status'}
+          >
+            {notice.message}
+          </p>
+        ) : null}
         {query.data?.map((provider) => {
           const identityUrl = provider.identityDocument
             ? documentPreviewUrl(provider.identityDocument)
@@ -100,14 +152,24 @@ export function ApplicationsPage() {
                 )}
               </div>
               <div className="motion-stagger flex flex-col gap-2 md:flex-row">
-                <Button onClick={() => void approve(provider.id)}>
-                  {t('common.approve')}
+                <Button
+                  type="button"
+                  disabled={pendingActionId === provider.id || !provider.identityDocument}
+                  onClick={() => void approve(provider.id)}
+                >
+                  {pendingActionId === provider.id
+                    ? t('admin.applicationProcessing')
+                    : t('common.approve')}
                 </Button>
                 <Button
+                  type="button"
                   variant="destructive"
+                  disabled={pendingActionId === provider.id}
                   onClick={() => void reject(provider.id)}
                 >
-                  {t('common.reject')}
+                  {pendingActionId === provider.id
+                    ? t('admin.applicationProcessing')
+                    : t('common.reject')}
                 </Button>
               </div>
             </div>
@@ -120,6 +182,23 @@ export function ApplicationsPage() {
 
 function documentPreviewUrl(identityDocument: { previewDataUrl?: string; downloadUrl?: string }) {
   return identityDocument.previewDataUrl || identityDocument.downloadUrl || '';
+}
+
+function applicationActionErrorKey(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+
+  if (message.startsWith('error.')) return message;
+
+  if (message.includes('Identity document is required')) {
+    return 'error.provider.identityRequired';
+  }
+
+  if (message.includes('Provider not found')) {
+    return 'error.provider.notFound';
+  }
+
+  return 'admin.applicationActionError';
 }
 
 async function openIdentityDocument(url: string) {

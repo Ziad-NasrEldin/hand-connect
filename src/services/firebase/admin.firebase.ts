@@ -5,6 +5,7 @@ import {
   getDocs,
   orderBy,
   query,
+  writeBatch,
   where,
 } from 'firebase/firestore';
 import { getFirebaseDb } from '@/firebase/db';
@@ -25,6 +26,104 @@ function requireFirebaseDb() {
   const db = getFirebaseDb();
   if (!db) throw new Error('error.firebase.notConfigured');
   return db;
+}
+
+async function approveProviderDirectly(adminId: string, providerId: string) {
+  const db = requireFirebaseDb();
+  const providerRef = doc(db, 'providers', providerId);
+  const identityRef = doc(db, 'providerIdentityDocuments', providerId);
+  const [provider, identity] = await Promise.all([
+    getDoc(providerRef),
+    getDoc(identityRef),
+  ]);
+
+  if (!provider.exists()) throw new Error('error.provider.notFound');
+  if (!identity.exists()) throw new Error('error.provider.identityRequired');
+  if (provider.data().status !== 'pending') throw new Error('error.request.notPending');
+
+  const now = new Date().toISOString();
+  const batch = writeBatch(db);
+  batch.update(providerRef, {
+    status: 'approved',
+    nationalIdVerified: true,
+    approvedAt: now,
+    rejectionReason: null,
+    verificationStatus: 'verified',
+    verificationReviewedAt: now,
+    verificationReviewedBy: adminId,
+  });
+  batch.set(doc(collection(db, 'adminActions')), {
+    adminId,
+    targetType: 'provider',
+    targetId: providerId,
+    action: 'approve_provider',
+    reason: 'admin.reason.identityReviewed',
+    createdAt: now,
+  });
+  await batch.commit();
+}
+
+async function rejectProviderDirectly(
+  adminId: string,
+  providerId: string,
+  reason: string,
+) {
+  const db = requireFirebaseDb();
+  const providerRef = doc(db, 'providers', providerId);
+  const provider = await getDoc(providerRef);
+
+  if (!provider.exists()) throw new Error('error.provider.notFound');
+  if (provider.data().status !== 'pending') throw new Error('error.request.notPending');
+
+  const now = new Date().toISOString();
+  const batch = writeBatch(db);
+  batch.update(providerRef, {
+    status: 'rejected',
+    nationalIdVerified: false,
+    approvedAt: null,
+    rejectionReason: reason,
+    verificationStatus: 'rejected',
+    verificationReviewedAt: now,
+    verificationReviewedBy: adminId,
+  });
+  batch.set(doc(collection(db, 'adminActions')), {
+    adminId,
+    targetType: 'provider',
+    targetId: providerId,
+    action: 'reject_provider',
+    reason,
+    createdAt: now,
+  });
+  await batch.commit();
+}
+
+async function suspendProviderDirectly(
+  adminId: string,
+  providerId: string,
+  reason: string,
+) {
+  const db = requireFirebaseDb();
+  const providerRef = doc(db, 'providers', providerId);
+  const provider = await getDoc(providerRef);
+
+  if (!provider.exists()) throw new Error('error.provider.notFound');
+  if (provider.data().status === 'suspended') throw new Error('error.request.notPending');
+
+  const now = new Date().toISOString();
+  const batch = writeBatch(db);
+  batch.update(providerRef, {
+    status: 'suspended',
+    suspensionReason: reason,
+  });
+  batch.set(doc(collection(db, 'adminActions')), {
+    adminId,
+    targetType: 'provider',
+    targetId: providerId,
+    action: 'suspend_provider',
+    reason,
+    createdAt: now,
+  });
+  await batch.commit();
 }
 
 export const firebaseAdminService: AdminService = {
@@ -85,14 +184,14 @@ export const firebaseAdminService: AdminService = {
     );
     return providers;
   },
-  approveProvider: async (_adminId, providerId) => {
-    await callFirebaseFunction<{ providerId: string }, void>('approveProvider', { providerId });
+  approveProvider: async (adminId, providerId) => {
+    await approveProviderDirectly(adminId, providerId);
   },
-  rejectProvider: async (_adminId, providerId, reason) => {
-    await callFirebaseFunction<{ providerId: string; reason: string }, void>('rejectProvider', { providerId, reason });
+  rejectProvider: async (adminId, providerId, reason) => {
+    await rejectProviderDirectly(adminId, providerId, reason);
   },
-  suspendProvider: async (_adminId, providerId, reason) => {
-    await callFirebaseFunction<{ providerId: string; reason: string }, void>('suspendProvider', { providerId, reason });
+  suspendProvider: async (adminId, providerId, reason) => {
+    await suspendProviderDirectly(adminId, providerId, reason);
   },
   approveVisibilityRequest: async (_adminId, requestId, notes) => {
     await callFirebaseFunction<{ requestId: string; notes: string }, void>('approveVisibilityRequest', { requestId, notes });

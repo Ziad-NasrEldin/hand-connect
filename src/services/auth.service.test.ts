@@ -29,12 +29,18 @@ describe('auth service localization', () => {
   });
 
   it('logs in with phone plus password without SMS', async () => {
-    const session = await login('+201001112222', 'password');
+    const session = await login('+201001112222', 'pass1234');
 
     expect(session.user).toMatchObject({
       email: 'customer@hand.test',
       role: 'customer',
     });
+  });
+
+  it('rejects the seeded customer when the demo password is wrong', async () => {
+    await expect(login('customer@hand.test', 'wrongpass')).rejects.toThrow(
+      'error.auth.invalidCredentials',
+    );
   });
 
   it('creates a customer session for Google login without provider approval', async () => {

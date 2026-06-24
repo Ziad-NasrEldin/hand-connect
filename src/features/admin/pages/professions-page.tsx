@@ -90,16 +90,23 @@ export function ProfessionsPage() {
       <Card className="motion-reveal">
         <CardContent className="motion-stagger space-y-3 p-5">
           {query.data?.map((profession) => (
-            <div key={profession.id} className="soft-list-item flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-              <div>
-                <p className="font-semibold text-foreground">
+            <div
+              key={profession.id}
+              className="soft-list-item grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5"
+            >
+              <div className="min-w-0 text-right sm:justify-self-end">
+                <p className="truncate font-semibold text-foreground">
                   {profession.nameAr} / {profession.nameEn}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="truncate text-sm text-muted-foreground">
                   {profession.slug} - {getProfessionActivityLabel(profession.active, t)}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => void toggle(profession)}>
+              <Button
+                className="w-full sm:row-start-1 sm:w-[96px] sm:justify-self-start"
+                variant="outline"
+                onClick={() => void toggle(profession)}
+              >
                 {profession.active ? t('common.inactive') : t('common.active')}
               </Button>
             </div>

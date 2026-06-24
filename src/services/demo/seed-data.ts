@@ -11,6 +11,10 @@ import { productForVisibilityRequest } from '../../config/paid-products';
 
 export const demoSeedVersion = '2026-05-09-cairo-dense-demo-seed-v7';
 
+export const demoSeedCredentials: Record<string, string> = {
+  'customer@hand.test': 'pass1234',
+};
+
 const baseDate = '2026-05-04T08:00:00.000Z';
 const paidUntil = '2026-06-03T08:00:00.000Z';
 
