@@ -78,7 +78,9 @@ export function VisibilityRequestsPage() {
         ) : null}
         {error ? <p className="motion-pop text-sm text-destructive">{error}</p> : null}
         {requests.data?.map((request) => {
-          const paymobRequiresCallback = request.paymentMethod === 'paymob_card' && request.paymentStatus !== 'matched';
+          const paymobAwaitingCallback =
+            request.paymentMethod === 'paymob_card' &&
+            request.paymentStatus === 'requires_action';
           return (
             <div
               key={request.id}
@@ -183,9 +185,9 @@ export function VisibilityRequestsPage() {
             ) : null}
             {request.status === 'pending' ? (
               <div className="motion-reveal space-y-3">
-                {paymobRequiresCallback ? (
+                {paymobAwaitingCallback ? (
                   <p className="soft-note p-3 text-sm text-muted-foreground">
-                    {t('admin.paymobCallbackOnly')}
+                    {t('admin.paymobManualConfirmationHint')}
                   </p>
                 ) : null}
                 <div className="space-y-2">
@@ -206,7 +208,7 @@ export function VisibilityRequestsPage() {
                 </div>
                 <div className="motion-stagger flex flex-col gap-2 sm:flex-row">
                   <Button
-                    disabled={pendingActionId === request.id || paymobRequiresCallback}
+                    disabled={pendingActionId === request.id}
                     onClick={() => void approve(request.id)}
                   >
                     {t('admin.confirmPayment')}
