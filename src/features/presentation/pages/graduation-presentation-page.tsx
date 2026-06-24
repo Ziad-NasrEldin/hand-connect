@@ -61,115 +61,115 @@ const slides: Slide[] = [
     kind: 'constraints',
     eyebrow: 'Business rules',
     title: 'The constraints are the product strategy.',
-    copy: 'The product avoided marketplace complexity on purpose: direct contact only, no customer payments, no guarantees, and no provider shown publicly before approval.',
-    proof: 'Rules changed screens, ranking, reviews, paid visibility, and admin controls',
+    copy: 'The product direction was controlled by strict business rules. They decided what could appear in the product and what had to stay out.',
+    proof: 'Cairo only / direct contact only / verified before public',
     visualTitle: 'Decision matrix',
-    items: ['Cairo only', 'Four professions', 'Direct contact only', 'No payments', 'Verified before public'],
+    items: ['Cairo only', 'Four professions only', 'Direct contact only', 'No booking', 'No customer payments', 'No service guarantees', 'Verified before public', 'Paid visibility capped and labeled', 'Reviews after contact'],
   },
   {
     kind: 'constraints',
     eyebrow: 'Product direction',
-    title: 'The most important features are also the features that were rejected.',
-    copy: 'No platform-managed visits, held funds, platform fees, work allocation, work status system, skill guarantees, or expansion beyond Cairo in v1. The product stays a directory.',
-    proof: 'Out of scope is enforced by docs, route shape, and product-boundary tests',
-    visualTitle: 'Boundary line',
-    items: ['In: search', 'In: profiles', 'In: chat', 'Out: managed visits', 'Out: payments', 'Out: dispatch'],
+    title: 'These guidelines shaped every product decision.',
+    copy: 'They affected what screens were designed, what features were rejected, how users move, how providers are ranked, and how admins control trust and safety.',
+    proof: 'This is why Herafy stayed focused instead of becoming a marketplace',
+    visualTitle: 'What the rules changed',
+    items: ['Screens designed', 'Features rejected', 'User movement', 'Provider ranking', 'Admin trust control'],
   },
   {
     kind: 'roles',
     eyebrow: 'Live demo',
-    title: 'The demo is a three-role system, not one linear app tour.',
-    copy: 'Customers search and contact. Providers operate approved profiles. Admins control verification, reports, professions, visibility, and audit logs.',
-    proof: 'Route guards: customer, provider, admin',
+    title: 'The live demo starts by showing the roles inside the system.',
+    copy: 'Each role proves a different part of the product: customers discover, providers operate, and admins protect platform integrity.',
+    proof: 'Customer / provider / admin',
     visualTitle: 'Role map',
-    items: ['Customer: discover and contact', 'Provider: profile and visibility', 'Admin: approval and moderation'],
+    items: ['Customer: search, profiles, chat, WhatsApp, reviews', 'Provider: account, verification, profile, contacts, dashboard, visibility', 'Admin: approve, reject, professions, reviews, bans, reports'],
   },
   {
     kind: 'journey',
     eyebrow: 'Customer demo',
-    title: 'The customer path is built around one conversion: reaching a provider.',
-    copy: 'Search filters profession and neighborhood, results show approved providers, profile actions require login, and reviews are only allowed after a recorded contact.',
-    proof: 'Services: searchProviders, startConversation, revealWhatsApp, canCustomerReviewProvider',
+    title: 'The customer demo shows the fastest path from need to contact.',
+    copy: 'Open the platform, select profession, select location, view provider results, open a profile, start chat, reveal WhatsApp, then leave a review after contact.',
+    proof: 'Goal: prove a customer can find and contact a provider quickly',
     visualTitle: 'Need to contact',
     items: ['Need', 'Profession', 'Neighborhood', 'Approved results', 'Profile', 'Chat or WhatsApp', 'Review after contact'],
   },
   {
     kind: 'journey',
     eyebrow: 'Provider demo',
-    title: 'A provider is not public until verification is complete.',
-    copy: 'Registration creates a pending provider, identity evidence is reviewed, approved providers get dashboard/profile/visibility routes, and metrics come from contacts, messages, views, and reviews.',
-    proof: 'Provider guard redirects unapproved accounts to /pending',
+    title: 'The provider demo shows how a service provider joins and operates.',
+    copy: 'Create a provider account, choose profession, choose service area, submit ID verification, wait for approval, complete profile, receive contacts, view metrics, and manage visibility options.',
+    proof: 'Goal: prove providers can be onboarded, verified, and activated without complex tools',
     visualTitle: 'Provider activation',
     items: ['Register', 'Identity document', 'Pending', 'Admin approval', 'Profile edit', 'Dashboard metrics', 'Visibility request'],
   },
   {
     kind: 'trust',
     eyebrow: 'Admin demo',
-    title: 'Trust is implemented as an admin workflow with audit trails.',
-    copy: 'Admin routes cover applications, providers, professions, visibility requests, reports, and action logs. Sensitive mutations are backed by rules and callable/server paths where required.',
-    proof: 'Admin routes: applications, providers, professions, visibility, reports, actions',
+    title: 'The admin demo shows how trust is controlled.',
+    copy: 'Open the admin dashboard, view pending providers, review identity, approve or reject, review reports, moderate reviews, enforce warnings or bans, and check logged actions.',
+    proof: 'Goal: prove trust is not just a claim. It is controlled by the system.',
     visualTitle: 'Control loop',
     items: ['Review identity', 'Approve or reject', 'Moderate reports', 'Suspend or ban', 'Write audit row'],
   },
   {
     kind: 'pipeline',
     eyebrow: 'How it was built',
-    title: 'The build process turned ambiguity into implementation checkpoints.',
-    copy: 'The work moved through PRD, SRS, tech decisions, sitemap, design and motion system, implementation tracker, QA, hardening, and release readiness.',
-    proof: 'Tracker milestones M0-M8 are marked verified',
+    title: 'The product was built through a sequence of product documents.',
+    copy: 'Business context became PRD, SRS, technology decisions, sitemap, design system, implementation tasks, hardening, and go-live preparation.',
+    proof: 'Idea became a buildable product process',
     visualTitle: 'Build pipeline',
     items: ['Business context', 'PRD', 'SRS', 'Tech decisions', 'Sitemap', 'Design + motion', 'Implementation tracker', 'Release gate'],
   },
   {
     kind: 'pipeline',
     eyebrow: 'PRD',
-    title: 'The PRD turned the idea into requirements and boundaries.',
-    copy: 'It clarified users, journeys, functional requirements, non-functional requirements, acceptance criteria, and what must stay outside v1.',
-    proof: 'Feature list has 14 feature areas plus explicit out-of-scope boundaries',
+    title: 'The PRD was written from the business context.',
+    copy: 'It translated the business idea into target users, user journeys, functional requirements, non-functional requirements, acceptance criteria, and out-of-scope features.',
+    proof: 'This document made the product buildable',
     visualTitle: 'PRD contents',
     items: ['Users', 'Journeys', 'Functional requirements', 'NFRs', 'Acceptance criteria', 'Out of scope'],
   },
   {
     kind: 'evidence',
     eyebrow: 'SRS',
-    title: 'The SRS audit shows what exists and what still needs hardening.',
-    copy: 'The implementation map audited 56 groups: 20 implemented, 36 partially implemented, and 0 not implemented. That is a real product with remaining launch-grade hardening work.',
-    proof: 'SRS implementation map, 56 audited groups',
+    title: 'The SRS was written by interviewing myself and answering 110+ questions.',
+    copy: 'The questions covered users, roles, permissions, edge cases, business rules, system behavior, admin actions, provider restrictions, and trust and safety.',
+    proof: 'This forced the project to become specific instead of vague',
     visualTitle: 'Audit status',
-    items: ['Implemented: 20', 'Partially implemented: 36', 'Not implemented: 0', 'Total audited groups: 56'],
+    items: ['Users', 'Roles', 'Permissions', 'Edge cases', 'Business rules', 'System behavior', 'Admin actions', 'Provider restrictions', 'Trust and safety'],
   },
   {
     kind: 'architecture',
     eyebrow: 'Technology decisions',
-    title: 'The stack matches the product shape: fast app, controlled backend, strict rules.',
-    copy: 'The app is Vite + React Router + TanStack Query on the frontend, service contracts in the middle, Firebase Auth/Firestore/Storage/Functions underneath, and Vercel for web/API deployment.',
-    proof: 'Sources: app-router, service contracts, firebase app, deployment.md, vercel.json',
+    title: 'The technology was not chosen randomly.',
+    copy: 'It was chosen based on what customers need to do, what providers need to do, what admins need to control, how the product needs to scale, and where trust and speed matter most.',
+    proof: 'The user lifecycle shaped the architecture and stack',
     visualTitle: 'System stack',
     items: ['React + Vite', 'React Router guards', 'Service contracts', 'Firebase Auth', 'Firestore + Storage', 'Cloud Functions', 'Vercel API/routes'],
   },
   {
     kind: 'architecture',
     eyebrow: 'Sitemap',
-    title: 'The route tree proves the product architecture.',
-    copy: 'Public discovery, authenticated messages, customer-only reviews, approved-provider workspace, and admin-only operations are separated at the router level.',
-    proof: 'Route source of truth: src/router/app-router.tsx',
+    title: 'The sitemap was extracted from user journeys.',
+    copy: 'Instead of inventing pages, every screen came from a real flow: customer search, customer contact, provider onboarding, provider dashboard, admin verification, and admin moderation.',
+    proof: 'This kept the product focused',
     visualTitle: 'Route tree',
     items: ['Public: /search, /providers/:id', 'Auth: /login, /register', 'Customer: /reviews/new/:providerId', 'Provider: dashboard/profile/visibility', 'Admin: six operational tabs'],
   },
   {
     kind: 'pipeline',
     eyebrow: 'Design and motion',
-    title: 'The design system is warm because the task is stressful.',
-    copy: 'Herafy uses Cairo-first Arabic typography, warm paper surfaces, orange action color, soft list rows, clear cards, and reduced-motion fallbacks so search and trust actions stay calm.',
-    proof: 'Sources: DESIGN.md, globals.css, motion.md',
+    title: 'The design.md and motion.md defined how the product should feel.',
+    copy: 'The goal was to make the UI clear, fast, trustworthy, consistent, and not over-designed. The product was treated as a utility, not a decorative landing page.',
+    proof: 'Design language and interaction behavior were defined before final UI',
     visualTitle: 'Interface language',
     items: ['Warm paper', 'Herafy orange', 'Cairo typography', 'Rounded trust cards', 'Mobile-first nav', 'Reduced motion'],
   },
   {
     kind: 'roles',
     eyebrow: 'UI design',
-    title: 'The UI covers product surfaces, not decorative pages.',
-    copy: 'The current page set includes landing, search, provider profile, auth, chat, review submission, provider dashboard, profile editing, visibility, and admin operations.',
+    title: 'The UI designs were created from the sitemap and design system.',
+    copy: 'Each screen had a reason: landing, search results, provider profile, login/signup, chat, reviews, onboarding, dashboard, admin dashboard, verification, and moderation.',
     proof: 'Design goal: help users reach contact as fast as possible',
     visualTitle: 'Screen families',
     items: ['Discovery', 'Contact', 'Provider ops', 'Admin trust', 'Moderation', 'Release'],
@@ -177,36 +177,36 @@ const slides: Slide[] = [
   {
     kind: 'pipeline',
     eyebrow: 'Implementation plan',
-    title: 'The tracker made progress measurable.',
-    copy: 'The v1 tracker records decisions, tasks, dependencies, verification proof, notes, and milestones. It includes release gates and evidence, not just a checklist.',
-    proof: 'Milestones M0-M8 verified in hand-connect-v1-completion-tracker.md',
+    title: 'The full spec document turned everything into implementation tasks.',
+    copy: 'It included product requirements, technical architecture, ERD, API contracts, ranking rules, chat rules, analytics events, admin rules, QA checklist, and release plan.',
+    proof: 'The tracker checklist made development measurable',
     visualTitle: 'Tracker proof',
     items: ['Product decisions', 'Task IDs', 'Dependencies', 'Verification proof', 'Milestones', 'Release gate'],
   },
   {
     kind: 'evidence',
     eyebrow: 'Polish and hardening',
-    title: 'The release gate is a technical argument, not a claim.',
-    copy: 'The documented gate runs lint, Vitest, Firestore rules tests, production build, and Playwright E2E. The tracker records E2E smoke as 11 passed with 1 expected mobile-only skip.',
-    proof: 'release:check, test:rules, build, e2e',
+    title: 'Final polish and hardening focused on making the product stable.',
+    copy: 'The goal was not to add more features. It was to fix broken flows, loading states, empty states, edge cases, permissions, admin actions, search, chat, reviews, security, and privacy.',
+    proof: 'The existing product had to become reliable',
     visualTitle: 'Quality gates',
     items: ['ESLint', 'Vitest', 'Firestore rules', 'Vite build', 'Playwright E2E', 'Operations docs'],
   },
   {
     kind: 'launch',
     eyebrow: 'Go live',
-    title: 'The launch stack separates web delivery from backend trust systems.',
-    copy: 'Vercel serves the Vite app and API routes with SPA fallback. Firebase remains Auth, Firestore, Storage, Functions, rules, and indexes. Capacitor wraps the dist build as Herafy for iOS beta readiness.',
-    proof: 'vercel.json, deployment.md, capacitor.config.ts',
+    title: 'The product was prepared for beta launch.',
+    copy: 'The frontend was deployed to Vercel, the domain was configured through Cloudflare, and beta launch paths were prepared for Apple Store and Google Play testing.',
+    proof: 'Goal: beta validation, not mass launch',
     visualTitle: 'Launch stack',
     items: ['Vercel app', 'Vercel API', 'Cloudflare domain', 'Firebase backend', 'Firebase rules', 'Capacitor iOS wrapper'],
   },
   {
     kind: 'final',
     eyebrow: 'Final message',
-    title: 'The graduation project is the product-building process.',
-    copy: 'A messy market problem became business rules, requirements, a routed product, service contracts, Firebase-backed trust controls, release gates, and a beta-ready launch path.',
-    proof: 'Idea to launch, with implementation evidence',
+    title: 'This graduation project is not just an app.',
+    copy: 'It is a full product-building process: market problem, business rules, requirements, system architecture, UI, implementation tasks, and a tested product ready for beta launch.',
+    proof: 'The focus is how the product was built from idea to launch',
     visualTitle: 'End-to-end proof',
     items: ['Problem', 'Rules', 'Requirements', 'Architecture', 'UI', 'Implementation', 'Verification', 'Launch'],
   },
@@ -447,15 +447,7 @@ export function GraduationPresentationPage() {
           className="relative grid min-h-screen snap-start snap-always overflow-hidden px-4 pb-8 pt-28 sm:px-6 lg:px-8"
         >
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_86%_14%,color-mix(in_oklch,var(--hc-orange)_10%,transparent),transparent_30%),radial-gradient(circle_at_8%_84%,color-mix(in_oklch,var(--hc-orange-soft)_14%,transparent),transparent_30%)]" />
-          {index === 0 ? (
-            <OpeningSlide />
-          ) : index === 1 ? (
-            <FocusSlide slide={slide} />
-          ) : index === 2 ? (
-            <ProblemSlide slide={slide} />
-          ) : (
-            <DeckSlide slide={slide} />
-          )}
+          <SlideFrame slide={slide} index={index} />
         </section>
       ))}
 
@@ -527,6 +519,44 @@ function OpeningSlide() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SlideFrame({ slide, index }: { slide: Slide; index: number }) {
+  if (index === 0) return <OpeningSlide />;
+  if (index === 1) return <FocusSlide slide={slide} />;
+  if (index === 2) return <ProblemSlide slide={slide} />;
+  if (index === 3) return <RulesConstellationSlide slide={slide} />;
+  if (index === 4) return <DecisionImpactSlide slide={slide} />;
+  if (index === 5) return <RoleTriptychSlide slide={slide} />;
+  if (index === 6) return <CustomerPathSlide slide={slide} />;
+  if (index === 7) return <ProviderActivationSlide slide={slide} />;
+  if (index === 8) return <AdminControlRoomSlide slide={slide} />;
+  if (index === 9) return <BuildDocumentStackSlide slide={slide} />;
+  if (index === 10) return <PrdBlueprintSlide slide={slide} />;
+  if (index === 11) return <SrsQuestionMatrixSlide slide={slide} />;
+  if (index === 12) return <TechDecisionConsoleSlide slide={slide} />;
+  if (index === 13) return <SitemapSwimlanesSlide slide={slide} />;
+  if (index === 14) return <DesignMotionSlide slide={slide} />;
+  if (index === 15) return <UiSurfaceWallSlide slide={slide} />;
+  if (index === 16) return <SpecTrackerSlide slide={slide} />;
+  if (index === 17) return <HardeningRadarSlide slide={slide} />;
+  if (index === 18) return <GoLiveSlide slide={slide} />;
+  if (index === 19) return <FinalChainSlide slide={slide} />;
+  return <DeckSlide slide={slide} />;
+}
+
+function SlideHeader({ slide, align = 'left' }: { slide: Slide; align?: 'left' | 'center' }) {
+  return (
+    <header className={align === 'center' ? 'mx-auto max-w-5xl text-center' : 'max-w-5xl'}>
+      <p className="section-label">{slide.eyebrow}</p>
+      <h1 className="mt-4 text-[clamp(2.25rem,5vw,4.85rem)] font-black leading-[0.98] tracking-[-0.04em] text-foreground">
+        {slide.title}
+      </h1>
+      <p className="mt-4 max-w-4xl text-base font-bold leading-8 text-muted-foreground sm:text-xl sm:leading-9">
+        {slide.copy}
+      </p>
+    </header>
   );
 }
 
@@ -610,6 +640,366 @@ function ProblemSlide({ slide }: { slide: Slide }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RulesConstellationSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="relative mx-auto h-[390px] w-full max-w-5xl">
+          <div className="absolute left-1/2 top-1/2 grid h-40 w-40 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary p-5 text-center text-primary-foreground shadow-[0_26px_70px_rgba(242,111,54,0.24)]">
+            <p className="text-xl font-black leading-tight">Strict business rules</p>
+          </div>
+          {slide.items.map((item, index) => {
+            const positions = [
+              'left-[6%] top-[6%]',
+              'left-[36%] top-0',
+              'right-[8%] top-[8%]',
+              'right-0 top-[43%]',
+              'right-[12%] bottom-[5%]',
+              'left-[39%] bottom-0',
+              'left-[5%] bottom-[10%]',
+              'left-0 top-[42%]',
+              'left-[43%] top-[38%]',
+            ];
+            return (
+              <div key={item} className={`absolute ${positions[index]} soft-list-item w-44 px-4 py-3 text-center text-sm font-black`}>
+                {item}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DecisionImpactSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+        <div className="brand-panel p-7">
+          <p className="section-label">{slide.eyebrow}</p>
+          <h1 className="mt-5 text-[clamp(2.4rem,5vw,5rem)] font-black leading-[0.96] tracking-[-0.04em] text-foreground">
+            {slide.title}
+          </h1>
+          <p className="mt-6 text-lg font-bold leading-8 text-muted-foreground">{slide.copy}</p>
+        </div>
+        <div className="grid gap-4">
+          {slide.items.map((item, index) => (
+            <div key={item} className="grid grid-cols-[auto_1fr] items-center gap-4">
+              <p className="brand-number w-16 text-5xl">{String(index + 1).padStart(2, '0')}</p>
+              <div className="rounded-full border border-border bg-[color:var(--hc-paper)] px-6 py-4 shadow-[0_14px_30px_rgba(73,55,38,0.06)]">
+                <p className="text-lg font-black text-foreground">{item}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RoleTriptychSlide({ slide }: { slide: Slide }) {
+  const roles = slide.items.map((item) => {
+    const [role, details = ''] = item.split(': ');
+    return { role, details: details.split(', ') };
+  });
+
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] grid-rows-[auto_1fr] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="grid gap-5 lg:grid-cols-3">
+          {roles.map(({ role, details }, index) => (
+            <section key={role} className="brand-panel grid content-between p-6">
+              <div>
+                <p className="brand-number text-6xl">{String(index + 1).padStart(2, '0')}</p>
+                <h2 className="mt-4 text-3xl font-black text-foreground">{role}</h2>
+              </div>
+              <div className="mt-8 grid gap-2">
+                {details.map((detail) => (
+                  <p key={detail} className="soft-note rounded-full px-4 py-2 text-sm font-black">{detail}</p>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomerPathSlide({ slide }: { slide: Slide }) {
+  return <PathSlide slide={slide} mode="customer" />;
+}
+
+function ProviderActivationSlide({ slide }: { slide: Slide }) {
+  return <PathSlide slide={slide} mode="provider" />;
+}
+
+function PathSlide({ slide, mode }: { slide: Slide; mode: 'customer' | 'provider' }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} />
+        <div className="relative rounded-[calc(var(--radius)+12px)] border border-border bg-[color:var(--hc-paper)] p-5">
+          <div className="absolute left-8 right-8 top-1/2 hidden h-1 -translate-y-1/2 rounded-full bg-[color:var(--hc-rule)] lg:block" />
+          <div className="relative grid gap-3 lg:grid-cols-7">
+            {slide.items.map((item, index) => (
+              <div key={item} className={`soft-list-item min-h-36 p-4 ${mode === 'provider' && index % 2 ? 'lg:translate-y-16' : ''}`}>
+                <p className="brand-number text-4xl">{String(index + 1).padStart(2, '0')}</p>
+                <p className="mt-4 text-sm font-black leading-6 text-foreground">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminControlRoomSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+        <div>
+          <SlideHeader slide={slide} />
+        </div>
+        <div className="brand-panel p-6">
+          <div className="grid grid-cols-2 gap-3">
+            {slide.items.map((item, index) => (
+              <div key={item} className={index === slide.items.length - 1 ? 'col-span-2' : ''}>
+                <div className="soft-list-item p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">{index === slide.items.length - 1 ? 'Audit' : 'Control'}</p>
+                  <p className="mt-2 text-lg font-black leading-tight text-foreground">{item}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BuildDocumentStackSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="mx-auto grid w-full max-w-6xl gap-3">
+          {slide.items.map((item, index) => (
+            <div key={item} className="brand-panel px-6 py-4" style={{ transform: `translateX(${(index % 2 === 0 ? -1 : 1) * 28}px)` }}>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-2xl font-black text-foreground">{item}</p>
+                <p className="brand-number text-4xl">{String(index + 1).padStart(2, '0')}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrdBlueprintSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-7">
+        <SlideHeader slide={slide} />
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {slide.items.map((item) => (
+            <div key={item} className="rounded-[calc(var(--radius)+4px)] border border-dashed border-[color:var(--hc-orange-soft)] bg-[color:var(--hc-paper)] p-5">
+              <p className="text-xl font-black text-foreground">{item}</p>
+              <div className="mt-5 h-2 rounded-full bg-[color:var(--hc-rule)]" />
+              <div className="mt-3 h-2 w-2/3 rounded-full bg-primary" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SrsQuestionMatrixSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
+        <div className="brand-panel p-7">
+          <p className="brand-number text-8xl">110+</p>
+          <h1 className="mt-5 text-4xl font-black leading-tight text-foreground">{slide.title}</h1>
+          <p className="mt-5 text-lg font-bold leading-8 text-muted-foreground">{slide.copy}</p>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {slide.items.map((item) => (
+            <div key={item} className="soft-note grid min-h-24 place-items-center rounded-2xl p-3 text-center text-sm font-black">
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TechDecisionConsoleSlide({ slide }: { slide: Slide }) {
+  const rows = ['Customer actions', 'Provider operations', 'Admin control', 'Scale path', 'Trust + speed'];
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="grid gap-3 rounded-[calc(var(--radius)+10px)] border border-border bg-[color:var(--hc-paper)] p-5">
+          {rows.map((row, index) => (
+            <div key={row} className="grid grid-cols-[220px_1fr] items-center gap-4">
+              <p className="text-sm font-black uppercase tracking-[0.14em] text-primary">{row}</p>
+              <div className="grid grid-cols-3 gap-3">
+                {['Frontend route', 'Service contract', 'Backend rule'].map((cell) => (
+                  <div key={cell} className="soft-list-item px-4 py-3 text-sm font-black text-foreground">
+                    {index + 1}. {cell}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SitemapSwimlanesSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} />
+        <div className="grid gap-3">
+          {slide.items.map((item, index) => (
+            <div key={item} className="grid grid-cols-[180px_1fr] items-center gap-4">
+              <p className="text-sm font-black uppercase tracking-[0.14em] text-muted-foreground">Journey {index + 1}</p>
+              <div className="rounded-full border border-border bg-[color:var(--hc-paper)] px-5 py-3">
+                <p className="text-lg font-black text-foreground">{item}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DesignMotionSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
+        <SlideHeader slide={slide} />
+        <div className="grid gap-4">
+          {slide.items.map((item, index) => (
+            <div key={item} className={`rounded-[calc(var(--radius)+4px)] p-6 ${index === 0 ? 'bg-primary text-primary-foreground' : 'soft-list-item'}`}>
+              <p className="text-3xl font-black">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UiSurfaceWallSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-6">
+        <SlideHeader slide={slide} align="center" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {['Landing', 'Search results', 'Provider profile', 'Login/signup', 'Chat', 'Reviews', 'Onboarding', 'Provider dashboard', 'Admin dashboard', 'Verification', 'Review moderation'].map((item, index) => (
+            <div key={item} className={`soft-list-item p-4 ${index % 3 === 0 ? 'md:row-span-2' : ''}`}>
+              <p className="brand-number text-3xl">{String(index + 1).padStart(2, '0')}</p>
+              <p className="mt-3 text-sm font-black leading-6 text-foreground">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SpecTrackerSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <SlideHeader slide={slide} />
+        <div className="brand-panel p-6">
+          <div className="grid gap-3">
+            {slide.items.map((item, index) => (
+              <div key={item} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-2xl border border-border bg-[color:var(--hc-paper)] px-4 py-3">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">{index + 1}</span>
+                <p className="text-sm font-black text-foreground">{item}</p>
+                <span className="text-xs font-black uppercase tracking-[0.12em] text-muted-foreground">checked</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HardeningRadarSlide({ slide }: { slide: Slide }) {
+  const checks = ['Broken flows', 'Loading states', 'Empty states', 'Edge cases', 'Permissions', 'Admin actions', 'Search', 'Chat', 'Reviews', 'Security', 'Privacy'];
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 md:grid-cols-4">
+          {checks.map((item, index) => (
+            <div key={item} className={`${index === 0 || index === checks.length - 1 ? 'bg-primary text-primary-foreground' : 'soft-note'} rounded-2xl p-4 text-center text-sm font-black`}>
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GoLiveSlide({ slide }: { slide: Slide }) {
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} />
+        <div className="grid gap-4 lg:grid-cols-4">
+          {['Vercel frontend', 'Cloudflare domain', 'Apple Store beta', 'Google Play beta'].map((item, index) => (
+            <div key={item} className="brand-panel grid min-h-72 content-between p-5">
+              <p className="brand-number text-6xl">{String(index + 1).padStart(2, '0')}</p>
+              <p className="text-2xl font-black leading-tight text-foreground">{item}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FinalChainSlide({ slide }: { slide: Slide }) {
+  const chain = ['Market problem', 'Business rules', 'Requirements', 'Architecture', 'UI', 'Implementation tasks', 'Tested product', 'Beta launch'];
+  return (
+    <div data-slide-content className="mx-auto grid w-full max-w-7xl items-center will-change-transform">
+      <div className="grid min-h-[620px] gap-8">
+        <SlideHeader slide={slide} align="center" />
+        <div className="grid gap-3">
+          {chain.map((item, index) => (
+            <div key={item} className="grid grid-cols-[auto_1fr] items-center gap-4">
+              <p className="brand-number text-5xl">{String(index + 1).padStart(2, '0')}</p>
+              <div className="rounded-full border border-border bg-[color:var(--hc-paper)] px-6 py-4 text-xl font-black text-foreground">
+                {item}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
