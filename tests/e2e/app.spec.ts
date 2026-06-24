@@ -112,7 +112,7 @@ test('provider profile stays directory-first before explicit contact', async ({
   await assertNoHorizontalOverflow(page);
 });
 
-test('provider completes mocked Paymob visibility payment end-to-end', async ({
+test('admin can confirm a pending mocked Paymob visibility payment end-to-end', async ({
   page,
 }, testInfo) => {
   await page.goto('/login');
@@ -129,13 +129,8 @@ test('provider completes mocked Paymob visibility payment end-to-end', async ({
   await page.getByRole('button', { name: 'طلب ظهور مدفوع' }).click();
   await expect(page.getByText('تم إنشاء جلسة دفع Paymob التجريبية')).toBeVisible();
   await expect(page.getByText('بانتظار إكمال دفع Paymob')).toBeVisible();
-  await page.getByRole('button', { name: 'إكمال دفع Paymob التجريبي' }).click();
-  await expect(page.getByText('تمت مطابقة الدفع - فيزا/بطاقة عبر Paymob')).toBeVisible();
-  await expect(page.getByText('مدفوعة - جلسة Paymob تجريبية')).toBeVisible();
-  await page.goto('/dashboard');
-  await expect(page.getByText('الظهور المدفوع نشط')).toBeVisible();
   await page.screenshot({
-    path: testInfo.outputPath('paymob-provider-active.png'),
+    path: testInfo.outputPath('paymob-provider-pending.png'),
     fullPage: true,
   });
 
@@ -147,6 +142,10 @@ test('provider completes mocked Paymob visibility payment end-to-end', async ({
   await expect(page.getByRole('heading', { name: 'طلبات الظهور' })).toBeVisible();
   const paymobRequest = page.locator('.soft-list-item').filter({ hasText: 'Smoke visibility request' });
   await expect(paymobRequest.getByText('provider-demo', { exact: true })).toBeVisible();
+  await expect(paymobRequest.getByText('بانتظار إكمال دفع Paymob - فيزا/بطاقة عبر Paymob')).toBeVisible();
+  await expect(paymobRequest.getByText('لم يصل رد Paymob مطابق بعد')).toBeVisible();
+  await paymobRequest.locator('textarea').fill('تمت مراجعة عملية Paymob من لوحة التاجر');
+  await paymobRequest.getByRole('button', { name: 'تأكيد الدفع' }).click();
   await expect(paymobRequest.getByText('تمت مطابقة الدفع - فيزا/بطاقة عبر Paymob')).toBeVisible();
   await expect(paymobRequest.getByRole('button', { name: 'تأكيد الدفع' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /حجز|جدولة|تعيين/ })).toHaveCount(0);
@@ -155,6 +154,13 @@ test('provider completes mocked Paymob visibility payment end-to-end', async ({
     path: testInfo.outputPath('paymob-admin-proof.png'),
     fullPage: true,
   });
+
+  await page.getByRole('button', { name: 'خروج' }).click();
+  await page.goto('/login');
+  await page.getByLabel('البريد الإلكتروني').fill('provider@hand.test');
+  await page.getByRole('button', { name: 'دخول' }).click();
+  await page.goto('/dashboard');
+  await expect(page.getByText('الظهور المدفوع نشط')).toBeVisible();
 });
 
 test('customer can login, reveal WhatsApp, and message after contact', async ({

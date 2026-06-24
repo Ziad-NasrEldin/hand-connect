@@ -242,6 +242,7 @@
   "admin.applicationRejected": "تم رفض المزود. أُزيل الطلب من قائمة الانتظار.",
   "admin.applicationProcessing": "جاري التنفيذ...",
   "admin.paymobCallbackOnly": "طلبات البطاقة عبر Paymob لا تُفعّل إلا بعد وصول رد Paymob موقّع ومطابق. تم تعطيل التأكيد اليدوي من الإدارة لهذه الطريقة.",
+  "admin.paymobManualConfirmationHint": "لم يصل رد Paymob مطابق بعد. أكّد يدويًا فقط بعد مراجعة الدفع داخل Paymob.",
   "admin.noVisibilityRequests": "لا توجد طلبات ظهور.",
   "admin.actionReason": "سبب الإدارة",
   "admin.actionReasonPlaceholder": "أضف سياق الدفع أو الرفض أو المراجعة",
