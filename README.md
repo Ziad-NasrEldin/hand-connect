@@ -1,5 +1,9 @@
 # Herafy
 
+<p align="center">
+  <img src="docs/hero.png" alt="hand-connect product" width="900">
+</p>
+
 Find a verified home-service professional in Cairo in minutes — then talk to them directly.
 
 **Who it's for.** People in Cairo who need trusted home help quickly, plus providers who want verified listings and direct leads without platform middlemen.
